@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useLocation, Redirect } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  Archive, Boxes, Tags, FileSpreadsheet, Images, History, Barcode, Check, Copy, KeyRound, LayoutGrid, LogOut, Package, Pencil, Plus, ScrollText, ShoppingBag, ExternalLink, AlertTriangle,
+  Archive, Boxes, Tags, FileSpreadsheet, Images, History, Barcode, Check, Copy, KeyRound, LayoutGrid, LogOut, Package, Pencil, Plus, ScrollText, ShoppingBag, Receipt, Wallet, ExternalLink, AlertTriangle,
 } from "lucide-react";
 import {
   useLogin, useLogout, useChangePassword, useActivateOwner, useGetAdminSummary, useListAdminProducts, useCreateProduct,
@@ -15,31 +15,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useSessionCsrf } from "@/lib/auth";
 import { asset, daToMinor, errMsg, formatDA } from "@/lib/util";
 import { Logo } from "@/components/site";
+import { inputCls, btnDark, btnGhost, Field, ErrorText, Skel } from "@/components/admin/shell-primitives";
 import { ImagesEditor, imgSrc } from "@/components/admin/media-picker";
 import { VariantEditDialog, BarcodeLabelDialog } from "@/pages/admin-stock";
 
-export const inputCls = "w-full px-3.5 py-2.5 rounded-md bg-background border border-input text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition";
-export const btnDark = "inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#282326] text-[#f6efe9] text-sm hover:bg-primary transition-colors disabled:opacity-50 disabled:pointer-events-none";
-export const btnGhost = "inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-border text-sm hover:border-primary hover:text-primary transition-colors disabled:opacity-50";
-
-export function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
-  return (
-    <label className="block space-y-1.5">
-      <span className="text-xs tracking-wide uppercase text-muted-foreground">{label}</span>
-      {children}
-      {hint && <span className="block text-xs text-muted-foreground">{hint}</span>}
-    </label>
-  );
-}
-
-export function ErrorText({ e }: { e: unknown }) {
-  if (!e) return null;
-  return <p className="text-sm text-destructive bg-destructive/5 border border-destructive/20 rounded-md px-3 py-2" data-testid="text-error">{errMsg(e)}</p>;
-}
-
-export function Skel({ h = "h-40" }: { h?: string }) {
-  return <div className={`${h} bg-muted animate-pulse rounded-md`} />;
-}
+export { inputCls, btnDark, btnGhost, Field, ErrorText, Skel };
 
 function useSetSession() {
   const qc = useQueryClient();
@@ -85,7 +65,7 @@ export function AdminLoginPage() {
 
   if (session.isLoading) return <AuthFrame title="Espace équipe"><Skel /></AuthFrame>;
   if (session.isError) return <AuthFrame title="Espace équipe"><ErrorText e={session.error} /><button className={`${btnGhost} mt-4`} onClick={() => session.refetch()}>Réessayer</button></AuthFrame>;
-  if (session.data?.user && !result) return <Redirect to="/admin" />;
+  if (session.data?.user && !result) return <Redirect to={session.data.user.role === "CASHIER" ? "/pos" : "/admin"} />;
   const s = session.data!;
 
   if (result) {
@@ -125,7 +105,7 @@ export function AdminLoginPage() {
       {mode === "login" ? (
         <form className="space-y-4" onSubmit={(e) => {
           e.preventDefault();
-          login.mutate({ data: { email: email.trim(), password } }, { onSuccess: (ns) => { setSession(ns); nav("/admin"); } });
+          login.mutate({ data: { email: email.trim(), password } }, { onSuccess: (ns) => { setSession(ns); nav(ns.user?.role === "CASHIER" ? "/pos" : "/admin"); } });
         }}>
           <Field label="E-mail"><input type="email" required autoComplete="username" className={inputCls} value={email} onChange={(e) => setEmail(e.target.value)} data-testid="input-email" /></Field>
           <Field label="Mot de passe"><input type="password" required autoComplete="current-password" className={inputCls} value={password} onChange={(e) => setPassword(e.target.value)} data-testid="input-password" /></Field>
@@ -189,6 +169,11 @@ const NAV = [
   { href: "/admin/activite", label: "Activité", icon: ScrollText },
   { href: "/pos", label: "Caisse", icon: ShoppingBag },
 ];
+const CASHIER_NAV = [
+  { href: "/pos", label: "Caisse", icon: ShoppingBag },
+  { href: "/pos/historique", label: "Tickets", icon: Receipt },
+  { href: "/pos/sessions", label: "Tiroir", icon: Wallet },
+];
 
 export function AdminShell({ title, sub, actions, children }: { title: string; sub?: string; actions?: ReactNode; children: ReactNode }) {
   const { session, request } = useSessionCsrf();
@@ -200,13 +185,16 @@ export function AdminShell({ title, sub, actions, children }: { title: string; s
   const user = session.data?.user;
   if (!user) return <Redirect to="/admin/login" />;
   if (user.mustChangePassword) return <ChangePasswordScreen />;
+  const cashier = user.role === "CASHIER";
+  if (cashier && !loc.startsWith("/pos")) return <Redirect to="/pos" />;
+  const items = cashier ? CASHIER_NAV : NAV;
   return (
     <div className="min-h-[100dvh] md:grid md:grid-cols-[250px_1fr] bg-[#fbf8f5]" dir="ltr">
-      <aside className="bg-sidebar border-e border-sidebar-border md:sticky md:top-0 md:h-[100dvh] flex md:flex-col">
+      <aside className="no-print bg-sidebar border-e border-sidebar-border md:sticky md:top-0 md:h-[100dvh] flex md:flex-col">
         <div className="p-5 hidden md:block"><Link href="/"><Logo className="h-16" /></Link></div>
         <nav className="flex md:flex-col gap-1 px-3 py-3 overflow-x-auto flex-1">
-          {NAV.map((n) => {
-            const on = n.href === "/admin" ? loc === "/admin" : loc.startsWith(n.href);
+          {items.map((n) => {
+            const on = n.href === "/admin" || n.href === "/pos" ? loc === n.href || (n.href === "/pos" && !cashier && loc.startsWith("/pos")) : loc.startsWith(n.href);
             return (
               <Link key={n.href} href={n.href} data-testid={`link-admin-${n.href.split("/").pop()}`}
                 className={`shrink-0 flex items-center gap-3 px-3.5 py-2.5 rounded-md text-sm transition-all ${on ? "bg-[#282326] text-[#f6efe9]" : "hover:bg-sidebar-accent hover:translate-x-0.5"}`}>
@@ -231,7 +219,7 @@ export function AdminShell({ title, sub, actions, children }: { title: string; s
       <main className="p-5 md:p-10 min-w-0">
         <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
           <div>
-            <p className="eyebrow">SOFIA STORE · Gestion</p>
+            <p className="eyebrow no-print">SOFIA STORE · {loc.startsWith("/pos") ? "Caisse" : "Gestion"}</p>
             <h1 className="font-serif text-4xl md:text-5xl mt-2">{title}</h1>
             {sub && <p className="text-sm text-muted-foreground mt-1">{sub}</p>}
           </div>
@@ -643,15 +631,3 @@ function AdjustDialog({ row, onClose }: { row: InventoryRow | null; onClose: () 
 
 /* ---------- POS placeholder ---------- */
 
-export function PosPage() {
-  return (
-    <AdminShell title="Caisse" sub="Point de vente en boutique.">
-      <div className="max-w-xl bg-card border border-border rounded-md p-10 text-center" data-testid="status-pos-disabled">
-        <KeyRound className="w-8 h-8 mx-auto text-secondary" strokeWidth={1.3} />
-        <p className="eyebrow mt-5">Phase suivante</p>
-        <p className="font-serif text-3xl mt-2">Caisse non activée</p>
-        <p className="text-sm text-muted-foreground mt-3">La caisse sera construite sur ce même inventaire partagé. Aucune vente n'est enregistrée pour l'instant.</p>
-      </div>
-    </AdminShell>
-  );
-}

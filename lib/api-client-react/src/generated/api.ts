@@ -30,22 +30,42 @@ import type {
   Activity,
   AdjustmentInput,
   AdminProduct,
+  CashSaleInput,
   CatalogImportInput,
   CatalogImportResult,
   Category,
   CategoryInput,
   HealthStatus,
   InventoryRow,
+  ListPosSalesParams,
   ListProductsParams,
+  ListRegisterSessionsParams,
   ListStockMovementsParams,
   LoginInput,
+  LookupPosBarcodeParams,
   MediaAsset,
   MediaLibrary,
   Message,
   MovementPage,
   PasswordInput,
+  PosContext,
+  PosRefundCancellation,
+  PosSale,
+  PosSaleCancellation,
+  PosVariant,
   Product,
   ProductInput,
+  ReceiptSettings,
+  RefundInput,
+  RegisterCancellation,
+  RegisterCancellationResult,
+  RegisterClosing,
+  RegisterOpening,
+  RegisterPage,
+  RegisterSession,
+  SaleCancellationResult,
+  SalePage,
+  SearchPosVariantsParams,
   Session,
   Store,
   Summary,
@@ -2775,5 +2795,1356 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getDeleteMediaMutationOptions(options), queryClient);
+    }
+
+export const getGetPosContextUrl = () => {
+
+
+
+
+  return `/api/pos/context`
+}
+
+export const getPosContext = async ( options?: Parameters<typeof customFetch>[1]): Promise<PosContext> => {
+
+  return customFetch<PosContext>(getGetPosContextUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPosContextQueryKey = () => {
+    return [
+    `/api/pos/context`
+    ] as const;
+    }
+
+
+export const getGetPosContextQueryOptions = <TData = Awaited<ReturnType<typeof getPosContext>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPosContext>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPosContextQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPosContext>>> = ({ signal }) => getPosContext({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPosContext>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetPosContextQueryResult = NonNullable<Awaited<ReturnType<typeof getPosContext>>>
+export type GetPosContextQueryError = ErrorType<unknown>
+
+
+export function useGetPosContext<TData = Awaited<ReturnType<typeof getPosContext>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPosContext>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPosContext>>,
+          TError,
+          Awaited<ReturnType<typeof getPosContext>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPosContext<TData = Awaited<ReturnType<typeof getPosContext>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPosContext>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPosContext>>,
+          TError,
+          Awaited<ReturnType<typeof getPosContext>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPosContext<TData = Awaited<ReturnType<typeof getPosContext>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPosContext>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetPosContext<TData = Awaited<ReturnType<typeof getPosContext>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPosContext>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetPosContextQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSearchPosVariantsUrl = (params?: SearchPosVariantsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/pos/variants?${stringifiedParams}` : `/api/pos/variants`
+}
+
+export const searchPosVariants = async (params?: SearchPosVariantsParams, options?: Parameters<typeof customFetch>[1]): Promise<PosVariant[]> => {
+
+  return customFetch<PosVariant[]>(getSearchPosVariantsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getSearchPosVariantsQueryKey = (params?: SearchPosVariantsParams,) => {
+    return [
+    `/api/pos/variants`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getSearchPosVariantsQueryOptions = <TData = Awaited<ReturnType<typeof searchPosVariants>>, TError = ErrorType<unknown>>(params?: SearchPosVariantsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchPosVariants>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getSearchPosVariantsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof searchPosVariants>>> = ({ signal }) => searchPosVariants(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof searchPosVariants>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type SearchPosVariantsQueryResult = NonNullable<Awaited<ReturnType<typeof searchPosVariants>>>
+export type SearchPosVariantsQueryError = ErrorType<unknown>
+
+
+export function useSearchPosVariants<TData = Awaited<ReturnType<typeof searchPosVariants>>, TError = ErrorType<unknown>>(
+ params: undefined |  SearchPosVariantsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchPosVariants>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchPosVariants>>,
+          TError,
+          Awaited<ReturnType<typeof searchPosVariants>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useSearchPosVariants<TData = Awaited<ReturnType<typeof searchPosVariants>>, TError = ErrorType<unknown>>(
+ params?: SearchPosVariantsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchPosVariants>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof searchPosVariants>>,
+          TError,
+          Awaited<ReturnType<typeof searchPosVariants>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useSearchPosVariants<TData = Awaited<ReturnType<typeof searchPosVariants>>, TError = ErrorType<unknown>>(
+ params?: SearchPosVariantsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchPosVariants>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useSearchPosVariants<TData = Awaited<ReturnType<typeof searchPosVariants>>, TError = ErrorType<unknown>>(
+ params?: SearchPosVariantsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof searchPosVariants>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getSearchPosVariantsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getLookupPosBarcodeUrl = (params: LookupPosBarcodeParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/pos/lookup?${stringifiedParams}` : `/api/pos/lookup`
+}
+
+export const lookupPosBarcode = async (params: LookupPosBarcodeParams, options?: Parameters<typeof customFetch>[1]): Promise<PosVariant> => {
+
+  return customFetch<PosVariant>(getLookupPosBarcodeUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getLookupPosBarcodeQueryKey = (params?: LookupPosBarcodeParams,) => {
+    return [
+    `/api/pos/lookup`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getLookupPosBarcodeQueryOptions = <TData = Awaited<ReturnType<typeof lookupPosBarcode>>, TError = ErrorType<unknown>>(params: LookupPosBarcodeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lookupPosBarcode>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLookupPosBarcodeQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof lookupPosBarcode>>> = ({ signal }) => lookupPosBarcode(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof lookupPosBarcode>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type LookupPosBarcodeQueryResult = NonNullable<Awaited<ReturnType<typeof lookupPosBarcode>>>
+export type LookupPosBarcodeQueryError = ErrorType<unknown>
+
+
+export function useLookupPosBarcode<TData = Awaited<ReturnType<typeof lookupPosBarcode>>, TError = ErrorType<unknown>>(
+ params: LookupPosBarcodeParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof lookupPosBarcode>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof lookupPosBarcode>>,
+          TError,
+          Awaited<ReturnType<typeof lookupPosBarcode>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLookupPosBarcode<TData = Awaited<ReturnType<typeof lookupPosBarcode>>, TError = ErrorType<unknown>>(
+ params: LookupPosBarcodeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lookupPosBarcode>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof lookupPosBarcode>>,
+          TError,
+          Awaited<ReturnType<typeof lookupPosBarcode>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useLookupPosBarcode<TData = Awaited<ReturnType<typeof lookupPosBarcode>>, TError = ErrorType<unknown>>(
+ params: LookupPosBarcodeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lookupPosBarcode>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useLookupPosBarcode<TData = Awaited<ReturnType<typeof lookupPosBarcode>>, TError = ErrorType<unknown>>(
+ params: LookupPosBarcodeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof lookupPosBarcode>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getLookupPosBarcodeQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListRegisterSessionsUrl = (params?: ListRegisterSessionsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/pos/register-sessions?${stringifiedParams}` : `/api/pos/register-sessions`
+}
+
+export const listRegisterSessions = async (params?: ListRegisterSessionsParams, options?: Parameters<typeof customFetch>[1]): Promise<RegisterPage> => {
+
+  return customFetch<RegisterPage>(getListRegisterSessionsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListRegisterSessionsQueryKey = (params?: ListRegisterSessionsParams,) => {
+    return [
+    `/api/pos/register-sessions`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListRegisterSessionsQueryOptions = <TData = Awaited<ReturnType<typeof listRegisterSessions>>, TError = ErrorType<unknown>>(params?: ListRegisterSessionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listRegisterSessions>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListRegisterSessionsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listRegisterSessions>>> = ({ signal }) => listRegisterSessions(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listRegisterSessions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListRegisterSessionsQueryResult = NonNullable<Awaited<ReturnType<typeof listRegisterSessions>>>
+export type ListRegisterSessionsQueryError = ErrorType<unknown>
+
+
+export function useListRegisterSessions<TData = Awaited<ReturnType<typeof listRegisterSessions>>, TError = ErrorType<unknown>>(
+ params: undefined |  ListRegisterSessionsParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listRegisterSessions>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listRegisterSessions>>,
+          TError,
+          Awaited<ReturnType<typeof listRegisterSessions>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListRegisterSessions<TData = Awaited<ReturnType<typeof listRegisterSessions>>, TError = ErrorType<unknown>>(
+ params?: ListRegisterSessionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listRegisterSessions>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listRegisterSessions>>,
+          TError,
+          Awaited<ReturnType<typeof listRegisterSessions>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListRegisterSessions<TData = Awaited<ReturnType<typeof listRegisterSessions>>, TError = ErrorType<unknown>>(
+ params?: ListRegisterSessionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listRegisterSessions>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useListRegisterSessions<TData = Awaited<ReturnType<typeof listRegisterSessions>>, TError = ErrorType<unknown>>(
+ params?: ListRegisterSessionsParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listRegisterSessions>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListRegisterSessionsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getOpenRegisterUrl = () => {
+
+
+
+
+  return `/api/pos/register-sessions`
+}
+
+export const openRegister = async (registerOpening: RegisterOpening, options?: Parameters<typeof customFetch>[1]): Promise<RegisterSession> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<RegisterSession>(getOpenRegisterUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(registerOpening)
+  }
+);}
+
+
+
+
+
+export const getOpenRegisterMutationKey = () => ['openRegister'] as const;
+
+export const getOpenRegisterMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof openRegister>>, TError,OpenRegisterMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof openRegister>>, TError,OpenRegisterMutationVariables, TContext> => {
+
+const mutationKey = getOpenRegisterMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof openRegister>>, OpenRegisterMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  openRegister(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type OpenRegisterMutationResult = NonNullable<Awaited<ReturnType<typeof openRegister>>>
+    export type OpenRegisterMutationBody = BodyType<RegisterOpening>
+    export type OpenRegisterMutationError = ErrorType<unknown>
+    export type OpenRegisterMutationVariables = {data: BodyType<RegisterOpening>}
+
+    export const useOpenRegister = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof openRegister>>, TError,OpenRegisterMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof openRegister>>,
+        TError,
+        OpenRegisterMutationVariables,
+        TContext
+      > => {
+      return useMutation(getOpenRegisterMutationOptions(options), queryClient);
+    }
+
+export const getCloseRegisterUrl = (id: number,) => {
+
+
+
+
+  return `/api/pos/register-sessions/${id}/close`
+}
+
+export const closeRegister = async (id: number,
+    registerClosing: RegisterClosing, options?: Parameters<typeof customFetch>[1]): Promise<RegisterSession> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<RegisterSession>(getCloseRegisterUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(registerClosing)
+  }
+);}
+
+
+
+
+
+export const getCloseRegisterMutationKey = () => ['closeRegister'] as const;
+
+export const getCloseRegisterMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof closeRegister>>, TError,CloseRegisterMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof closeRegister>>, TError,CloseRegisterMutationVariables, TContext> => {
+
+const mutationKey = getCloseRegisterMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof closeRegister>>, CloseRegisterMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  closeRegister(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CloseRegisterMutationResult = NonNullable<Awaited<ReturnType<typeof closeRegister>>>
+    export type CloseRegisterMutationBody = BodyType<RegisterClosing>
+    export type CloseRegisterMutationError = ErrorType<unknown>
+    export type CloseRegisterMutationVariables = {id: number;data: BodyType<RegisterClosing>}
+
+    export const useCloseRegister = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof closeRegister>>, TError,CloseRegisterMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof closeRegister>>,
+        TError,
+        CloseRegisterMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCloseRegisterMutationOptions(options), queryClient);
+    }
+
+export const getListPosSalesUrl = (params?: ListPosSalesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/pos/sales?${stringifiedParams}` : `/api/pos/sales`
+}
+
+export const listPosSales = async (params?: ListPosSalesParams, options?: Parameters<typeof customFetch>[1]): Promise<SalePage> => {
+
+  return customFetch<SalePage>(getListPosSalesUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPosSalesQueryKey = (params?: ListPosSalesParams,) => {
+    return [
+    `/api/pos/sales`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListPosSalesQueryOptions = <TData = Awaited<ReturnType<typeof listPosSales>>, TError = ErrorType<unknown>>(params?: ListPosSalesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPosSales>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPosSalesQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPosSales>>> = ({ signal }) => listPosSales(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPosSales>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListPosSalesQueryResult = NonNullable<Awaited<ReturnType<typeof listPosSales>>>
+export type ListPosSalesQueryError = ErrorType<unknown>
+
+
+export function useListPosSales<TData = Awaited<ReturnType<typeof listPosSales>>, TError = ErrorType<unknown>>(
+ params: undefined |  ListPosSalesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPosSales>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listPosSales>>,
+          TError,
+          Awaited<ReturnType<typeof listPosSales>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListPosSales<TData = Awaited<ReturnType<typeof listPosSales>>, TError = ErrorType<unknown>>(
+ params?: ListPosSalesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPosSales>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listPosSales>>,
+          TError,
+          Awaited<ReturnType<typeof listPosSales>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListPosSales<TData = Awaited<ReturnType<typeof listPosSales>>, TError = ErrorType<unknown>>(
+ params?: ListPosSalesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPosSales>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useListPosSales<TData = Awaited<ReturnType<typeof listPosSales>>, TError = ErrorType<unknown>>(
+ params?: ListPosSalesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listPosSales>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListPosSalesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreatePosSaleUrl = () => {
+
+
+
+
+  return `/api/pos/sales`
+}
+
+export const createPosSale = async (cashSaleInput: CashSaleInput, options?: Parameters<typeof customFetch>[1]): Promise<PosSale> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<PosSale>(getCreatePosSaleUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(cashSaleInput)
+  }
+);}
+
+
+
+
+
+export const getCreatePosSaleMutationKey = () => ['createPosSale'] as const;
+
+export const getCreatePosSaleMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPosSale>>, TError,CreatePosSaleMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createPosSale>>, TError,CreatePosSaleMutationVariables, TContext> => {
+
+const mutationKey = getCreatePosSaleMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPosSale>>, CreatePosSaleMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createPosSale(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreatePosSaleMutationResult = NonNullable<Awaited<ReturnType<typeof createPosSale>>>
+    export type CreatePosSaleMutationBody = BodyType<CashSaleInput>
+    export type CreatePosSaleMutationError = ErrorType<unknown>
+    export type CreatePosSaleMutationVariables = {data: BodyType<CashSaleInput>}
+
+    export const useCreatePosSale = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPosSale>>, TError,CreatePosSaleMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createPosSale>>,
+        TError,
+        CreatePosSaleMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreatePosSaleMutationOptions(options), queryClient);
+    }
+
+export const getRecoverPosSaleUrl = (requestId: string,) => {
+
+
+
+
+  return `/api/pos/sales/by-request/${requestId}`
+}
+
+export const recoverPosSale = async (requestId: string, options?: Parameters<typeof customFetch>[1]): Promise<PosSale> => {
+
+  return customFetch<PosSale>(getRecoverPosSaleUrl(requestId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getRecoverPosSaleQueryKey = (requestId: string,) => {
+    return [
+    `/api/pos/sales/by-request/${requestId}`
+    ] as const;
+    }
+
+
+export const getRecoverPosSaleQueryOptions = <TData = Awaited<ReturnType<typeof recoverPosSale>>, TError = ErrorType<unknown>>(requestId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof recoverPosSale>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getRecoverPosSaleQueryKey(requestId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof recoverPosSale>>> = ({ signal }) => recoverPosSale(requestId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: requestId !== null && requestId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof recoverPosSale>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type RecoverPosSaleQueryResult = NonNullable<Awaited<ReturnType<typeof recoverPosSale>>>
+export type RecoverPosSaleQueryError = ErrorType<unknown>
+
+
+export function useRecoverPosSale<TData = Awaited<ReturnType<typeof recoverPosSale>>, TError = ErrorType<unknown>>(
+ requestId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof recoverPosSale>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof recoverPosSale>>,
+          TError,
+          Awaited<ReturnType<typeof recoverPosSale>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useRecoverPosSale<TData = Awaited<ReturnType<typeof recoverPosSale>>, TError = ErrorType<unknown>>(
+ requestId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof recoverPosSale>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof recoverPosSale>>,
+          TError,
+          Awaited<ReturnType<typeof recoverPosSale>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useRecoverPosSale<TData = Awaited<ReturnType<typeof recoverPosSale>>, TError = ErrorType<unknown>>(
+ requestId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof recoverPosSale>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useRecoverPosSale<TData = Awaited<ReturnType<typeof recoverPosSale>>, TError = ErrorType<unknown>>(
+ requestId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof recoverPosSale>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getRecoverPosSaleQueryOptions(requestId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCancelPosSaleRequestUrl = () => {
+
+
+
+
+  return `/api/pos/sales/cancel-request`
+}
+
+export const cancelPosSaleRequest = async (posSaleCancellation: PosSaleCancellation, options?: Parameters<typeof customFetch>[1]): Promise<SaleCancellationResult> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<SaleCancellationResult>(getCancelPosSaleRequestUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(posSaleCancellation)
+  }
+);}
+
+
+
+
+
+export const getCancelPosSaleRequestMutationKey = () => ['cancelPosSaleRequest'] as const;
+
+export const getCancelPosSaleRequestMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelPosSaleRequest>>, TError,CancelPosSaleRequestMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof cancelPosSaleRequest>>, TError,CancelPosSaleRequestMutationVariables, TContext> => {
+
+const mutationKey = getCancelPosSaleRequestMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof cancelPosSaleRequest>>, CancelPosSaleRequestMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  cancelPosSaleRequest(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CancelPosSaleRequestMutationResult = NonNullable<Awaited<ReturnType<typeof cancelPosSaleRequest>>>
+    export type CancelPosSaleRequestMutationBody = BodyType<PosSaleCancellation>
+    export type CancelPosSaleRequestMutationError = ErrorType<unknown>
+    export type CancelPosSaleRequestMutationVariables = {data: BodyType<PosSaleCancellation>}
+
+    export const useCancelPosSaleRequest = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelPosSaleRequest>>, TError,CancelPosSaleRequestMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof cancelPosSaleRequest>>,
+        TError,
+        CancelPosSaleRequestMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCancelPosSaleRequestMutationOptions(options), queryClient);
+    }
+
+export const getCancelPosRefundRequestUrl = () => {
+
+
+
+
+  return `/api/pos/refunds/cancel-request`
+}
+
+export const cancelPosRefundRequest = async (posRefundCancellation: PosRefundCancellation, options?: Parameters<typeof customFetch>[1]): Promise<SaleCancellationResult> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<SaleCancellationResult>(getCancelPosRefundRequestUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(posRefundCancellation)
+  }
+);}
+
+
+
+
+
+export const getCancelPosRefundRequestMutationKey = () => ['cancelPosRefundRequest'] as const;
+
+export const getCancelPosRefundRequestMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelPosRefundRequest>>, TError,CancelPosRefundRequestMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof cancelPosRefundRequest>>, TError,CancelPosRefundRequestMutationVariables, TContext> => {
+
+const mutationKey = getCancelPosRefundRequestMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof cancelPosRefundRequest>>, CancelPosRefundRequestMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  cancelPosRefundRequest(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CancelPosRefundRequestMutationResult = NonNullable<Awaited<ReturnType<typeof cancelPosRefundRequest>>>
+    export type CancelPosRefundRequestMutationBody = BodyType<PosRefundCancellation>
+    export type CancelPosRefundRequestMutationError = ErrorType<unknown>
+    export type CancelPosRefundRequestMutationVariables = {data: BodyType<PosRefundCancellation>}
+
+    export const useCancelPosRefundRequest = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelPosRefundRequest>>, TError,CancelPosRefundRequestMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof cancelPosRefundRequest>>,
+        TError,
+        CancelPosRefundRequestMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCancelPosRefundRequestMutationOptions(options), queryClient);
+    }
+
+export const getCancelRegisterRequestUrl = () => {
+
+
+
+
+  return `/api/pos/register-sessions/cancel-request`
+}
+
+export const cancelRegisterRequest = async (registerCancellation: RegisterCancellation, options?: Parameters<typeof customFetch>[1]): Promise<RegisterCancellationResult> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<RegisterCancellationResult>(getCancelRegisterRequestUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(registerCancellation)
+  }
+);}
+
+
+
+
+
+export const getCancelRegisterRequestMutationKey = () => ['cancelRegisterRequest'] as const;
+
+export const getCancelRegisterRequestMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelRegisterRequest>>, TError,CancelRegisterRequestMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof cancelRegisterRequest>>, TError,CancelRegisterRequestMutationVariables, TContext> => {
+
+const mutationKey = getCancelRegisterRequestMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof cancelRegisterRequest>>, CancelRegisterRequestMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  cancelRegisterRequest(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CancelRegisterRequestMutationResult = NonNullable<Awaited<ReturnType<typeof cancelRegisterRequest>>>
+    export type CancelRegisterRequestMutationBody = BodyType<RegisterCancellation>
+    export type CancelRegisterRequestMutationError = ErrorType<unknown>
+    export type CancelRegisterRequestMutationVariables = {data: BodyType<RegisterCancellation>}
+
+    export const useCancelRegisterRequest = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelRegisterRequest>>, TError,CancelRegisterRequestMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof cancelRegisterRequest>>,
+        TError,
+        CancelRegisterRequestMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCancelRegisterRequestMutationOptions(options), queryClient);
+    }
+
+export const getGetPosSaleUrl = (id: number,) => {
+
+
+
+
+  return `/api/pos/sales/${id}`
+}
+
+export const getPosSale = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<PosSale> => {
+
+  return customFetch<PosSale>(getGetPosSaleUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPosSaleQueryKey = (id: number,) => {
+    return [
+    `/api/pos/sales/${id}`
+    ] as const;
+    }
+
+
+export const getGetPosSaleQueryOptions = <TData = Awaited<ReturnType<typeof getPosSale>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPosSale>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPosSaleQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPosSale>>> = ({ signal }) => getPosSale(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPosSale>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetPosSaleQueryResult = NonNullable<Awaited<ReturnType<typeof getPosSale>>>
+export type GetPosSaleQueryError = ErrorType<unknown>
+
+
+export function useGetPosSale<TData = Awaited<ReturnType<typeof getPosSale>>, TError = ErrorType<unknown>>(
+ id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPosSale>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPosSale>>,
+          TError,
+          Awaited<ReturnType<typeof getPosSale>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPosSale<TData = Awaited<ReturnType<typeof getPosSale>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPosSale>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPosSale>>,
+          TError,
+          Awaited<ReturnType<typeof getPosSale>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetPosSale<TData = Awaited<ReturnType<typeof getPosSale>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPosSale>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetPosSale<TData = Awaited<ReturnType<typeof getPosSale>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPosSale>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetPosSaleQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getRefundPosSaleUrl = (id: number,) => {
+
+
+
+
+  return `/api/pos/sales/${id}/refunds`
+}
+
+export const refundPosSale = async (id: number,
+    refundInput: RefundInput, options?: Parameters<typeof customFetch>[1]): Promise<PosSale> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<PosSale>(getRefundPosSaleUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(refundInput)
+  }
+);}
+
+
+
+
+
+export const getRefundPosSaleMutationKey = () => ['refundPosSale'] as const;
+
+export const getRefundPosSaleMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof refundPosSale>>, TError,RefundPosSaleMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof refundPosSale>>, TError,RefundPosSaleMutationVariables, TContext> => {
+
+const mutationKey = getRefundPosSaleMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof refundPosSale>>, RefundPosSaleMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  refundPosSale(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RefundPosSaleMutationResult = NonNullable<Awaited<ReturnType<typeof refundPosSale>>>
+    export type RefundPosSaleMutationBody = BodyType<RefundInput>
+    export type RefundPosSaleMutationError = ErrorType<unknown>
+    export type RefundPosSaleMutationVariables = {id: number;data: BodyType<RefundInput>}
+
+    export const useRefundPosSale = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof refundPosSale>>, TError,RefundPosSaleMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof refundPosSale>>,
+        TError,
+        RefundPosSaleMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRefundPosSaleMutationOptions(options), queryClient);
+    }
+
+export const getUpdateReceiptSettingsUrl = () => {
+
+
+
+
+  return `/api/pos/receipt-settings`
+}
+
+export const updateReceiptSettings = async (receiptSettings: ReceiptSettings, options?: Parameters<typeof customFetch>[1]): Promise<ReceiptSettings> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ReceiptSettings>(getUpdateReceiptSettingsUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(receiptSettings)
+  }
+);}
+
+
+
+
+
+export const getUpdateReceiptSettingsMutationKey = () => ['updateReceiptSettings'] as const;
+
+export const getUpdateReceiptSettingsMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateReceiptSettings>>, TError,UpdateReceiptSettingsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateReceiptSettings>>, TError,UpdateReceiptSettingsMutationVariables, TContext> => {
+
+const mutationKey = getUpdateReceiptSettingsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateReceiptSettings>>, UpdateReceiptSettingsMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateReceiptSettings(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateReceiptSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof updateReceiptSettings>>>
+    export type UpdateReceiptSettingsMutationBody = BodyType<ReceiptSettings>
+    export type UpdateReceiptSettingsMutationError = ErrorType<unknown>
+    export type UpdateReceiptSettingsMutationVariables = {data: BodyType<ReceiptSettings>}
+
+    export const useUpdateReceiptSettings = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateReceiptSettings>>, TError,UpdateReceiptSettingsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateReceiptSettings>>,
+        TError,
+        UpdateReceiptSettingsMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateReceiptSettingsMutationOptions(options), queryClient);
     }
 

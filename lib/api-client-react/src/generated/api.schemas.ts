@@ -5,6 +5,319 @@
  * SOFIA STORE shared retail API. Initial foundation and catalog phase.
  * OpenAPI spec version: 0.2.0
  */
+export interface PosSaleCancellation {
+  /**
+     * @minLength 16
+     * @maxLength 100
+     */
+  requestId: string;
+  /** @minimum 1 */
+  registerSessionId: number;
+}
+
+export interface PosRefundCancellation {
+  /**
+     * @minLength 16
+     * @maxLength 100
+     */
+  requestId: string;
+  /** @minimum 1 */
+  registerSessionId: number;
+  /** @minimum 1 */
+  saleId: number;
+}
+
+export type RegisterCancellationKind = typeof RegisterCancellationKind[keyof typeof RegisterCancellationKind];
+
+
+export const RegisterCancellationKind = {
+  OPEN: 'OPEN',
+  CLOSE: 'CLOSE',
+} as const;
+
+export interface RegisterCancellation {
+  /**
+     * @minLength 16
+     * @maxLength 100
+     */
+  requestId: string;
+  kind: RegisterCancellationKind;
+  /**
+     * @minimum 1
+     * @nullable
+     */
+  registerSessionId: number | null;
+}
+
+export type PosSaleStatus = typeof PosSaleStatus[keyof typeof PosSaleStatus];
+
+
+export const PosSaleStatus = {
+  COMPLETED: 'COMPLETED',
+  PARTIALLY_REFUNDED: 'PARTIALLY_REFUNDED',
+  REFUNDED: 'REFUNDED',
+  VOIDED: 'VOIDED',
+} as const;
+
+export interface ReceiptSettings {
+  /** @maxLength 500 */
+  address: string;
+  /** @maxLength 60 */
+  phone: string;
+  /** @maxLength 500 */
+  footer: string;
+}
+
+export interface SaleLine {
+  id: number;
+  variantId: number;
+  productName: string;
+  nameAr: string;
+  sku: string;
+  barcode: string;
+  size: string;
+  color: string;
+  quantity: number;
+  unitPriceMinor: number;
+  discountMinor: number;
+  lineTotalMinor: number;
+  refundedQuantity: number;
+}
+
+export interface RefundLine {
+  saleItemId: number;
+  quantity: number;
+  restock: boolean;
+  amountMinor: number;
+}
+
+export interface PosRefund {
+  id: number;
+  number: string;
+  kind: string;
+  reason: string;
+  amountMinor: number;
+  createdAt: string;
+  actorId: number;
+  registerSessionId: number;
+  items: RefundLine[];
+}
+
+export interface PosSale {
+  id: number;
+  number: string;
+  requestId: string;
+  registerSessionId: number;
+  cashierId: number;
+  status: PosSaleStatus;
+  createdAt: string;
+  subtotalMinor: number;
+  discountMinor: number;
+  discountReason: string;
+  totalMinor: number;
+  tenderedMinor: number;
+  changeMinor: number;
+  refundedMinor: number;
+  storeName: string;
+  receiptSettings: ReceiptSettings;
+  items: SaleLine[];
+  refunds: PosRefund[];
+}
+
+export interface SaleCancellationResult {
+  cancelled: boolean;
+  sale: PosSale | null;
+}
+
+export type RegisterSessionStatus = typeof RegisterSessionStatus[keyof typeof RegisterSessionStatus];
+
+
+export const RegisterSessionStatus = {
+  OPEN: 'OPEN',
+  CLOSED: 'CLOSED',
+} as const;
+
+export interface RegisterSession {
+  id: number;
+  openedById: number;
+  openedBy: string;
+  status: RegisterSessionStatus;
+  openingMinor: number;
+  salesMinor: number;
+  refundsMinor: number;
+  expectedMinor: number;
+  /** @nullable */
+  countedMinor: number | null;
+  /** @nullable */
+  varianceMinor: number | null;
+  openedAt: string;
+  /** @nullable */
+  closedAt: string | null;
+  /** @nullable */
+  closedBy: string | null;
+  /** @nullable */
+  closeReason: string | null;
+}
+
+export interface RegisterCancellationResult {
+  cancelled: boolean;
+  session: RegisterSession | null;
+}
+
+export interface PosVariant {
+  id: number;
+  productId: number;
+  productName: string;
+  nameAr: string;
+  category: string;
+  image: string;
+  sku: string;
+  barcode: string;
+  size: string;
+  color: string;
+  priceMinor: number;
+  available: number;
+}
+
+export interface PosContext {
+  userId: number;
+  canManage: boolean;
+  canSell: boolean;
+  registerName: string;
+  activeSession: RegisterSession | null;
+  receiptSettings: ReceiptSettings;
+}
+
+export interface RegisterOpening {
+  /**
+     * @minimum 0
+     * @maximum 1000000000
+     */
+  openingMinor: number;
+  /**
+     * @minLength 16
+     * @maxLength 100
+     */
+  requestId: string;
+}
+
+export interface RegisterClosing {
+  /**
+     * @minimum 0
+     * @maximum 1000000000
+     */
+  countedMinor: number;
+  /**
+     * @minLength 3
+     * @maxLength 500
+     */
+  reason: string;
+  /**
+     * @minLength 16
+     * @maxLength 100
+     */
+  requestId: string;
+}
+
+export interface RegisterPage {
+  items: RegisterSession[];
+  /** @nullable */
+  nextCursor: number | null;
+}
+
+export interface CashSaleLine {
+  /** @minimum 1 */
+  variantId: number;
+  /**
+     * @minimum 1
+     * @maximum 1000
+     */
+  quantity: number;
+  /**
+     * @minimum 1
+     * @maximum 100000000
+     */
+  expectedUnitPriceMinor: number;
+  /**
+     * @minimum 0
+     * @maximum 1000000000
+     */
+  discountMinor: number;
+}
+
+export interface CashSaleInput {
+  /**
+     * @minLength 16
+     * @maxLength 100
+     */
+  requestId: string;
+  /** @minimum 1 */
+  registerSessionId: number;
+  /**
+     * @minItems 1
+     * @maxItems 50
+     */
+  items: CashSaleLine[];
+  /**
+     * @minimum 0
+     * @maximum 1000000000
+     */
+  orderDiscountMinor: number;
+  /** @maxLength 500 */
+  discountReason: string;
+  /**
+     * @minimum 0
+     * @maximum 1000000000
+     */
+  tenderedMinor: number;
+}
+
+export type RefundInputKind = typeof RefundInputKind[keyof typeof RefundInputKind];
+
+
+export const RefundInputKind = {
+  RETURN: 'RETURN',
+  VOID: 'VOID',
+} as const;
+
+export interface RefundLineInput {
+  /** @minimum 1 */
+  saleItemId: number;
+  /**
+     * @minimum 1
+     * @maximum 1000
+     */
+  quantity: number;
+  restock: boolean;
+}
+
+export interface RefundInput {
+  /**
+     * @minLength 16
+     * @maxLength 100
+     */
+  requestId: string;
+  /** @minimum 1 */
+  registerSessionId: number;
+  kind: RefundInputKind;
+  /**
+     * @minLength 3
+     * @maxLength 500
+     */
+  reason: string;
+  /**
+     * @minItems 1
+     * @maxItems 50
+     */
+  items: RefundLineInput[];
+}
+
+export interface SalePage {
+  items: PosSale[];
+  /** @nullable */
+  nextCursor: number | null;
+}
+
 export interface HealthStatus {
   status: string;
 }
@@ -379,5 +692,38 @@ variantId?: number;
  * @minimum 1
  */
 before?: number;
+};
+
+export type SearchPosVariantsParams = {
+/**
+ * @maxLength 100
+ */
+q?: string;
+};
+
+export type LookupPosBarcodeParams = {
+/**
+ * @minLength 1
+ * @maxLength 80
+ */
+barcode: string;
+};
+
+export type ListRegisterSessionsParams = {
+/**
+ * @minimum 1
+ */
+before?: number;
+};
+
+export type ListPosSalesParams = {
+/**
+ * @minimum 1
+ */
+before?: number;
+/**
+ * @maxLength 100
+ */
+q?: string;
 };
 

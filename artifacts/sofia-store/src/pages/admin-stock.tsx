@@ -10,7 +10,7 @@ import { useSessionCsrf } from "@/lib/auth";
 import { daToMinor, errMsg, formatDA } from "@/lib/util";
 import { AdminShell, ErrorText, Field, Skel, btnDark, btnGhost, inputCls, useInvalidateCatalog } from "@/pages/admin";
 
-const KIND: Record<string, string> = { RECEIPT: "Réception", ADJUSTMENT: "Correction", DAMAGE: "Dommage", RETURN: "Retour", SALE: "Vente", RESERVATION: "Réservation" };
+const KIND: Record<string, string> = { RECEIPT: "Réception", ADJUSTMENT: "Correction", DAMAGE: "Dommage", RETURN: "Retour", SALE: "Vente", REFUND: "Remboursement", VOID: "Annulation", RESERVATION: "Réservation" };
 
 /* ---------- Movements ---------- */
 

@@ -642,6 +642,9 @@ importers:
       '@prisma/client':
         specifier: ^6.19.3
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
+      '@workspace/api-zod':
+        specifier: workspace:*
+        version: link:../api-zod
       csv-parse:
         specifier: ^7.0.3
         version: 7.0.3

@@ -20,6 +20,11 @@ model User {
   audit              AuditLog[]
   imports            ImportBatch[]
   media              MediaAsset[]
+  registerOpenings   RegisterSession[] @relation("RegisterOpenedBy")
+  registerClosings   RegisterSession[] @relation("RegisterClosedBy")
+  sales              Sale[]
+  refunds            Refund[]
+  posCancellations   PosCancellation[]
   @@map("users")
 }
 
@@ -124,6 +129,7 @@ model ProductVariant {
   color      Color           @relation(fields: [colorId], references: [id], onDelete: Restrict)
   inventory  Inventory[]
   movements  StockMovement[]
+  saleItems  SaleItem[]
   @@unique([productId, sizeId, colorId])
   @@map("product_variants")
 }
@@ -161,6 +167,10 @@ model StockMovement {
   createdAt   DateTime       @default(now())
   variant     ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
   user        User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  saleItemId  Int?           @unique
+  refundItemId Int?          @unique
+  saleItem    SaleItem?      @relation(fields: [saleItemId], references: [id], onDelete: Restrict)
+  refundItem  RefundItem?    @relation(fields: [refundItemId], references: [id], onDelete: Restrict)
   @@index([variantId, createdAt])
   @@map("stock_movements")
 }
@@ -209,4 +219,151 @@ model MediaAsset {
   images       ProductImage[]
   @@index([status, createdAt])
   @@map("media_assets")
+}
+
+model CashRegister {
+  id               Int @id @default(autoincrement())
+  code             String @unique @db.VarChar(40)
+  name             String @db.VarChar(150)
+  currentSessionId Int? @unique
+  currentSession   RegisterSession? @relation("CurrentRegister", fields: [currentSessionId], references: [id], onDelete: Restrict)
+  sessions         RegisterSession[] @relation("RegisterHistory")
+  cancellations    PosCancellation[]
+  @@map("cash_registers")
+}
+
+model RegisterSession {
+  id               Int @id @default(autoincrement())
+  registerId       Int
+  openedById       Int
+  closedById       Int?
+  status           String @default("OPEN") @db.VarChar(20)
+  openingMinor     Int
+  openedAt         DateTime @default(now())
+  closedAt         DateTime?
+  expectedMinor    Int?
+  countedMinor     Int?
+  varianceMinor    Int?
+  closeReason      String? @db.VarChar(500)
+  openRequestId    String @unique @db.VarChar(100)
+  openRequestHash  String @db.VarChar(64)
+  closeRequestId   String? @unique @db.VarChar(100)
+  closeRequestHash String? @db.VarChar(64)
+  register         CashRegister @relation("RegisterHistory", fields: [registerId], references: [id], onDelete: Restrict)
+  currentFor       CashRegister? @relation("CurrentRegister")
+  openedBy         User @relation("RegisterOpenedBy", fields: [openedById], references: [id], onDelete: Restrict)
+  closedBy         User? @relation("RegisterClosedBy", fields: [closedById], references: [id], onDelete: Restrict)
+  sales            Sale[]
+  refunds          Refund[]
+  @@index([openedById, openedAt])
+  @@map("register_sessions")
+}
+
+model Sale {
+  id                Int @id @default(autoincrement())
+  number            String @unique @db.VarChar(80)
+  requestId         String @unique @db.VarChar(100)
+  requestHash       String @db.VarChar(64)
+  registerSessionId Int
+  userId            Int
+  status            String @default("COMPLETED") @db.VarChar(30)
+  subtotalMinor     Int
+  discountMinor     Int
+  discountReason    String @default("") @db.VarChar(500)
+  totalMinor        Int
+  storeName         String @db.VarChar(150)
+  storeAddress      String @default("") @db.VarChar(500)
+  storePhone        String @default("") @db.VarChar(60)
+  receiptFooter     String @default("") @db.VarChar(500)
+  createdAt         DateTime @default(now())
+  registerSession   RegisterSession @relation(fields: [registerSessionId], references: [id], onDelete: Restrict)
+  user              User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items             SaleItem[]
+  payment           Payment?
+  refunds           Refund[]
+  @@index([userId, id])
+  @@index([createdAt])
+  @@map("sales")
+}
+
+model SaleItem {
+  id             Int @id @default(autoincrement())
+  saleId         Int
+  variantId      Int
+  productName    String @db.VarChar(150)
+  nameAr         String @db.VarChar(150)
+  sku            String @db.VarChar(80)
+  barcode        String @db.VarChar(80)
+  size           String @db.VarChar(30)
+  color          String @db.VarChar(60)
+  quantity       Int
+  unitPriceMinor Int
+  unitCostMinor  Int
+  discountMinor  Int
+  lineTotalMinor Int
+  sale           Sale @relation(fields: [saleId], references: [id], onDelete: Restrict)
+  variant        ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  refundItems    RefundItem[]
+  movement       StockMovement?
+  @@unique([saleId, variantId])
+  @@map("sale_items")
+}
+
+model Payment {
+  id            Int @id @default(autoincrement())
+  saleId        Int @unique
+  method        String @default("CASH") @db.VarChar(20)
+  amountMinor   Int
+  tenderedMinor Int
+  changeMinor   Int
+  createdAt     DateTime @default(now())
+  sale          Sale @relation(fields: [saleId], references: [id], onDelete: Restrict)
+  @@map("payments")
+}
+
+model Refund {
+  id                Int @id @default(autoincrement())
+  number            String @unique @db.VarChar(80)
+  requestId         String @unique @db.VarChar(100)
+  requestHash       String @db.VarChar(64)
+  saleId            Int
+  registerSessionId Int
+  userId            Int
+  kind              String @db.VarChar(20)
+  reason            String @db.VarChar(500)
+  amountMinor       Int
+  createdAt         DateTime @default(now())
+  sale              Sale @relation(fields: [saleId], references: [id], onDelete: Restrict)
+  registerSession   RegisterSession @relation(fields: [registerSessionId], references: [id], onDelete: Restrict)
+  user              User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items             RefundItem[]
+  @@index([saleId, id])
+  @@map("refunds")
+}
+
+model RefundItem {
+  id           Int @id @default(autoincrement())
+  refundId     Int
+  saleItemId   Int
+  quantity     Int
+  restock      Boolean
+  amountMinor  Int
+  refund       Refund @relation(fields: [refundId], references: [id], onDelete: Restrict)
+  saleItem     SaleItem @relation(fields: [saleItemId], references: [id], onDelete: Restrict)
+  movement     StockMovement?
+  @@unique([refundId, saleItemId])
+  @@index([saleItemId])
+  @@map("refund_items")
+}
+
+model PosCancellation {
+  kind       String @db.VarChar(20)
+  requestId  String @db.VarChar(100)
+  userId     Int
+  registerId Int
+  createdAt  DateTime @default(now())
+  user       User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  register   CashRegister @relation(fields: [registerId], references: [id], onDelete: Restrict)
+  @@id([kind, requestId])
+  @@map("pos_cancellations")
 }

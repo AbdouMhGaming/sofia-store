@@ -389,8 +389,409 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Message" }
+  /pos/context:
+    get:
+      operationId: getPosContext
+      responses:
+        "200":
+          description: Current staff permissions, physical drawer and receipt configuration
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PosContext" }
+  /pos/variants:
+    get:
+      operationId: searchPosVariants
+      parameters:
+        - { name: q, in: query, schema: { type: string, maxLength: 100 } }
+      responses:
+        "200":
+          description: Up to 40 matching sellable catalog variants, including out-of-stock variants
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/PosVariant" } }
+  /pos/lookup:
+    get:
+      operationId: lookupPosBarcode
+      parameters:
+        - { name: barcode, in: query, required: true, schema: { type: string, minLength: 1, maxLength: 80 } }
+      responses:
+        "200":
+          description: Exact case-sensitive barcode match, preserving leading zeros
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PosVariant" }
+  /pos/register-sessions:
+    get:
+      operationId: listRegisterSessions
+      parameters:
+        - { name: before, in: query, schema: { type: integer, minimum: 1 } }
+      responses:
+        "200":
+          description: Drawer history, restricted to own sessions for cashiers
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RegisterPage" }
+    post:
+      operationId: openRegister
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RegisterOpening" }
+      responses:
+        "200":
+          description: Opened drawer session, or the identical previous request
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RegisterSession" }
+  /pos/register-sessions/{id}/close:
+    post:
+      operationId: closeRegister
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer, minimum: 1 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RegisterClosing" }
+      responses:
+        "200":
+          description: Counted cash and variance saved atomically, without deleting history
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RegisterSession" }
+  /pos/sales:
+    get:
+      operationId: listPosSales
+      parameters:
+        - { name: before, in: query, schema: { type: integer, minimum: 1 } }
+        - { name: q, in: query, schema: { type: string, maxLength: 100 } }
+      responses:
+        "200":
+          description: Receipt history, restricted to own sales for cashiers
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SalePage" }
+    post:
+      operationId: createPosSale
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CashSaleInput" }
+      responses:
+        "200":
+          description: Committed cash sale, receipt and stock movements, or identical previous request
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PosSale" }
+  /pos/sales/by-request/{requestId}:
+    get:
+      operationId: recoverPosSale
+      parameters:
+        - { name: requestId, in: path, required: true, schema: { type: string, minLength: 16, maxLength: 100 } }
+      responses:
+        "200":
+          description: Recover a completed checkout after an uncertain network response
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PosSale" }
+  /pos/sales/cancel-request:
+    post:
+      operationId: cancelPosSaleRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PosSaleCancellation" }
+      responses:
+        "200":
+          description: Durable cancellation of an uncommitted request, or its already committed sale
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SaleCancellationResult" }
+  /pos/refunds/cancel-request:
+    post:
+      operationId: cancelPosRefundRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PosRefundCancellation" }
+      responses:
+        "200":
+          description: Durable cancellation of an uncommitted refund, or the confirmed original sale with refund
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SaleCancellationResult" }
+  /pos/register-sessions/cancel-request:
+    post:
+      operationId: cancelRegisterRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RegisterCancellation" }
+      responses:
+        "200":
+          description: Durable cancellation of an opening/closing attempt, or the already confirmed session
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RegisterCancellationResult" }
+  /pos/sales/{id}:
+    get:
+      operationId: getPosSale
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer, minimum: 1 } }
+      responses:
+        "200":
+          description: Immutable sale snapshots, cash payment and attributed refunds
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PosSale" }
+  /pos/sales/{id}/refunds:
+    post:
+      operationId: refundPosSale
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer, minimum: 1 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RefundInput" }
+      responses:
+        "200":
+          description: Manager-authorized cash refund or compensating void; original sale is preserved
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PosSale" }
+  /pos/receipt-settings:
+    put:
+      operationId: updateReceiptSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ReceiptSettings" }
+      responses:
+        "200":
+          description: Manager-only store details used by future receipts, not historical receipts
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReceiptSettings" }
 components:
   schemas:
+    PosSaleCancellation:
+      type: object
+      required: [requestId, registerSessionId]
+      properties:
+        requestId: { type: string, minLength: 16, maxLength: 100 }
+        registerSessionId: { type: integer, minimum: 1 }
+    PosRefundCancellation:
+      type: object
+      required: [requestId, registerSessionId, saleId]
+      properties:
+        requestId: { type: string, minLength: 16, maxLength: 100 }
+        registerSessionId: { type: integer, minimum: 1 }
+        saleId: { type: integer, minimum: 1 }
+    RegisterCancellation:
+      type: object
+      required: [requestId, kind, registerSessionId]
+      properties:
+        requestId: { type: string, minLength: 16, maxLength: 100 }
+        kind: { type: string, enum: [OPEN, CLOSE] }
+        registerSessionId: { type: [integer, "null"], minimum: 1 }
+    SaleCancellationResult:
+      type: object
+      required: [cancelled, sale]
+      properties:
+        cancelled: { type: boolean }
+        sale:
+          oneOf:
+            - { $ref: "#/components/schemas/PosSale" }
+            - { type: "null" }
+    RegisterCancellationResult:
+      type: object
+      required: [cancelled, session]
+      properties:
+        cancelled: { type: boolean }
+        session:
+          oneOf:
+            - { $ref: "#/components/schemas/RegisterSession" }
+            - { type: "null" }
+    PosVariant:
+      type: object
+      required: [id, productId, productName, nameAr, category, image, sku, barcode, size, color, priceMinor, available]
+      properties:
+        id: { type: integer }
+        productId: { type: integer }
+        productName: { type: string }
+        nameAr: { type: string }
+        category: { type: string }
+        image: { type: string }
+        sku: { type: string }
+        barcode: { type: string }
+        size: { type: string }
+        color: { type: string }
+        priceMinor: { type: integer }
+        available: { type: integer }
+    ReceiptSettings:
+      type: object
+      required: [address, phone, footer]
+      properties:
+        address: { type: string, maxLength: 500 }
+        phone: { type: string, maxLength: 60 }
+        footer: { type: string, maxLength: 500 }
+    PosContext:
+      type: object
+      required: [userId, canManage, canSell, registerName, activeSession, receiptSettings]
+      properties:
+        userId: { type: integer }
+        canManage: { type: boolean }
+        canSell: { type: boolean }
+        registerName: { type: string }
+        activeSession:
+          oneOf:
+            - { $ref: "#/components/schemas/RegisterSession" }
+            - { type: "null" }
+        receiptSettings: { $ref: "#/components/schemas/ReceiptSettings" }
+    RegisterOpening:
+      type: object
+      required: [openingMinor, requestId]
+      properties:
+        openingMinor: { type: integer, minimum: 0, maximum: 1000000000 }
+        requestId: { type: string, minLength: 16, maxLength: 100 }
+    RegisterClosing:
+      type: object
+      required: [countedMinor, reason, requestId]
+      properties:
+        countedMinor: { type: integer, minimum: 0, maximum: 1000000000 }
+        reason: { type: string, minLength: 3, maxLength: 500 }
+        requestId: { type: string, minLength: 16, maxLength: 100 }
+    RegisterSession:
+      type: object
+      required: [id, openedById, openedBy, status, openingMinor, salesMinor, refundsMinor, expectedMinor, countedMinor, varianceMinor, openedAt, closedAt, closedBy, closeReason]
+      properties:
+        id: { type: integer }
+        openedById: { type: integer }
+        openedBy: { type: string }
+        status: { type: string, enum: [OPEN, CLOSED] }
+        openingMinor: { type: integer }
+        salesMinor: { type: integer }
+        refundsMinor: { type: integer }
+        expectedMinor: { type: integer }
+        countedMinor: { type: [integer, "null"] }
+        varianceMinor: { type: [integer, "null"] }
+        openedAt: { type: string }
+        closedAt: { type: [string, "null"] }
+        closedBy: { type: [string, "null"] }
+        closeReason: { type: [string, "null"] }
+    RegisterPage:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/RegisterSession" } }
+        nextCursor: { type: [integer, "null"] }
+    CashSaleInput:
+      type: object
+      required: [requestId, registerSessionId, items, orderDiscountMinor, discountReason, tenderedMinor]
+      properties:
+        requestId: { type: string, minLength: 16, maxLength: 100 }
+        registerSessionId: { type: integer, minimum: 1 }
+        items: { type: array, minItems: 1, maxItems: 50, items: { $ref: "#/components/schemas/CashSaleLine" } }
+        orderDiscountMinor: { type: integer, minimum: 0, maximum: 1000000000 }
+        discountReason: { type: string, maxLength: 500 }
+        tenderedMinor: { type: integer, minimum: 0, maximum: 1000000000 }
+    CashSaleLine:
+      type: object
+      required: [variantId, quantity, expectedUnitPriceMinor, discountMinor]
+      properties:
+        variantId: { type: integer, minimum: 1 }
+        quantity: { type: integer, minimum: 1, maximum: 1000 }
+        expectedUnitPriceMinor: { type: integer, minimum: 1, maximum: 100000000 }
+        discountMinor: { type: integer, minimum: 0, maximum: 1000000000 }
+    PosSale:
+      type: object
+      required: [id, number, requestId, registerSessionId, cashierId, status, createdAt, subtotalMinor, discountMinor, discountReason, totalMinor, tenderedMinor, changeMinor, refundedMinor, storeName, receiptSettings, items, refunds]
+      properties:
+        id: { type: integer }
+        number: { type: string }
+        requestId: { type: string }
+        registerSessionId: { type: integer }
+        cashierId: { type: integer }
+        status: { type: string, enum: [COMPLETED, PARTIALLY_REFUNDED, REFUNDED, VOIDED] }
+        createdAt: { type: string }
+        subtotalMinor: { type: integer }
+        discountMinor: { type: integer }
+        discountReason: { type: string }
+        totalMinor: { type: integer }
+        tenderedMinor: { type: integer }
+        changeMinor: { type: integer }
+        refundedMinor: { type: integer }
+        storeName: { type: string }
+        receiptSettings: { $ref: "#/components/schemas/ReceiptSettings" }
+        items: { type: array, items: { $ref: "#/components/schemas/SaleLine" } }
+        refunds: { type: array, items: { $ref: "#/components/schemas/PosRefund" } }
+    SaleLine:
+      type: object
+      required: [id, variantId, productName, nameAr, sku, barcode, size, color, quantity, unitPriceMinor, discountMinor, lineTotalMinor, refundedQuantity]
+      properties:
+        id: { type: integer }
+        variantId: { type: integer }
+        productName: { type: string }
+        nameAr: { type: string }
+        sku: { type: string }
+        barcode: { type: string }
+        size: { type: string }
+        color: { type: string }
+        quantity: { type: integer }
+        unitPriceMinor: { type: integer }
+        discountMinor: { type: integer }
+        lineTotalMinor: { type: integer }
+        refundedQuantity: { type: integer }
+    RefundInput:
+      type: object
+      required: [requestId, registerSessionId, kind, reason, items]
+      properties:
+        requestId: { type: string, minLength: 16, maxLength: 100 }
+        registerSessionId: { type: integer, minimum: 1 }
+        kind: { type: string, enum: [RETURN, VOID] }
+        reason: { type: string, minLength: 3, maxLength: 500 }
+        items: { type: array, minItems: 1, maxItems: 50, items: { $ref: "#/components/schemas/RefundLineInput" } }
+    RefundLineInput:
+      type: object
+      required: [saleItemId, quantity, restock]
+      properties:
+        saleItemId: { type: integer, minimum: 1 }
+        quantity: { type: integer, minimum: 1, maximum: 1000 }
+        restock: { type: boolean }
+    PosRefund:
+      type: object
+      required: [id, number, kind, reason, amountMinor, createdAt, actorId, registerSessionId, items]
+      properties:
+        id: { type: integer }
+        number: { type: string }
+        kind: { type: string }
+        reason: { type: string }
+        amountMinor: { type: integer }
+        createdAt: { type: string }
+        actorId: { type: integer }
+        registerSessionId: { type: integer }
+        items: { type: array, items: { $ref: "#/components/schemas/RefundLine" } }
+    RefundLine:
+      type: object
+      required: [saleItemId, quantity, restock, amountMinor]
+      properties:
+        saleItemId: { type: integer }
+        quantity: { type: integer }
+        restock: { type: boolean }
+        amountMinor: { type: integer }
+    SalePage:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/PosSale" } }
+        nextCursor: { type: [integer, "null"] }
     HealthStatus:
       type: object
       required: [status]

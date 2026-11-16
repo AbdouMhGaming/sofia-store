@@ -443,3 +443,11 @@ html[dir='rtl'] .eyebrow { letter-spacing: 0; font-size: .85rem; }
 .link-underline:hover { background-size: 100% 1px; }
 @keyframes rise { from { opacity:0; transform: translateY(14px);} to {opacity:1; transform:none;} }
 .rise { animation: rise .9s cubic-bezier(.2,.7,.2,1) both; }
+@media print {
+  body:has(#pos-receipt) { background: #fff; }
+  body:has(#pos-receipt)::before { display: none; }
+  body:has(#pos-receipt) * { visibility: hidden; }
+  #pos-receipt, #pos-receipt * { visibility: visible; }
+  #pos-receipt { position: absolute; left: 0; top: 0; margin: 0; border: 0; box-shadow: none; }
+  .no-print { display: none !important; }
+}

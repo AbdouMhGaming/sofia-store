@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma as PrismaRuntime } from "@prisma/client";
 
 export function mysqlUrl(): string {
   for (const key of ["DB_HOST", "DB_NAME", "DB_USER", "DB_PASS"]) {
@@ -14,6 +14,15 @@ export const db = new PrismaClient({
   transactionOptions: { maxWait: 5000, timeout: 30000 },
   log: [],
 });
+/** Locking reads must not be followed by an older MySQL repeatable-read snapshot. */
+export function posTransaction<T>(work: (tx: PrismaRuntime.TransactionClient) => Promise<T>) {
+  return db.$transaction(work, { timeout: 60000, maxWait: 10000, isolationLevel: PrismaRuntime.TransactionIsolationLevel.ReadCommitted });
+}
 export { Prisma } from "@prisma/client";
 export { applyStockAdjustment } from "./stock";
 export { transferCatalog, parseCatalogCsv, csvCell, catalogHeaders } from "./catalog-transfer";
+export { openDrawer, closeDrawer, saveReceiptSettings } from "./pos/registers";
+export { recordCashSale, allocateDiscount } from "./pos/sales";
+export { recordRefund, refundAmount } from "./pos/refunds";
+export { cancelSaleAttempt, cancelRefundAttempt, cancelRegisterAttempt } from "./pos/cancellation";
+export { receiptSettings, registerOutput, registerOutputs, drawerTotals, readSale, saleInclude, saleOutput, manager as posManager, type PosActor } from "./pos/shared";

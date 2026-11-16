@@ -10,7 +10,12 @@ import { HomePage, ShopPage, ProductPage, AboutPage, ContactPage, FavoritesPage 
 import { AdminCategoriesPage, AdminImportExportPage } from '@/pages/admin-catalog';
 import { AdminMediaPage } from '@/pages/admin-media';
 import { AdminMovementsPage } from '@/pages/admin-stock';
-import { AdminLoginPage, AdminDashboardPage, AdminProductsPage, AdminInventoryPage, AdminActivityPage, PosPage } from '@/pages/admin';
+import { AdminLoginPage, AdminDashboardPage, AdminProductsPage, AdminInventoryPage, AdminActivityPage } from '@/pages/admin';
+import { PosRegisterPage } from '@/pages/pos-register';
+import { PosHistoryPage } from '@/pages/pos-history';
+import { PosTicketPage } from '@/pages/pos-ticket';
+import { PosSessionsPage } from '@/pages/pos-sessions';
+import { PosSettingsPage } from '@/pages/pos-settings';
 import {
   Route,
   Switch,
@@ -41,7 +46,11 @@ function Router() {
         <Route path="/admin/import-export" component={AdminImportExportPage} />
         <Route path="/admin/medias" component={AdminMediaPage} />
         <Route path="/admin/mouvements" component={AdminMovementsPage} />
-        <Route path="/pos" component={PosPage} />
+        <Route path="/pos" component={PosRegisterPage} />
+        <Route path="/pos/historique" component={PosHistoryPage} />
+        <Route path="/pos/tickets/:id" component={PosTicketPage} />
+        <Route path="/pos/sessions" component={PosSessionsPage} />
+        <Route path="/pos/reglages" component={PosSettingsPage} />
         <Route component={NotFound} />
       </Switch>
     </RoutedErrorBoundary>

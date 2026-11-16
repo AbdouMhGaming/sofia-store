@@ -683,3 +683,823 @@ export const DeleteMediaResponse = zod.object({
 })
 
 
+export const getPosContextResponseReceiptSettingsAddressMax = 500;
+
+export const getPosContextResponseReceiptSettingsPhoneMax = 60;
+
+export const getPosContextResponseReceiptSettingsFooterMax = 500;
+
+
+
+export const GetPosContextResponse = zod.object({
+  "userId": zod.number().int(),
+  "canManage": zod.boolean(),
+  "canSell": zod.boolean(),
+  "registerName": zod.string(),
+  "activeSession": zod.union([zod.object({
+  "id": zod.number().int(),
+  "openedById": zod.number().int(),
+  "openedBy": zod.string(),
+  "status": zod.enum(['OPEN', 'CLOSED']),
+  "openingMinor": zod.number().int(),
+  "salesMinor": zod.number().int(),
+  "refundsMinor": zod.number().int(),
+  "expectedMinor": zod.number().int(),
+  "countedMinor": zod.number().int().nullable(),
+  "varianceMinor": zod.number().int().nullable(),
+  "openedAt": zod.string(),
+  "closedAt": zod.string().nullable(),
+  "closedBy": zod.string().nullable(),
+  "closeReason": zod.string().nullable()
+}),zod.null()]),
+  "receiptSettings": zod.object({
+  "address": zod.string().max(getPosContextResponseReceiptSettingsAddressMax),
+  "phone": zod.string().max(getPosContextResponseReceiptSettingsPhoneMax),
+  "footer": zod.string().max(getPosContextResponseReceiptSettingsFooterMax)
+})
+})
+
+
+export const searchPosVariantsQueryQMax = 100;
+
+
+
+export const SearchPosVariantsQueryParams = zod.object({
+  "q": zod.coerce.string().max(searchPosVariantsQueryQMax).optional()
+})
+
+export const SearchPosVariantsResponseItem = zod.object({
+  "id": zod.number().int(),
+  "productId": zod.number().int(),
+  "productName": zod.string(),
+  "nameAr": zod.string(),
+  "category": zod.string(),
+  "image": zod.string(),
+  "sku": zod.string(),
+  "barcode": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "priceMinor": zod.number().int(),
+  "available": zod.number().int()
+})
+export const SearchPosVariantsResponse = zod.array(SearchPosVariantsResponseItem)
+
+
+export const lookupPosBarcodeQueryBarcodeMax = 80;
+
+
+
+export const LookupPosBarcodeQueryParams = zod.object({
+  "barcode": zod.coerce.string().min(1).max(lookupPosBarcodeQueryBarcodeMax)
+})
+
+export const LookupPosBarcodeResponse = zod.object({
+  "id": zod.number().int(),
+  "productId": zod.number().int(),
+  "productName": zod.string(),
+  "nameAr": zod.string(),
+  "category": zod.string(),
+  "image": zod.string(),
+  "sku": zod.string(),
+  "barcode": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "priceMinor": zod.number().int(),
+  "available": zod.number().int()
+})
+
+
+
+
+
+export const ListRegisterSessionsQueryParams = zod.object({
+  "before": zod.coerce.number().int().min(1).optional()
+})
+
+export const ListRegisterSessionsResponse = zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.number().int(),
+  "openedById": zod.number().int(),
+  "openedBy": zod.string(),
+  "status": zod.enum(['OPEN', 'CLOSED']),
+  "openingMinor": zod.number().int(),
+  "salesMinor": zod.number().int(),
+  "refundsMinor": zod.number().int(),
+  "expectedMinor": zod.number().int(),
+  "countedMinor": zod.number().int().nullable(),
+  "varianceMinor": zod.number().int().nullable(),
+  "openedAt": zod.string(),
+  "closedAt": zod.string().nullable(),
+  "closedBy": zod.string().nullable(),
+  "closeReason": zod.string().nullable()
+})),
+  "nextCursor": zod.number().int().nullable()
+})
+
+
+export const openRegisterBodyOpeningMinorMin = 0;
+export const openRegisterBodyOpeningMinorMax = 1000000000;
+
+export const openRegisterBodyRequestIdMin = 16;
+export const openRegisterBodyRequestIdMax = 100;
+
+
+
+export const OpenRegisterBody = zod.object({
+  "openingMinor": zod.number().int().min(openRegisterBodyOpeningMinorMin).max(openRegisterBodyOpeningMinorMax),
+  "requestId": zod.string().min(openRegisterBodyRequestIdMin).max(openRegisterBodyRequestIdMax)
+})
+
+export const OpenRegisterResponse = zod.object({
+  "id": zod.number().int(),
+  "openedById": zod.number().int(),
+  "openedBy": zod.string(),
+  "status": zod.enum(['OPEN', 'CLOSED']),
+  "openingMinor": zod.number().int(),
+  "salesMinor": zod.number().int(),
+  "refundsMinor": zod.number().int(),
+  "expectedMinor": zod.number().int(),
+  "countedMinor": zod.number().int().nullable(),
+  "varianceMinor": zod.number().int().nullable(),
+  "openedAt": zod.string(),
+  "closedAt": zod.string().nullable(),
+  "closedBy": zod.string().nullable(),
+  "closeReason": zod.string().nullable()
+})
+
+
+
+
+
+export const CloseRegisterParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const closeRegisterBodyCountedMinorMin = 0;
+export const closeRegisterBodyCountedMinorMax = 1000000000;
+
+export const closeRegisterBodyReasonMin = 3;
+export const closeRegisterBodyReasonMax = 500;
+
+export const closeRegisterBodyRequestIdMin = 16;
+export const closeRegisterBodyRequestIdMax = 100;
+
+
+
+export const CloseRegisterBody = zod.object({
+  "countedMinor": zod.number().int().min(closeRegisterBodyCountedMinorMin).max(closeRegisterBodyCountedMinorMax),
+  "reason": zod.string().min(closeRegisterBodyReasonMin).max(closeRegisterBodyReasonMax),
+  "requestId": zod.string().min(closeRegisterBodyRequestIdMin).max(closeRegisterBodyRequestIdMax)
+})
+
+export const CloseRegisterResponse = zod.object({
+  "id": zod.number().int(),
+  "openedById": zod.number().int(),
+  "openedBy": zod.string(),
+  "status": zod.enum(['OPEN', 'CLOSED']),
+  "openingMinor": zod.number().int(),
+  "salesMinor": zod.number().int(),
+  "refundsMinor": zod.number().int(),
+  "expectedMinor": zod.number().int(),
+  "countedMinor": zod.number().int().nullable(),
+  "varianceMinor": zod.number().int().nullable(),
+  "openedAt": zod.string(),
+  "closedAt": zod.string().nullable(),
+  "closedBy": zod.string().nullable(),
+  "closeReason": zod.string().nullable()
+})
+
+
+
+export const listPosSalesQueryQMax = 100;
+
+
+
+export const ListPosSalesQueryParams = zod.object({
+  "before": zod.coerce.number().int().min(1).optional(),
+  "q": zod.coerce.string().max(listPosSalesQueryQMax).optional()
+})
+
+export const listPosSalesResponseItemsItemReceiptSettingsAddressMax = 500;
+
+export const listPosSalesResponseItemsItemReceiptSettingsPhoneMax = 60;
+
+export const listPosSalesResponseItemsItemReceiptSettingsFooterMax = 500;
+
+
+
+export const ListPosSalesResponse = zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.number().int(),
+  "number": zod.string(),
+  "requestId": zod.string(),
+  "registerSessionId": zod.number().int(),
+  "cashierId": zod.number().int(),
+  "status": zod.enum(['COMPLETED', 'PARTIALLY_REFUNDED', 'REFUNDED', 'VOIDED']),
+  "createdAt": zod.string(),
+  "subtotalMinor": zod.number().int(),
+  "discountMinor": zod.number().int(),
+  "discountReason": zod.string(),
+  "totalMinor": zod.number().int(),
+  "tenderedMinor": zod.number().int(),
+  "changeMinor": zod.number().int(),
+  "refundedMinor": zod.number().int(),
+  "storeName": zod.string(),
+  "receiptSettings": zod.object({
+  "address": zod.string().max(listPosSalesResponseItemsItemReceiptSettingsAddressMax),
+  "phone": zod.string().max(listPosSalesResponseItemsItemReceiptSettingsPhoneMax),
+  "footer": zod.string().max(listPosSalesResponseItemsItemReceiptSettingsFooterMax)
+}),
+  "items": zod.array(zod.object({
+  "id": zod.number().int(),
+  "variantId": zod.number().int(),
+  "productName": zod.string(),
+  "nameAr": zod.string(),
+  "sku": zod.string(),
+  "barcode": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "quantity": zod.number().int(),
+  "unitPriceMinor": zod.number().int(),
+  "discountMinor": zod.number().int(),
+  "lineTotalMinor": zod.number().int(),
+  "refundedQuantity": zod.number().int()
+})),
+  "refunds": zod.array(zod.object({
+  "id": zod.number().int(),
+  "number": zod.string(),
+  "kind": zod.string(),
+  "reason": zod.string(),
+  "amountMinor": zod.number().int(),
+  "createdAt": zod.string(),
+  "actorId": zod.number().int(),
+  "registerSessionId": zod.number().int(),
+  "items": zod.array(zod.object({
+  "saleItemId": zod.number().int(),
+  "quantity": zod.number().int(),
+  "restock": zod.boolean(),
+  "amountMinor": zod.number().int()
+}))
+}))
+})),
+  "nextCursor": zod.number().int().nullable()
+})
+
+
+export const createPosSaleBodyRequestIdMin = 16;
+export const createPosSaleBodyRequestIdMax = 100;
+
+
+
+export const createPosSaleBodyItemsItemQuantityMax = 1000;
+
+export const createPosSaleBodyItemsItemExpectedUnitPriceMinorMax = 100000000;
+
+export const createPosSaleBodyItemsItemDiscountMinorMin = 0;
+export const createPosSaleBodyItemsItemDiscountMinorMax = 1000000000;
+
+export const createPosSaleBodyItemsMax = 50;
+
+export const createPosSaleBodyOrderDiscountMinorMin = 0;
+export const createPosSaleBodyOrderDiscountMinorMax = 1000000000;
+
+export const createPosSaleBodyDiscountReasonMax = 500;
+
+export const createPosSaleBodyTenderedMinorMin = 0;
+export const createPosSaleBodyTenderedMinorMax = 1000000000;
+
+
+
+export const CreatePosSaleBody = zod.object({
+  "requestId": zod.string().min(createPosSaleBodyRequestIdMin).max(createPosSaleBodyRequestIdMax),
+  "registerSessionId": zod.number().int().min(1),
+  "items": zod.array(zod.object({
+  "variantId": zod.number().int().min(1),
+  "quantity": zod.number().int().min(1).max(createPosSaleBodyItemsItemQuantityMax),
+  "expectedUnitPriceMinor": zod.number().int().min(1).max(createPosSaleBodyItemsItemExpectedUnitPriceMinorMax),
+  "discountMinor": zod.number().int().min(createPosSaleBodyItemsItemDiscountMinorMin).max(createPosSaleBodyItemsItemDiscountMinorMax)
+})).min(1).max(createPosSaleBodyItemsMax),
+  "orderDiscountMinor": zod.number().int().min(createPosSaleBodyOrderDiscountMinorMin).max(createPosSaleBodyOrderDiscountMinorMax),
+  "discountReason": zod.string().max(createPosSaleBodyDiscountReasonMax),
+  "tenderedMinor": zod.number().int().min(createPosSaleBodyTenderedMinorMin).max(createPosSaleBodyTenderedMinorMax)
+})
+
+export const createPosSaleResponseReceiptSettingsAddressMax = 500;
+
+export const createPosSaleResponseReceiptSettingsPhoneMax = 60;
+
+export const createPosSaleResponseReceiptSettingsFooterMax = 500;
+
+
+
+export const CreatePosSaleResponse = zod.object({
+  "id": zod.number().int(),
+  "number": zod.string(),
+  "requestId": zod.string(),
+  "registerSessionId": zod.number().int(),
+  "cashierId": zod.number().int(),
+  "status": zod.enum(['COMPLETED', 'PARTIALLY_REFUNDED', 'REFUNDED', 'VOIDED']),
+  "createdAt": zod.string(),
+  "subtotalMinor": zod.number().int(),
+  "discountMinor": zod.number().int(),
+  "discountReason": zod.string(),
+  "totalMinor": zod.number().int(),
+  "tenderedMinor": zod.number().int(),
+  "changeMinor": zod.number().int(),
+  "refundedMinor": zod.number().int(),
+  "storeName": zod.string(),
+  "receiptSettings": zod.object({
+  "address": zod.string().max(createPosSaleResponseReceiptSettingsAddressMax),
+  "phone": zod.string().max(createPosSaleResponseReceiptSettingsPhoneMax),
+  "footer": zod.string().max(createPosSaleResponseReceiptSettingsFooterMax)
+}),
+  "items": zod.array(zod.object({
+  "id": zod.number().int(),
+  "variantId": zod.number().int(),
+  "productName": zod.string(),
+  "nameAr": zod.string(),
+  "sku": zod.string(),
+  "barcode": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "quantity": zod.number().int(),
+  "unitPriceMinor": zod.number().int(),
+  "discountMinor": zod.number().int(),
+  "lineTotalMinor": zod.number().int(),
+  "refundedQuantity": zod.number().int()
+})),
+  "refunds": zod.array(zod.object({
+  "id": zod.number().int(),
+  "number": zod.string(),
+  "kind": zod.string(),
+  "reason": zod.string(),
+  "amountMinor": zod.number().int(),
+  "createdAt": zod.string(),
+  "actorId": zod.number().int(),
+  "registerSessionId": zod.number().int(),
+  "items": zod.array(zod.object({
+  "saleItemId": zod.number().int(),
+  "quantity": zod.number().int(),
+  "restock": zod.boolean(),
+  "amountMinor": zod.number().int()
+}))
+}))
+})
+
+
+export const recoverPosSalePathRequestIdMin = 16;
+export const recoverPosSalePathRequestIdMax = 100;
+
+
+
+export const RecoverPosSaleParams = zod.object({
+  "requestId": zod.coerce.string().min(recoverPosSalePathRequestIdMin).max(recoverPosSalePathRequestIdMax)
+})
+
+export const recoverPosSaleResponseReceiptSettingsAddressMax = 500;
+
+export const recoverPosSaleResponseReceiptSettingsPhoneMax = 60;
+
+export const recoverPosSaleResponseReceiptSettingsFooterMax = 500;
+
+
+
+export const RecoverPosSaleResponse = zod.object({
+  "id": zod.number().int(),
+  "number": zod.string(),
+  "requestId": zod.string(),
+  "registerSessionId": zod.number().int(),
+  "cashierId": zod.number().int(),
+  "status": zod.enum(['COMPLETED', 'PARTIALLY_REFUNDED', 'REFUNDED', 'VOIDED']),
+  "createdAt": zod.string(),
+  "subtotalMinor": zod.number().int(),
+  "discountMinor": zod.number().int(),
+  "discountReason": zod.string(),
+  "totalMinor": zod.number().int(),
+  "tenderedMinor": zod.number().int(),
+  "changeMinor": zod.number().int(),
+  "refundedMinor": zod.number().int(),
+  "storeName": zod.string(),
+  "receiptSettings": zod.object({
+  "address": zod.string().max(recoverPosSaleResponseReceiptSettingsAddressMax),
+  "phone": zod.string().max(recoverPosSaleResponseReceiptSettingsPhoneMax),
+  "footer": zod.string().max(recoverPosSaleResponseReceiptSettingsFooterMax)
+}),
+  "items": zod.array(zod.object({
+  "id": zod.number().int(),
+  "variantId": zod.number().int(),
+  "productName": zod.string(),
+  "nameAr": zod.string(),
+  "sku": zod.string(),
+  "barcode": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "quantity": zod.number().int(),
+  "unitPriceMinor": zod.number().int(),
+  "discountMinor": zod.number().int(),
+  "lineTotalMinor": zod.number().int(),
+  "refundedQuantity": zod.number().int()
+})),
+  "refunds": zod.array(zod.object({
+  "id": zod.number().int(),
+  "number": zod.string(),
+  "kind": zod.string(),
+  "reason": zod.string(),
+  "amountMinor": zod.number().int(),
+  "createdAt": zod.string(),
+  "actorId": zod.number().int(),
+  "registerSessionId": zod.number().int(),
+  "items": zod.array(zod.object({
+  "saleItemId": zod.number().int(),
+  "quantity": zod.number().int(),
+  "restock": zod.boolean(),
+  "amountMinor": zod.number().int()
+}))
+}))
+})
+
+
+export const cancelPosSaleRequestBodyRequestIdMin = 16;
+export const cancelPosSaleRequestBodyRequestIdMax = 100;
+
+
+
+
+export const CancelPosSaleRequestBody = zod.object({
+  "requestId": zod.string().min(cancelPosSaleRequestBodyRequestIdMin).max(cancelPosSaleRequestBodyRequestIdMax),
+  "registerSessionId": zod.number().int().min(1)
+})
+
+export const cancelPosSaleRequestResponseSaleOneReceiptSettingsAddressMax = 500;
+
+export const cancelPosSaleRequestResponseSaleOneReceiptSettingsPhoneMax = 60;
+
+export const cancelPosSaleRequestResponseSaleOneReceiptSettingsFooterMax = 500;
+
+
+
+export const CancelPosSaleRequestResponse = zod.object({
+  "cancelled": zod.boolean(),
+  "sale": zod.union([zod.object({
+  "id": zod.number().int(),
+  "number": zod.string(),
+  "requestId": zod.string(),
+  "registerSessionId": zod.number().int(),
+  "cashierId": zod.number().int(),
+  "status": zod.enum(['COMPLETED', 'PARTIALLY_REFUNDED', 'REFUNDED', 'VOIDED']),
+  "createdAt": zod.string(),
+  "subtotalMinor": zod.number().int(),
+  "discountMinor": zod.number().int(),
+  "discountReason": zod.string(),
+  "totalMinor": zod.number().int(),
+  "tenderedMinor": zod.number().int(),
+  "changeMinor": zod.number().int(),
+  "refundedMinor": zod.number().int(),
+  "storeName": zod.string(),
+  "receiptSettings": zod.object({
+  "address": zod.string().max(cancelPosSaleRequestResponseSaleOneReceiptSettingsAddressMax),
+  "phone": zod.string().max(cancelPosSaleRequestResponseSaleOneReceiptSettingsPhoneMax),
+  "footer": zod.string().max(cancelPosSaleRequestResponseSaleOneReceiptSettingsFooterMax)
+}),
+  "items": zod.array(zod.object({
+  "id": zod.number().int(),
+  "variantId": zod.number().int(),
+  "productName": zod.string(),
+  "nameAr": zod.string(),
+  "sku": zod.string(),
+  "barcode": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "quantity": zod.number().int(),
+  "unitPriceMinor": zod.number().int(),
+  "discountMinor": zod.number().int(),
+  "lineTotalMinor": zod.number().int(),
+  "refundedQuantity": zod.number().int()
+})),
+  "refunds": zod.array(zod.object({
+  "id": zod.number().int(),
+  "number": zod.string(),
+  "kind": zod.string(),
+  "reason": zod.string(),
+  "amountMinor": zod.number().int(),
+  "createdAt": zod.string(),
+  "actorId": zod.number().int(),
+  "registerSessionId": zod.number().int(),
+  "items": zod.array(zod.object({
+  "saleItemId": zod.number().int(),
+  "quantity": zod.number().int(),
+  "restock": zod.boolean(),
+  "amountMinor": zod.number().int()
+}))
+}))
+}),zod.null()])
+})
+
+
+export const cancelPosRefundRequestBodyRequestIdMin = 16;
+export const cancelPosRefundRequestBodyRequestIdMax = 100;
+
+
+
+
+
+export const CancelPosRefundRequestBody = zod.object({
+  "requestId": zod.string().min(cancelPosRefundRequestBodyRequestIdMin).max(cancelPosRefundRequestBodyRequestIdMax),
+  "registerSessionId": zod.number().int().min(1),
+  "saleId": zod.number().int().min(1)
+})
+
+export const cancelPosRefundRequestResponseSaleOneReceiptSettingsAddressMax = 500;
+
+export const cancelPosRefundRequestResponseSaleOneReceiptSettingsPhoneMax = 60;
+
+export const cancelPosRefundRequestResponseSaleOneReceiptSettingsFooterMax = 500;
+
+
+
+export const CancelPosRefundRequestResponse = zod.object({
+  "cancelled": zod.boolean(),
+  "sale": zod.union([zod.object({
+  "id": zod.number().int(),
+  "number": zod.string(),
+  "requestId": zod.string(),
+  "registerSessionId": zod.number().int(),
+  "cashierId": zod.number().int(),
+  "status": zod.enum(['COMPLETED', 'PARTIALLY_REFUNDED', 'REFUNDED', 'VOIDED']),
+  "createdAt": zod.string(),
+  "subtotalMinor": zod.number().int(),
+  "discountMinor": zod.number().int(),
+  "discountReason": zod.string(),
+  "totalMinor": zod.number().int(),
+  "tenderedMinor": zod.number().int(),
+  "changeMinor": zod.number().int(),
+  "refundedMinor": zod.number().int(),
+  "storeName": zod.string(),
+  "receiptSettings": zod.object({
+  "address": zod.string().max(cancelPosRefundRequestResponseSaleOneReceiptSettingsAddressMax),
+  "phone": zod.string().max(cancelPosRefundRequestResponseSaleOneReceiptSettingsPhoneMax),
+  "footer": zod.string().max(cancelPosRefundRequestResponseSaleOneReceiptSettingsFooterMax)
+}),
+  "items": zod.array(zod.object({
+  "id": zod.number().int(),
+  "variantId": zod.number().int(),
+  "productName": zod.string(),
+  "nameAr": zod.string(),
+  "sku": zod.string(),
+  "barcode": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "quantity": zod.number().int(),
+  "unitPriceMinor": zod.number().int(),
+  "discountMinor": zod.number().int(),
+  "lineTotalMinor": zod.number().int(),
+  "refundedQuantity": zod.number().int()
+})),
+  "refunds": zod.array(zod.object({
+  "id": zod.number().int(),
+  "number": zod.string(),
+  "kind": zod.string(),
+  "reason": zod.string(),
+  "amountMinor": zod.number().int(),
+  "createdAt": zod.string(),
+  "actorId": zod.number().int(),
+  "registerSessionId": zod.number().int(),
+  "items": zod.array(zod.object({
+  "saleItemId": zod.number().int(),
+  "quantity": zod.number().int(),
+  "restock": zod.boolean(),
+  "amountMinor": zod.number().int()
+}))
+}))
+}),zod.null()])
+})
+
+
+export const cancelRegisterRequestBodyRequestIdMin = 16;
+export const cancelRegisterRequestBodyRequestIdMax = 100;
+
+
+
+
+export const CancelRegisterRequestBody = zod.object({
+  "requestId": zod.string().min(cancelRegisterRequestBodyRequestIdMin).max(cancelRegisterRequestBodyRequestIdMax),
+  "kind": zod.enum(['OPEN', 'CLOSE']),
+  "registerSessionId": zod.number().int().min(1).nullable()
+})
+
+export const CancelRegisterRequestResponse = zod.object({
+  "cancelled": zod.boolean(),
+  "session": zod.union([zod.object({
+  "id": zod.number().int(),
+  "openedById": zod.number().int(),
+  "openedBy": zod.string(),
+  "status": zod.enum(['OPEN', 'CLOSED']),
+  "openingMinor": zod.number().int(),
+  "salesMinor": zod.number().int(),
+  "refundsMinor": zod.number().int(),
+  "expectedMinor": zod.number().int(),
+  "countedMinor": zod.number().int().nullable(),
+  "varianceMinor": zod.number().int().nullable(),
+  "openedAt": zod.string(),
+  "closedAt": zod.string().nullable(),
+  "closedBy": zod.string().nullable(),
+  "closeReason": zod.string().nullable()
+}),zod.null()])
+})
+
+
+
+
+
+export const GetPosSaleParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const getPosSaleResponseReceiptSettingsAddressMax = 500;
+
+export const getPosSaleResponseReceiptSettingsPhoneMax = 60;
+
+export const getPosSaleResponseReceiptSettingsFooterMax = 500;
+
+
+
+export const GetPosSaleResponse = zod.object({
+  "id": zod.number().int(),
+  "number": zod.string(),
+  "requestId": zod.string(),
+  "registerSessionId": zod.number().int(),
+  "cashierId": zod.number().int(),
+  "status": zod.enum(['COMPLETED', 'PARTIALLY_REFUNDED', 'REFUNDED', 'VOIDED']),
+  "createdAt": zod.string(),
+  "subtotalMinor": zod.number().int(),
+  "discountMinor": zod.number().int(),
+  "discountReason": zod.string(),
+  "totalMinor": zod.number().int(),
+  "tenderedMinor": zod.number().int(),
+  "changeMinor": zod.number().int(),
+  "refundedMinor": zod.number().int(),
+  "storeName": zod.string(),
+  "receiptSettings": zod.object({
+  "address": zod.string().max(getPosSaleResponseReceiptSettingsAddressMax),
+  "phone": zod.string().max(getPosSaleResponseReceiptSettingsPhoneMax),
+  "footer": zod.string().max(getPosSaleResponseReceiptSettingsFooterMax)
+}),
+  "items": zod.array(zod.object({
+  "id": zod.number().int(),
+  "variantId": zod.number().int(),
+  "productName": zod.string(),
+  "nameAr": zod.string(),
+  "sku": zod.string(),
+  "barcode": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "quantity": zod.number().int(),
+  "unitPriceMinor": zod.number().int(),
+  "discountMinor": zod.number().int(),
+  "lineTotalMinor": zod.number().int(),
+  "refundedQuantity": zod.number().int()
+})),
+  "refunds": zod.array(zod.object({
+  "id": zod.number().int(),
+  "number": zod.string(),
+  "kind": zod.string(),
+  "reason": zod.string(),
+  "amountMinor": zod.number().int(),
+  "createdAt": zod.string(),
+  "actorId": zod.number().int(),
+  "registerSessionId": zod.number().int(),
+  "items": zod.array(zod.object({
+  "saleItemId": zod.number().int(),
+  "quantity": zod.number().int(),
+  "restock": zod.boolean(),
+  "amountMinor": zod.number().int()
+}))
+}))
+})
+
+
+
+
+
+export const RefundPosSaleParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const refundPosSaleBodyRequestIdMin = 16;
+export const refundPosSaleBodyRequestIdMax = 100;
+
+
+export const refundPosSaleBodyReasonMin = 3;
+export const refundPosSaleBodyReasonMax = 500;
+
+
+export const refundPosSaleBodyItemsItemQuantityMax = 1000;
+
+export const refundPosSaleBodyItemsMax = 50;
+
+
+
+export const RefundPosSaleBody = zod.object({
+  "requestId": zod.string().min(refundPosSaleBodyRequestIdMin).max(refundPosSaleBodyRequestIdMax),
+  "registerSessionId": zod.number().int().min(1),
+  "kind": zod.enum(['RETURN', 'VOID']),
+  "reason": zod.string().min(refundPosSaleBodyReasonMin).max(refundPosSaleBodyReasonMax),
+  "items": zod.array(zod.object({
+  "saleItemId": zod.number().int().min(1),
+  "quantity": zod.number().int().min(1).max(refundPosSaleBodyItemsItemQuantityMax),
+  "restock": zod.boolean()
+})).min(1).max(refundPosSaleBodyItemsMax)
+})
+
+export const refundPosSaleResponseReceiptSettingsAddressMax = 500;
+
+export const refundPosSaleResponseReceiptSettingsPhoneMax = 60;
+
+export const refundPosSaleResponseReceiptSettingsFooterMax = 500;
+
+
+
+export const RefundPosSaleResponse = zod.object({
+  "id": zod.number().int(),
+  "number": zod.string(),
+  "requestId": zod.string(),
+  "registerSessionId": zod.number().int(),
+  "cashierId": zod.number().int(),
+  "status": zod.enum(['COMPLETED', 'PARTIALLY_REFUNDED', 'REFUNDED', 'VOIDED']),
+  "createdAt": zod.string(),
+  "subtotalMinor": zod.number().int(),
+  "discountMinor": zod.number().int(),
+  "discountReason": zod.string(),
+  "totalMinor": zod.number().int(),
+  "tenderedMinor": zod.number().int(),
+  "changeMinor": zod.number().int(),
+  "refundedMinor": zod.number().int(),
+  "storeName": zod.string(),
+  "receiptSettings": zod.object({
+  "address": zod.string().max(refundPosSaleResponseReceiptSettingsAddressMax),
+  "phone": zod.string().max(refundPosSaleResponseReceiptSettingsPhoneMax),
+  "footer": zod.string().max(refundPosSaleResponseReceiptSettingsFooterMax)
+}),
+  "items": zod.array(zod.object({
+  "id": zod.number().int(),
+  "variantId": zod.number().int(),
+  "productName": zod.string(),
+  "nameAr": zod.string(),
+  "sku": zod.string(),
+  "barcode": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "quantity": zod.number().int(),
+  "unitPriceMinor": zod.number().int(),
+  "discountMinor": zod.number().int(),
+  "lineTotalMinor": zod.number().int(),
+  "refundedQuantity": zod.number().int()
+})),
+  "refunds": zod.array(zod.object({
+  "id": zod.number().int(),
+  "number": zod.string(),
+  "kind": zod.string(),
+  "reason": zod.string(),
+  "amountMinor": zod.number().int(),
+  "createdAt": zod.string(),
+  "actorId": zod.number().int(),
+  "registerSessionId": zod.number().int(),
+  "items": zod.array(zod.object({
+  "saleItemId": zod.number().int(),
+  "quantity": zod.number().int(),
+  "restock": zod.boolean(),
+  "amountMinor": zod.number().int()
+}))
+}))
+})
+
+
+export const updateReceiptSettingsBodyAddressMax = 500;
+
+export const updateReceiptSettingsBodyPhoneMax = 60;
+
+export const updateReceiptSettingsBodyFooterMax = 500;
+
+
+
+export const UpdateReceiptSettingsBody = zod.object({
+  "address": zod.string().max(updateReceiptSettingsBodyAddressMax),
+  "phone": zod.string().max(updateReceiptSettingsBodyPhoneMax),
+  "footer": zod.string().max(updateReceiptSettingsBodyFooterMax)
+})
+
+export const updateReceiptSettingsResponseAddressMax = 500;
+
+export const updateReceiptSettingsResponsePhoneMax = 60;
+
+export const updateReceiptSettingsResponseFooterMax = 500;
+
+
+
+export const UpdateReceiptSettingsResponse = zod.object({
+  "address": zod.string().max(updateReceiptSettingsResponseAddressMax),
+  "phone": zod.string().max(updateReceiptSettingsResponsePhoneMax),
+  "footer": zod.string().max(updateReceiptSettingsResponseFooterMax)
+})
+
+

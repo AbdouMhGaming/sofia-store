@@ -8,6 +8,7 @@ import { requireStaff } from "../lib/security";
 import catalogToolsRouter from "./catalog-tools";
 import catalogTransferRouter from "./catalog-transfer";
 import mediaRouter from "./media";
+import posRouter from "./pos";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(inventoryRouter);
 router.use(catalogToolsRouter);
 router.use(catalogTransferRouter);
 router.use(mediaRouter);
+router.use("/pos", posRouter);
 
 export default router;

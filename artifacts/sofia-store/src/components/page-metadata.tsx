@@ -16,12 +16,15 @@ const pages: Record<string, [string, string]> = {
   "/admin/import-export": ["Import et export", "Transfert contrôlé du catalogue SOFIA STORE au format CSV."],
   "/admin/medias": ["Médiathèque", "Gestion des photographies produits SOFIA STORE."],
   "/admin/mouvements": ["Mouvements de stock", "Historique attribué des entrées et sorties de stock SOFIA STORE."],
-  "/pos": ["Point de vente", "Module caisse SOFIA STORE en préparation."],
+  "/pos": ["Caisse", "Encaissement en boutique SOFIA STORE."],
+  "/pos/historique": ["Tickets de caisse", "Historique des ventes en boutique SOFIA STORE."],
+  "/pos/sessions": ["Tiroir-caisse", "Ouvertures et clôtures du tiroir SOFIA STORE."],
+  "/pos/reglages": ["Réglages du ticket", "Coordonnées imprimées sur les tickets SOFIA STORE."],
 };
 export function PageMetadata() {
   const [location] = useLocation();
   useEffect(() => {
-    const [label, description] = pages[location] || (location.startsWith("/produit/")
+    const [label, description] = pages[location] || (location.startsWith("/pos/tickets/") ? ["Ticket de caisse", "Ticket de vente SOFIA STORE."] as [string, string] : null) || (location.startsWith("/produit/")
       ? [decodeURIComponent(location.split("/").pop() || "").replace(/^apercu-/, "").replace(/-/g, " "), "Découvrez cette pièce SOFIA STORE. Prix, tailles et disponibilités à confirmer auprès de la boutique."]
       : ["Page introuvable", "Cette page SOFIA STORE est introuvable."]);
     const title = `${label} | SOFIA STORE`;
