@@ -30,7 +30,7 @@ app.use(
     },
   }),
 );
-app.use(express.json({ limit: "100kb" }));
+app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
 app.use("/api", (_req, res, next) => { res.setHeader("Cache-Control", "no-store"); next(); });
 app.use("/api", requireCsrf);

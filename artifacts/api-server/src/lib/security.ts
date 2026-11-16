@@ -71,7 +71,8 @@ export function anonymousCsrf(req: Request, res: Response): string {
 }
 export async function requireCsrf(req: Request, res: Response, next: NextFunction) {
   if (["GET", "HEAD", "OPTIONS"].includes(req.method)) { next(); return; }
-  if (!req.is("application/json")) { res.status(415).json({ error: "Requête JSON requise." }); return; }
+  const hasBody = Number(req.get("content-length") || 0) > 0 || !!req.get("transfer-encoding");
+  if (hasBody && !req.is("application/json")) { res.status(415).json({ error: "Requête JSON requise." }); return; }
   const header = req.get("x-csrf-token") || "";
   const who = await identity(req);
   let valid = who ? safeEqual(header, who.csrfToken) : false;

@@ -5,6 +5,9 @@ import storeRouter from "./store";
 import catalogAdminRouter from "./catalog-admin";
 import inventoryRouter from "./inventory";
 import { requireStaff } from "../lib/security";
+import catalogToolsRouter from "./catalog-tools";
+import catalogTransferRouter from "./catalog-transfer";
+import mediaRouter from "./media";
 
 const router: IRouter = Router();
 
@@ -14,5 +17,8 @@ router.use(storeRouter);
 router.use("/admin", requireStaff);
 router.use(catalogAdminRouter);
 router.use(inventoryRouter);
+router.use(catalogToolsRouter);
+router.use(catalogTransferRouter);
+router.use(mediaRouter);
 
 export default router;

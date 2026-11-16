@@ -3,7 +3,7 @@ import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import { CreateProductBody, UpdateProductBody, UpdateProductParams, CreateVariantBody, CreateVariantParams, ListAdminProductsResponse, CreateProductResponse, UpdateProductResponse, CreateVariantResponse } from "@workspace/api-zod";
 import { type Identity } from "../lib/security";
-import { productInclude, publicProduct, validImages } from "../lib/catalog";
+import { productInclude, publicProduct, prepareImages } from "../lib/catalog";
 
 const router: IRouter = Router();
 router.get("/admin/products", async (_req, res): Promise<void> => {
@@ -12,13 +12,14 @@ router.get("/admin/products", async (_req, res): Promise<void> => {
 });
 router.post("/admin/products", async (req, res): Promise<void> => {
   const input = CreateProductBody.safeParse(req.body);
-  if (!input.success || !validImages(input.data.images)) { res.status(400).json({ error: "Données invalides. Seules les photos fournies sont disponibles à cette étape." }); return; }
+  if (!input.success || !input.data.nameFr.trim()) { res.status(400).json({ error: "Données du produit invalides." }); return; }
   if (input.data.status === "ACTIVE") { res.status(400).json({ error: "Créez d'abord le produit en aperçu, puis ajoutez ses variantes avant publication." }); return; }
   const userId = (res.locals.identity as Identity).user.id;
   const { images, ...data } = input.data;
   const slug = `${data.nameFr.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 140) || "mode"}-${randomUUID().slice(0, 8)}`;
   const product = await db.$transaction(async tx => {
-    const created = await tx.product.create({ data: { ...data, slug, images: { create: images.map((path, position) => ({ path, position })) } }, include: productInclude });
+    const imageData = await prepareImages(tx, images);
+    const created = await tx.product.create({ data: { ...data, slug, images: { create: imageData } }, include: productInclude });
     await tx.auditLog.create({ data: { userId, action: "PRODUCT_CREATED", detail: `Produit créé : ${data.nameFr}` } });
     return created;
   });
@@ -27,17 +28,18 @@ router.post("/admin/products", async (req, res): Promise<void> => {
 router.put("/admin/products/:id", async (req, res): Promise<void> => {
   const params = UpdateProductParams.safeParse(req.params);
   const input = UpdateProductBody.safeParse(req.body);
-  if (!params.success || !input.success || !validImages(input.data.images)) { res.status(400).json({ error: "Données du produit invalides." }); return; }
+  if (!params.success || !input.success || !input.data.nameFr.trim()) { res.status(400).json({ error: "Données du produit invalides." }); return; }
   const existing = await db.product.findUnique({ where: { id: params.data.id }, include: { variants: true } });
   if (!existing) { res.status(404).json({ error: "Produit introuvable." }); return; }
   if (input.data.status === "ACTIVE" && !existing.variants.length) { res.status(400).json({ error: "Ajoutez au moins une variante avec prix avant de publier." }); return; }
   const userId = (res.locals.identity as Identity).user.id;
   const { images, ...data } = input.data;
   const product = await db.$transaction(async tx => {
+    const imageData = await prepareImages(tx, images);
     await tx.productImage.deleteMany({ where: { productId: existing.id } });
     const updated = await tx.product.update({
       where: { id: existing.id },
-      data: { ...data, images: { create: images.map((path, position) => ({ path, position })) } },
+      data: { ...data, images: { create: imageData } },
       include: productInclude,
     });
     await tx.auditLog.create({ data: { userId, action: data.status === "ARCHIVED" ? "PRODUCT_ARCHIVED" : "PRODUCT_UPDATED", detail: `Produit : ${data.nameFr}` } });

@@ -90,8 +90,11 @@ Six real supplied clothing photos are explicitly labeled as previews; descriptiv
 names are provisional. No product prices, stock counts, materials, reviews, or sales
 are invented. Publication needs owner-verified variants, prices, and stock.
 
-New image uploads require a persistent Hostinger-compatible storage strategy in a
-later phase; the initial admin deliberately selects only packaged supplied photos.
+The Phase 3 media library implements direct-to-object-storage upload, actual image
+validation, WebP optimization, thumbnails, and photo ordering/replacement/removal.
+Provisioning of the development storage bucket is currently blocked, so new uploads
+remain explicitly unavailable. Packaged supplied photos still work. A Hostinger
+production storage adapter remains a deployment requirement.
 No upload to temporary Replit storage is represented as a durable upload.
 
 ## Delivery roadmap and gates
@@ -101,8 +104,9 @@ No upload to temporary Replit storage is represented as a durable upload.
 2. **Foundation:** initialize client/API and Prisma migrations, roles, session security,
    secure one-time owner activation and required password change.
 3. **Catalog and inventory:** bilingual product management, variants, barcodes,
-   receiving/adjustments, audited stock history. Follow-on gaps: category CRUD,
-   variant editing, CSV import/export, persistent multi-image uploads.
+   receiving/adjustments, audited stock history, category CRUD, variant editing,
+   barcode labels, and transactional CSV import/export. Remaining gate: connect and
+   verify persistent multi-image uploads; see `docs/phase3-catalog.md`.
 4. **POS:** USB keyboard-wedge scanner, exact barcode lookup, cashier basket,
    transactional cash sale, idempotent retry, receipts at 58/80mm, receipt history.
 5. **Storefront checkout:** basket, checkout validation, cash on delivery/store payment,

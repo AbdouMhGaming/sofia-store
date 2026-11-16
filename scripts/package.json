@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "csv-parse": "^7.0.3",
     "mysql2": "^3.24.6"
   }
 }

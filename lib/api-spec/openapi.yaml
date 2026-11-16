@@ -221,6 +221,154 @@ paths:
               schema:
                 type: array
                 items: { $ref: "#/components/schemas/Activity" }
+  /media/{id}/{version}:
+    get:
+      operationId: getMediaImage
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: version, in: path, required: true, schema: { type: string, enum: [image, thumbnail] } }
+      responses:
+        "200":
+          description: Validated optimized image; public only when attached to a visible product
+          content:
+            image/webp:
+              schema: { type: string, format: binary }
+  /admin/categories:
+    post:
+      operationId: createCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CategoryInput" }
+      responses:
+        "201":
+          description: Category created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Category" }
+  /admin/categories/{id}:
+    put:
+      operationId: updateCategory
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer, minimum: 1 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CategoryInput" }
+      responses:
+        "200":
+          description: Category updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Category" }
+    delete:
+      operationId: deleteCategory
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer, minimum: 1 } }
+      responses:
+        "200":
+          description: Empty category removed; referenced categories cannot be deleted
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Message" }
+  /admin/variants/{id}:
+    put:
+      operationId: updateVariant
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer, minimum: 1 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/VariantInput" }
+      responses:
+        "200":
+          description: Variant metadata updated; stock never changed here
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/InventoryRow" }
+  /admin/stock-movements:
+    get:
+      operationId: listStockMovements
+      parameters:
+        - { name: variantId, in: query, schema: { type: integer, minimum: 1 } }
+        - { name: before, in: query, schema: { type: integer, minimum: 1 } }
+      responses:
+        "200":
+          description: Attributed stock movement history with cursor pagination
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MovementPage" }
+  /admin/catalog/export:
+    get:
+      operationId: exportCatalog
+      responses:
+        "200":
+          description: Catalog CSV with integer centimes; no stock import
+          content:
+            text/csv:
+              schema: { type: string }
+  /admin/catalog/import:
+    post:
+      operationId: importCatalog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CatalogImportInput" }
+      responses:
+        "200":
+          description: Preview or atomic import result
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CatalogImportResult" }
+  /admin/media:
+    get:
+      operationId: listMedia
+      responses:
+        "200":
+          description: Durable media library and storage availability
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaLibrary" }
+  /storage/uploads/request-url:
+    post:
+      operationId: requestUploadUrl
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UploadInput" }
+      responses:
+        "200":
+          description: Direct-to-storage signed upload URL, available only to staff
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UploadTicket" }
+  /admin/media/{id}/complete:
+    post:
+      operationId: completeMedia
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Validated and optimized image, ready to attach
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaAsset" }
+  /admin/media/{id}:
+    delete:
+      operationId: deleteMedia
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Unused image removed from the library
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Message" }
 components:
   schemas:
     HealthStatus:
@@ -405,3 +553,88 @@ components:
         detail: { type: string }
         createdAt: { type: string }
         actor: { type: string }
+    CategoryInput:
+      type: object
+      required: [slug, nameFr, nameAr]
+      properties:
+        slug: { type: string, pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$", maxLength: 100 }
+        nameFr: { type: string, minLength: 1, maxLength: 150 }
+        nameAr: { type: string, minLength: 1, maxLength: 150 }
+    StockMovement:
+      type: object
+      required: [id, variantId, productName, sku, size, color, quantity, kind, reason, balanceAfter, actor, createdAt]
+      properties:
+        id: { type: integer }
+        variantId: { type: integer }
+        productName: { type: string }
+        sku: { type: string }
+        size: { type: string }
+        color: { type: string }
+        quantity: { type: integer }
+        kind: { type: string }
+        reason: { type: string }
+        balanceAfter: { type: integer }
+        actor: { type: string }
+        createdAt: { type: string }
+    MovementPage:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/StockMovement" }
+        nextCursor: { type: [integer, "null"] }
+    CatalogImportInput:
+      type: object
+      required: [csv, dryRun, requestId]
+      properties:
+        csv: { type: string, minLength: 1, maxLength: 200000 }
+        dryRun: { type: boolean }
+        requestId: { type: string, minLength: 16, maxLength: 100 }
+    CatalogImportResult:
+      type: object
+      required: [valid, committed, products, variants, errors, warnings]
+      properties:
+        valid: { type: boolean }
+        committed: { type: boolean }
+        products: { type: integer }
+        variants: { type: integer }
+        errors:
+          type: array
+          items: { type: string }
+        warnings:
+          type: array
+          items: { type: string }
+    MediaAsset:
+      type: object
+      required: [id, name, path, thumbnailPath, width, height, bytes]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        path: { type: string }
+        thumbnailPath: { type: string }
+        width: { type: integer }
+        height: { type: integer }
+        bytes: { type: integer }
+    MediaLibrary:
+      type: object
+      required: [enabled, items]
+      properties:
+        enabled: { type: boolean }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/MediaAsset" }
+    UploadInput:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 190 }
+        size: { type: integer, minimum: 1, maximum: 8388608 }
+        contentType: { type: string, enum: [image/jpeg, image/png, image/webp] }
+    UploadTicket:
+      type: object
+      required: [uploadId, uploadURL, objectPath]
+      properties:
+        uploadId: { type: string }
+        uploadURL: { type: string }
+        objectPath: { type: string }

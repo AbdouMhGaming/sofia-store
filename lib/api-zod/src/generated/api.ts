@@ -440,3 +440,237 @@ export const ListActivityResponseItem = zod.object({
 export const ListActivityResponse = zod.array(ListActivityResponseItem)
 
 
+export const GetMediaImageParams = zod.object({
+  "id": zod.coerce.string().uuid(),
+  "version": zod.enum(['image', 'thumbnail'])
+})
+
+export const GetMediaImageResponse = zod.unknown()
+
+
+export const createCategoryBodySlugMax = 100;
+
+
+export const createCategoryBodySlugRegExp = new RegExp('^[a-z0-9]+(?:-[a-z0-9]+)*$');
+export const createCategoryBodyNameFrMax = 150;
+
+export const createCategoryBodyNameArMax = 150;
+
+
+
+export const CreateCategoryBody = zod.object({
+  "slug": zod.string().max(createCategoryBodySlugMax).regex(createCategoryBodySlugRegExp),
+  "nameFr": zod.string().min(1).max(createCategoryBodyNameFrMax),
+  "nameAr": zod.string().min(1).max(createCategoryBodyNameArMax)
+})
+
+export const CreateCategoryResponse = zod.object({
+  "id": zod.number().int(),
+  "slug": zod.string(),
+  "nameFr": zod.string(),
+  "nameAr": zod.string()
+})
+
+
+
+
+
+export const UpdateCategoryParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const updateCategoryBodySlugMax = 100;
+
+
+export const updateCategoryBodySlugRegExp = new RegExp('^[a-z0-9]+(?:-[a-z0-9]+)*$');
+export const updateCategoryBodyNameFrMax = 150;
+
+export const updateCategoryBodyNameArMax = 150;
+
+
+
+export const UpdateCategoryBody = zod.object({
+  "slug": zod.string().max(updateCategoryBodySlugMax).regex(updateCategoryBodySlugRegExp),
+  "nameFr": zod.string().min(1).max(updateCategoryBodyNameFrMax),
+  "nameAr": zod.string().min(1).max(updateCategoryBodyNameArMax)
+})
+
+export const UpdateCategoryResponse = zod.object({
+  "id": zod.number().int(),
+  "slug": zod.string(),
+  "nameFr": zod.string(),
+  "nameAr": zod.string()
+})
+
+
+
+
+
+export const DeleteCategoryParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const DeleteCategoryResponse = zod.object({
+  "message": zod.string()
+})
+
+
+
+
+
+export const UpdateVariantParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const updateVariantBodySkuMax = 80;
+
+export const updateVariantBodyBarcodeMax = 80;
+
+export const updateVariantBodySizeMax = 30;
+
+export const updateVariantBodyColorMax = 60;
+
+export const updateVariantBodyPriceMinorMax = 100000000;
+
+export const updateVariantBodyCostMinorMin = 0;
+export const updateVariantBodyCostMinorMax = 100000000;
+
+
+
+export const UpdateVariantBody = zod.object({
+  "sku": zod.string().min(1).max(updateVariantBodySkuMax),
+  "barcode": zod.string().min(1).max(updateVariantBodyBarcodeMax),
+  "size": zod.string().min(1).max(updateVariantBodySizeMax),
+  "color": zod.string().min(1).max(updateVariantBodyColorMax),
+  "priceMinor": zod.number().int().min(1).max(updateVariantBodyPriceMinorMax),
+  "costMinor": zod.number().int().min(updateVariantBodyCostMinorMin).max(updateVariantBodyCostMinorMax)
+})
+
+export const UpdateVariantResponse = zod.object({
+  "id": zod.number().int(),
+  "productId": zod.number().int(),
+  "productName": zod.string(),
+  "image": zod.string(),
+  "sku": zod.string(),
+  "barcode": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "priceMinor": zod.number().int(),
+  "costMinor": zod.number().int(),
+  "onHand": zod.number().int(),
+  "reserved": zod.number().int(),
+  "available": zod.number().int()
+})
+
+
+
+
+
+
+export const ListStockMovementsQueryParams = zod.object({
+  "variantId": zod.coerce.number().int().min(1).optional(),
+  "before": zod.coerce.number().int().min(1).optional()
+})
+
+export const ListStockMovementsResponse = zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.number().int(),
+  "variantId": zod.number().int(),
+  "productName": zod.string(),
+  "sku": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "quantity": zod.number().int(),
+  "kind": zod.string(),
+  "reason": zod.string(),
+  "balanceAfter": zod.number().int(),
+  "actor": zod.string(),
+  "createdAt": zod.string()
+})),
+  "nextCursor": zod.number().int().nullable()
+})
+
+
+export const ExportCatalogResponse = zod.unknown()
+
+
+export const importCatalogBodyCsvMax = 200000;
+
+export const importCatalogBodyRequestIdMin = 16;
+export const importCatalogBodyRequestIdMax = 100;
+
+
+
+export const ImportCatalogBody = zod.object({
+  "csv": zod.string().min(1).max(importCatalogBodyCsvMax),
+  "dryRun": zod.boolean(),
+  "requestId": zod.string().min(importCatalogBodyRequestIdMin).max(importCatalogBodyRequestIdMax)
+})
+
+export const ImportCatalogResponse = zod.object({
+  "valid": zod.boolean(),
+  "committed": zod.boolean(),
+  "products": zod.number().int(),
+  "variants": zod.number().int(),
+  "errors": zod.array(zod.string()),
+  "warnings": zod.array(zod.string())
+})
+
+
+export const ListMediaResponse = zod.object({
+  "enabled": zod.boolean(),
+  "items": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "path": zod.string(),
+  "thumbnailPath": zod.string(),
+  "width": zod.number().int(),
+  "height": zod.number().int(),
+  "bytes": zod.number().int()
+}))
+})
+
+
+export const requestUploadUrlBodyNameMax = 190;
+
+export const requestUploadUrlBodySizeMax = 8388608;
+
+
+
+export const RequestUploadUrlBody = zod.object({
+  "name": zod.string().min(1).max(requestUploadUrlBodyNameMax),
+  "size": zod.number().int().min(1).max(requestUploadUrlBodySizeMax),
+  "contentType": zod.enum(['image/jpeg', 'image/png', 'image/webp'])
+})
+
+export const RequestUploadUrlResponse = zod.object({
+  "uploadId": zod.string(),
+  "uploadURL": zod.string(),
+  "objectPath": zod.string()
+})
+
+
+export const CompleteMediaParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const CompleteMediaResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "path": zod.string(),
+  "thumbnailPath": zod.string(),
+  "width": zod.number().int(),
+  "height": zod.number().int(),
+  "bytes": zod.number().int()
+})
+
+
+export const DeleteMediaParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const DeleteMediaResponse = zod.object({
+  "message": zod.string()
+})
+
+

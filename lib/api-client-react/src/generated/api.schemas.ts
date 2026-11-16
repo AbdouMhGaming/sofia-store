@@ -256,11 +256,128 @@ export interface AdjustmentInput {
   requestId: string;
 }
 
+export interface CategoryInput {
+  /**
+     * @maxLength 100
+     * @pattern ^[a-z0-9]+(?:-[a-z0-9]+)*$
+     */
+  slug: string;
+  /**
+     * @minLength 1
+     * @maxLength 150
+     */
+  nameFr: string;
+  /**
+     * @minLength 1
+     * @maxLength 150
+     */
+  nameAr: string;
+}
+
+export interface StockMovement {
+  id: number;
+  variantId: number;
+  productName: string;
+  sku: string;
+  size: string;
+  color: string;
+  quantity: number;
+  kind: string;
+  reason: string;
+  balanceAfter: number;
+  actor: string;
+  createdAt: string;
+}
+
+export interface MovementPage {
+  items: StockMovement[];
+  /** @nullable */
+  nextCursor: number | null;
+}
+
+export interface CatalogImportInput {
+  /**
+     * @minLength 1
+     * @maxLength 200000
+     */
+  csv: string;
+  dryRun: boolean;
+  /**
+     * @minLength 16
+     * @maxLength 100
+     */
+  requestId: string;
+}
+
+export interface CatalogImportResult {
+  valid: boolean;
+  committed: boolean;
+  products: number;
+  variants: number;
+  errors: string[];
+  warnings: string[];
+}
+
+export interface MediaAsset {
+  id: string;
+  name: string;
+  path: string;
+  thumbnailPath: string;
+  width: number;
+  height: number;
+  bytes: number;
+}
+
+export interface MediaLibrary {
+  enabled: boolean;
+  items: MediaAsset[];
+}
+
+export type UploadInputContentType = typeof UploadInputContentType[keyof typeof UploadInputContentType];
+
+
+export const UploadInputContentType = {
+  'image/jpeg': 'image/jpeg',
+  'image/png': 'image/png',
+  'image/webp': 'image/webp',
+} as const;
+
+export interface UploadInput {
+  /**
+     * @minLength 1
+     * @maxLength 190
+     */
+  name: string;
+  /**
+     * @minimum 1
+     * @maximum 8388608
+     */
+  size: number;
+  contentType: UploadInputContentType;
+}
+
+export interface UploadTicket {
+  uploadId: string;
+  uploadURL: string;
+  objectPath: string;
+}
+
 export type ListProductsParams = {
 /**
  * @maxLength 100
  */
 search?: string;
 category?: string;
+};
+
+export type ListStockMovementsParams = {
+/**
+ * @minimum 1
+ */
+variantId?: number;
+/**
+ * @minimum 1
+ */
+before?: number;
 };
 

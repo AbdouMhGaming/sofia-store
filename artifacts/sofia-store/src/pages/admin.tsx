@@ -2,25 +2,27 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useLocation, Redirect } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  Archive, Boxes, Check, Copy, KeyRound, LayoutGrid, LogOut, Package, Pencil, Plus, ScrollText, ShoppingBag, ExternalLink, AlertTriangle,
+  Archive, Boxes, Tags, FileSpreadsheet, Images, History, Barcode, Check, Copy, KeyRound, LayoutGrid, LogOut, Package, Pencil, Plus, ScrollText, ShoppingBag, ExternalLink, AlertTriangle,
 } from "lucide-react";
 import {
   useLogin, useLogout, useChangePassword, useActivateOwner, useGetAdminSummary, useListAdminProducts, useCreateProduct,
   useUpdateProduct, useCreateVariant, useListInventory, useAdjustStock, useListActivity, useListCategories,
   getGetSessionQueryKey, getGetAdminSummaryQueryKey, getListAdminProductsQueryKey, getListInventoryQueryKey,
-  getListActivityQueryKey, getListProductsQueryKey, getListCategoriesQueryKey,
+  getListActivityQueryKey, getListProductsQueryKey, getListCategoriesQueryKey, getListMediaQueryKey,
   type AdminProduct, type ActivationResult, type InventoryRow, type Session, type Activity, type AdjustmentInputKind, type ProductInputStatus,
 } from "@workspace/api-client-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useSessionCsrf } from "@/lib/auth";
-import { PRODUCT_IMAGES, asset, daToMinor, errMsg, formatDA } from "@/lib/util";
+import { asset, daToMinor, errMsg, formatDA } from "@/lib/util";
 import { Logo } from "@/components/site";
+import { ImagesEditor, imgSrc } from "@/components/admin/media-picker";
+import { VariantEditDialog, BarcodeLabelDialog } from "@/pages/admin-stock";
 
-const inputCls = "w-full px-3.5 py-2.5 rounded-md bg-background border border-input text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition";
-const btnDark = "inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#282326] text-[#f6efe9] text-sm hover:bg-primary transition-colors disabled:opacity-50 disabled:pointer-events-none";
-const btnGhost = "inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-border text-sm hover:border-primary hover:text-primary transition-colors disabled:opacity-50";
+export const inputCls = "w-full px-3.5 py-2.5 rounded-md bg-background border border-input text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 transition";
+export const btnDark = "inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#282326] text-[#f6efe9] text-sm hover:bg-primary transition-colors disabled:opacity-50 disabled:pointer-events-none";
+export const btnGhost = "inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-border text-sm hover:border-primary hover:text-primary transition-colors disabled:opacity-50";
 
-function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
+export function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
   return (
     <label className="block space-y-1.5">
       <span className="text-xs tracking-wide uppercase text-muted-foreground">{label}</span>
@@ -30,12 +32,12 @@ function Field({ label, children, hint }: { label: string; children: ReactNode; 
   );
 }
 
-function ErrorText({ e }: { e: unknown }) {
+export function ErrorText({ e }: { e: unknown }) {
   if (!e) return null;
   return <p className="text-sm text-destructive bg-destructive/5 border border-destructive/20 rounded-md px-3 py-2" data-testid="text-error">{errMsg(e)}</p>;
 }
 
-function Skel({ h = "h-40" }: { h?: string }) {
+export function Skel({ h = "h-40" }: { h?: string }) {
   return <div className={`${h} bg-muted animate-pulse rounded-md`} />;
 }
 
@@ -180,11 +182,15 @@ const NAV = [
   { href: "/admin", label: "Tableau de bord", icon: LayoutGrid },
   { href: "/admin/produits", label: "Produits", icon: Package },
   { href: "/admin/inventaire", label: "Inventaire", icon: Boxes },
+  { href: "/admin/categories", label: "Catégories", icon: Tags },
+  { href: "/admin/mouvements", label: "Mouvements", icon: History },
+  { href: "/admin/medias", label: "Médiathèque", icon: Images },
+  { href: "/admin/import-export", label: "Import / Export", icon: FileSpreadsheet },
   { href: "/admin/activite", label: "Activité", icon: ScrollText },
   { href: "/pos", label: "Caisse", icon: ShoppingBag },
 ];
 
-function AdminShell({ title, sub, actions, children }: { title: string; sub?: string; actions?: ReactNode; children: ReactNode }) {
+export function AdminShell({ title, sub, actions, children }: { title: string; sub?: string; actions?: ReactNode; children: ReactNode }) {
   const { session, request } = useSessionCsrf();
   const [loc, nav] = useLocation();
   const qc = useQueryClient();
@@ -318,13 +324,13 @@ export function AdminActivityPage() {
 const STATUS_LABEL: Record<string, string> = { PREVIEW: "Aperçu", ACTIVE: "Actif", ARCHIVED: "Archivé" };
 const STATUS_CLS: Record<string, string> = { PREVIEW: "bg-[#fbf1ea] text-[#a65429]", ACTIVE: "bg-[#f7e6ec] text-[#a82d64]", ARCHIVED: "bg-muted text-muted-foreground" };
 
-function useInvalidateCatalog() {
+export function useInvalidateCatalog() {
   const qc = useQueryClient();
   return () => {
-    for (const k of [getListAdminProductsQueryKey(), getGetAdminSummaryQueryKey(), getListInventoryQueryKey(), getListActivityQueryKey(), getListProductsQueryKey()]) {
+    for (const k of [getListAdminProductsQueryKey(), getGetAdminSummaryQueryKey(), getListInventoryQueryKey(), getListActivityQueryKey(), getListProductsQueryKey(), getListCategoriesQueryKey(), getListMediaQueryKey()]) {
       qc.invalidateQueries({ queryKey: k });
     }
-    qc.invalidateQueries({ predicate: (q) => String(q.queryKey[0]).startsWith("/api/products") });
+    qc.invalidateQueries({ predicate: (q) => { const k = String(q.queryKey[0]); return k.startsWith("/api/products") || k.startsWith("/api/admin/products") || k.startsWith("/api/inventory") || k.includes("movements"); } });
   };
 }
 
@@ -366,7 +372,7 @@ export function AdminProductsPage() {
           <div className="grid gap-3">
             {list.map((p) => (
               <div key={p.id} className="bg-card border border-border rounded-md p-3 flex flex-wrap md:flex-nowrap items-center gap-4 hover:border-primary/40 transition-colors" data-testid={`row-product-${p.id}`}>
-                <div className="w-14 h-[74px] bg-muted rounded-sm overflow-hidden shrink-0">{p.images[0] && <img src={asset(p.images[0])} alt="" className="w-full h-full object-cover" />}</div>
+                <div className="w-14 h-[74px] bg-muted rounded-sm overflow-hidden shrink-0">{p.images[0] && <img src={imgSrc(p.images[0])} alt="" className="w-full h-full object-cover" />}</div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-serif text-xl truncate">{p.nameFr}</p>
@@ -416,7 +422,6 @@ function ProductDialog({ product, onClose }: { product: AdminProduct | "new" | n
   }, [product]);
   const isNew = product === "new";
   const pending = create.isPending || update.isPending;
-  const toggleImg = (src: string) => setF((s) => ({ ...s, images: s.images.includes(src) ? s.images.filter((x) => x !== src) : [...s.images, src] }));
   const submit = () => {
     setLocal("");
     if (!f.nameFr.trim()) return setLocal("Le nom en français est obligatoire.");
@@ -454,22 +459,7 @@ function ProductDialog({ product, onClose }: { product: AdminProduct | "new" | n
           <input type="checkbox" checked={f.featured} onChange={(e) => setF({ ...f, featured: e.target.checked })} className="accent-[#F04F94] w-4 h-4" data-testid="checkbox-featured" />
           Mettre en vitrine sur l'accueil
         </label>
-        <div>
-          <p className="text-xs tracking-wide uppercase text-muted-foreground mb-2">Images ({f.images.length}) — l'ordre de sélection définit l'ordre d'affichage</p>
-          <div className="grid grid-cols-6 gap-2">
-            {PRODUCT_IMAGES.map((src) => {
-              const idx = f.images.indexOf(src);
-              return (
-                <button type="button" key={src} onClick={() => toggleImg(src)} data-testid={`button-image-${src.split("/").pop()}`}
-                  className={`relative aspect-[3/4] rounded-sm overflow-hidden border-2 transition-all ${idx >= 0 ? "border-primary" : "border-transparent opacity-55 hover:opacity-100"}`}>
-                  <img src={asset(src)} alt="" className="w-full h-full object-cover" />
-                  {idx >= 0 && <span className="absolute top-1 right-1 w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] grid place-items-center">{idx + 1}</span>}
-                </button>
-              );
-            })}
-          </div>
-          <p className="text-xs text-muted-foreground mt-2">Le téléversement de nouvelles photos arrivera dans une phase suivante.</p>
-        </div>
+        <ImagesEditor images={f.images} onChange={(images) => setF((s) => ({ ...s, images }))} />
         {local && <p className="text-sm text-destructive">{local}</p>}
         <ErrorText e={create.error || update.error} />
         <div className="flex justify-end gap-2 pt-2">
@@ -537,18 +527,28 @@ export function AdminInventoryPage() {
   const q = useListInventory({ query: { queryKey: getListInventoryQueryKey(), enabled, refetchInterval: 30_000 } });
   const [search, setSearch] = useState("");
   const [row, setRow] = useState<InventoryRow | null>(null);
+  const [editRow, setEditRow] = useState<InventoryRow | null>(null);
+  const [labelRow, setLabelRow] = useState<InventoryRow | null>(null);
+  const [low, setLow] = useState(false);
+  const lowCount = (q.data ?? []).filter((r) => r.available <= 3).length;
   const rows = useMemo(() => {
     const s = search.trim().toLowerCase();
-    return (q.data ?? []).filter((r) => !s || [r.productName, r.sku, r.barcode, r.size, r.color].some((x) => x.toLowerCase().includes(s)));
-  }, [q.data, search]);
+    return (q.data ?? []).filter((r) => !low || r.available <= 3).filter((r) => !s || [r.productName, r.sku, r.barcode, r.size, r.color].some((x) => x.toLowerCase().includes(s)));
+  }, [q.data, search, low]);
   return (
     <AdminShell title="Inventaire" sub="Soldes calculés par le serveur. Chaque mouvement est tracé.">
-      <input className={`${inputCls} max-w-sm mb-5`} placeholder="Rechercher produit, SKU, code-barres…" value={search} onChange={(e) => setSearch(e.target.value)} data-testid="input-inventory-search" />
+      <div className="flex flex-wrap items-center gap-3 mb-5">
+        <input className={`${inputCls} max-w-sm`} placeholder="Rechercher produit, SKU, code-barres…" value={search} onChange={(e) => setSearch(e.target.value)} data-testid="input-inventory-search" />
+        <button onClick={() => setLow(!low)} data-testid="button-filter-low-stock"
+          className={`px-3.5 py-2 rounded-full text-xs border transition ${low ? "bg-secondary text-secondary-foreground border-secondary" : "border-border hover:border-secondary"}`}>
+          Stock bas (3 ou moins) · {lowCount}
+        </button>
+      </div>
       {q.isLoading || !enabled ? <Skel h="h-80" /> : q.isError ? <><ErrorText e={q.error} /><button className={`${btnGhost} mt-3`} onClick={() => q.refetch()}>Réessayer</button></> :
         rows.length === 0 ? (
           <div className="border border-dashed border-border rounded-md py-16 text-center" data-testid="status-inventory-empty">
             <Boxes className="w-8 h-8 mx-auto text-primary/50" strokeWidth={1.2} />
-            <p className="font-serif text-2xl mt-3">Aucune déclinaison.</p>
+            <p className="font-serif text-2xl mt-3">{low ? "Aucun article en stock bas." : "Aucune déclinaison."}</p>
             <p className="text-sm text-muted-foreground mt-1">Créez des déclinaisons depuis la page Produits.</p>
           </div>
         ) : (
@@ -560,7 +560,7 @@ export function AdminInventoryPage() {
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.id} className="border-t border-border hover:bg-[#fbf1f4] transition-colors" data-testid={`row-inventory-${r.id}`}>
-                    <td className="px-4 py-3"><div className="flex items-center gap-3"><div className="w-9 h-12 bg-muted rounded-sm overflow-hidden shrink-0">{r.image && <img src={asset(r.image)} alt="" className="w-full h-full object-cover" />}</div><span className="font-medium">{r.productName}</span></div></td>
+                    <td className="px-4 py-3"><div className="flex items-center gap-3"><div className="w-9 h-12 bg-muted rounded-sm overflow-hidden shrink-0">{r.image && <img src={imgSrc(r.image)} alt="" className="w-full h-full object-cover" />}</div><span className="font-medium">{r.productName}</span></div></td>
                     <td className="px-4 py-3 font-mono text-xs">{r.sku}<br /><span className="text-muted-foreground">{r.barcode}</span></td>
                     <td className="px-4 py-3">{r.size}</td>
                     <td className="px-4 py-3">{r.color}</td>
@@ -568,8 +568,13 @@ export function AdminInventoryPage() {
                     <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">{formatDA(r.costMinor)}</td>
                     <td className="px-4 py-3 tabular-nums">{r.onHand}</td>
                     <td className="px-4 py-3 tabular-nums">{r.reserved}</td>
-                    <td className={`px-4 py-3 tabular-nums font-semibold ${r.available <= 0 ? "text-destructive" : r.available <= 2 ? "text-secondary" : ""}`} data-testid={`text-available-${r.id}`}>{r.available}</td>
-                    <td className="px-4 py-3"><button className={btnGhost} onClick={() => setRow(r)} data-testid={`button-adjust-${r.id}`}>Mouvement</button></td>
+                    <td className={`px-4 py-3 tabular-nums font-semibold ${r.available <= 0 ? "text-destructive" : r.available <= 3 ? "text-secondary" : ""}`} data-testid={`text-available-${r.id}`}>{r.available}</td>
+                    <td className="px-4 py-3"><div className="flex gap-1.5 justify-end">
+                      <button className={btnGhost} onClick={() => setRow(r)} data-testid={`button-adjust-${r.id}`}>Mouvement</button>
+                      <Link href={`/admin/mouvements?variant=${r.id}`} className={`${btnGhost} !px-2.5`} title="Historique" data-testid={`link-history-${r.id}`}><History className="w-3.5 h-3.5" /></Link>
+                      <button className={`${btnGhost} !px-2.5`} onClick={() => setEditRow(r)} title="Modifier" data-testid={`button-edit-variant-${r.id}`}><Pencil className="w-3.5 h-3.5" /></button>
+                      <button className={`${btnGhost} !px-2.5`} onClick={() => setLabelRow(r)} title="Étiquette" data-testid={`button-label-${r.id}`}><Barcode className="w-3.5 h-3.5" /></button>
+                    </div></td>
                   </tr>
                 ))}
               </tbody>
@@ -577,6 +582,8 @@ export function AdminInventoryPage() {
           </div>
         )}
       <AdjustDialog row={row} onClose={() => setRow(null)} />
+      <VariantEditDialog row={editRow} onClose={() => setEditRow(null)} />
+      <BarcodeLabelDialog row={labelRow} onClose={() => setLabelRow(null)} />
     </AdminShell>
   );
 }

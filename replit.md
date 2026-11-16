@@ -29,6 +29,8 @@ replace the store's existing Safe-POS installation yet.
 - Architecture, schema plan, phase gates: `docs/architecture.md`.
 - Migrations, secure owner activation, Hostinger staging and backup procedures:
   `docs/database-operations.md`.
+- Current Phase 3 behavior, CSV format, image upload constraints and provisioning
+  blocker: `docs/phase3-catalog.md`.
 
 ## Run and validate
 
@@ -62,8 +64,12 @@ budget (60 seconds for the multi-record setup seed).
 
 ## Current phase boundary
 
-Foundation/catalog/inventory are being built first. Cash checkout, sale receipts,
-orders/reservations, delivery, reports, CSV operations, image uploads, staff account
+Current phase: **Phase 3 — catalog and inventory**. Next: **Phase 4 — POS and receipts**.
+Category CRUD, variant editing, barcode labels, CSV preview/atomic import/export,
+and detailed stock history are implemented. New-photo upload workflow is implemented
+but blocked on object storage provisioning; do not call it verified or Phase 3 finished.
+The active owner account was created through the one-time activation process.
+
+Cash checkout, sale receipts, orders/reservations, delivery, reports, staff account
 management, Hostinger production setup, restore rehearsal, and Safe-POS migration
-remain separate phases. Do not imply that placeholder or unavailable screens
-implement those functions.
+remain separate phases. Do not imply unavailable screens implement those functions.

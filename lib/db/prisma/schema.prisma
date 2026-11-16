@@ -18,6 +18,8 @@ model User {
   sessions           Session[]
   movements          StockMovement[]
   audit              AuditLog[]
+  imports            ImportBatch[]
+  media              MediaAsset[]
   @@map("users")
 }
 
@@ -87,6 +89,8 @@ model ProductImage {
   productId Int
   path      String  @db.VarChar(500)
   position  Int     @default(0)
+  mediaId   String? @db.VarChar(36)
+  media     MediaAsset? @relation(fields: [mediaId], references: [id], onDelete: Restrict)
   product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
   @@unique([productId, position])
   @@map("product_images")
@@ -176,4 +180,33 @@ model StoreSetting {
   key   String @id @db.VarChar(100)
   value String @db.Text
   @@map("store_settings")
+}
+
+model ImportBatch {
+  requestId   String   @id @db.VarChar(100)
+  requestHash String   @db.VarChar(64)
+  userId      Int
+  products    Int
+  variants    Int
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  @@map("import_batches")
+}
+
+model MediaAsset {
+  id           String         @id @db.VarChar(36)
+  userId       Int
+  name         String         @db.VarChar(190)
+  originalPath String         @db.VarChar(500)
+  objectPrefix String         @default("") @db.VarChar(500)
+  contentType  String         @db.VarChar(40)
+  status       String         @default("PENDING") @db.VarChar(20)
+  width        Int            @default(0)
+  height       Int            @default(0)
+  bytes        Int            @default(0)
+  createdAt    DateTime       @default(now())
+  user         User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  images       ProductImage[]
+  @@index([status, createdAt])
+  @@map("media_assets")
 }

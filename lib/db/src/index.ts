@@ -16,3 +16,4 @@ export const db = new PrismaClient({
 });
 export { Prisma } from "@prisma/client";
 export { applyStockAdjustment } from "./stock";
+export { transferCatalog, parseCatalogCsv, csvCell, catalogHeaders } from "./catalog-transfer";

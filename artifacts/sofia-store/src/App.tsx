@@ -7,6 +7,9 @@ import NotFound from '@/pages/not-found';
 import { I18nProvider } from '@/lib/i18n';
 import { PageMetadata } from '@/components/page-metadata';
 import { HomePage, ShopPage, ProductPage, AboutPage, ContactPage, FavoritesPage } from '@/pages/public';
+import { AdminCategoriesPage, AdminImportExportPage } from '@/pages/admin-catalog';
+import { AdminMediaPage } from '@/pages/admin-media';
+import { AdminMovementsPage } from '@/pages/admin-stock';
 import { AdminLoginPage, AdminDashboardPage, AdminProductsPage, AdminInventoryPage, AdminActivityPage, PosPage } from '@/pages/admin';
 import {
   Route,
@@ -34,6 +37,10 @@ function Router() {
         <Route path="/admin/produits" component={AdminProductsPage} />
         <Route path="/admin/inventaire" component={AdminInventoryPage} />
         <Route path="/admin/activite" component={AdminActivityPage} />
+        <Route path="/admin/categories" component={AdminCategoriesPage} />
+        <Route path="/admin/import-export" component={AdminImportExportPage} />
+        <Route path="/admin/medias" component={AdminMediaPage} />
+        <Route path="/admin/mouvements" component={AdminMovementsPage} />
         <Route path="/pos" component={PosPage} />
         <Route component={NotFound} />
       </Switch>

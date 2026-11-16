@@ -23,3 +23,12 @@ mistaken for actual offers or stock.
 **How to apply:** Treat photo-derived labels as provisional previews until verified.
 Never claim launch readiness until concurrent stock operations, cash sales, order
 reservations, backup restoration, and the store's actual scanner/printer are tested.
+
+Always tell the user which phase we are in and which phase is next until everything
+in this project is finished.
+
+**Why:** The user explicitly requested phase-by-phase status in every continuation.
+
+**How to apply:** Include current and next phase in progress summaries and final
+responses. Do not call a phase complete while its required functionality or critical
+checks remain open.

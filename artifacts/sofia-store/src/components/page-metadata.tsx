@@ -12,6 +12,10 @@ const pages: Record<string, [string, string]> = {
   "/admin/produits": ["Gestion des produits", "Gestion des produits et variantes SOFIA STORE."],
   "/admin/inventaire": ["Inventaire", "Suivi des stocks et mouvements SOFIA STORE."],
   "/admin/activite": ["Historique", "Journal des actions de gestion SOFIA STORE."],
+  "/admin/categories": ["Catégories", "Gestion des catégories bilingues SOFIA STORE."],
+  "/admin/import-export": ["Import et export", "Transfert contrôlé du catalogue SOFIA STORE au format CSV."],
+  "/admin/medias": ["Médiathèque", "Gestion des photographies produits SOFIA STORE."],
+  "/admin/mouvements": ["Mouvements de stock", "Historique attribué des entrées et sorties de stock SOFIA STORE."],
   "/pos": ["Point de vente", "Module caisse SOFIA STORE en préparation."],
 };
 export function PageMetadata() {
