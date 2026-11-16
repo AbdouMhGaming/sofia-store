@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "SOFIA STORE"
+description = "French and Arabic women's fashion boutique and shared retail management foundation for Sofia Store, backed by the supplied Hostinger MySQL development database."
+version = "1.0.0"
+id = "artifacts/sofia-store"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25937
+
+[services.development]
+run = "pnpm --filter @workspace/sofia-store run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/sofia-store", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/sofia-store/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25937"
+BASE_PATH = "/"

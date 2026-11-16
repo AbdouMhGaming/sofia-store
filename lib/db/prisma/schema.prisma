@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("SOFIA_MYSQL_URL")
+}
+
+model User {
+  id                 Int         @id @default(autoincrement())
+  email              String      @unique @db.VarChar(190)
+  passwordHash       String      @db.VarChar(255)
+  mustChangePassword Boolean     @default(true)
+  active             Boolean     @default(true)
+  createdAt          DateTime    @default(now())
+  roles              UserRole[]
+  sessions           Session[]
+  movements          StockMovement[]
+  audit              AuditLog[]
+  @@map("users")
+}
+
+model Role {
+  id    Int        @id @default(autoincrement())
+  name  String     @unique @db.VarChar(40)
+  users UserRole[]
+  @@map("roles")
+}
+
+model UserRole {
+  userId Int
+  roleId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model Session {
+  tokenHash String   @id @db.VarChar(64)
+  userId    Int
+  csrfHash  String   @db.VarChar(64)
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model SetupClaim {
+  id        Int      @id
+  createdAt DateTime @default(now())
+  @@map("owner_setup_claim")
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  slug     String    @unique @db.VarChar(100)
+  nameFr   String    @db.VarChar(150)
+  nameAr   String    @db.VarChar(150)
+  products Product[]
+  @@map("categories")
+}
+
+model Product {
+  id            Int            @id @default(autoincrement())
+  slug          String         @unique @db.VarChar(190)
+  nameFr        String         @db.VarChar(150)
+  nameAr        String         @db.VarChar(150)
+  descriptionFr String         @db.Text
+  descriptionAr String         @db.Text
+  categoryId    Int
+  featured      Boolean        @default(false)
+  status        String         @default("PREVIEW") @db.VarChar(20)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  category      Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  images        ProductImage[]
+  variants      ProductVariant[]
+  @@index([status, categoryId])
+  @@index([featured])
+  @@map("products")
+}
+
+model ProductImage {
+  id        Int     @id @default(autoincrement())
+  productId Int
+  path      String  @db.VarChar(500)
+  position  Int     @default(0)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  @@unique([productId, position])
+  @@map("product_images")
+}
+
+model Size {
+  id       Int              @id @default(autoincrement())
+  name     String           @unique @db.VarChar(30)
+  variants ProductVariant[]
+  @@map("sizes")
+}
+
+model Color {
+  id       Int              @id @default(autoincrement())
+  name     String           @unique @db.VarChar(60)
+  variants ProductVariant[]
+  @@map("colors")
+}
+
+model ProductVariant {
+  id         Int             @id @default(autoincrement())
+  productId  Int
+  sizeId     Int
+  colorId    Int
+  sku        String          @unique @db.VarChar(80)
+  barcode    String          @unique @db.VarChar(80)
+  priceMinor Int
+  costMinor  Int
+  product    Product         @relation(fields: [productId], references: [id], onDelete: Restrict)
+  size       Size            @relation(fields: [sizeId], references: [id], onDelete: Restrict)
+  color      Color           @relation(fields: [colorId], references: [id], onDelete: Restrict)
+  inventory  Inventory[]
+  movements  StockMovement[]
+  @@unique([productId, sizeId, colorId])
+  @@map("product_variants")
+}
+
+model Location {
+  id        Int         @id @default(autoincrement())
+  code      String      @unique @db.VarChar(40)
+  name      String      @db.VarChar(150)
+  inventory Inventory[]
+  @@map("locations")
+}
+
+model Inventory {
+  id         Int            @id @default(autoincrement())
+  variantId  Int
+  locationId Int
+  onHand     Int            @default(0)
+  reserved   Int            @default(0)
+  variant    ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  location   Location       @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  @@unique([variantId, locationId])
+  @@map("inventory")
+}
+
+model StockMovement {
+  id          Int            @id @default(autoincrement())
+  variantId   Int
+  userId      Int
+  quantity    Int
+  kind        String         @db.VarChar(30)
+  reason      String         @db.VarChar(500)
+  requestId   String         @unique @db.VarChar(100)
+  requestHash String         @db.VarChar(64)
+  balanceAfter Int
+  createdAt   DateTime       @default(now())
+  variant     ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  user        User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  @@index([variantId, createdAt])
+  @@map("stock_movements")
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  action    String   @db.VarChar(80)
+  detail    String   @db.VarChar(500)
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Restrict)
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model StoreSetting {
+  key   String @id @db.VarChar(100)
+  value String @db.Text
+  @@map("store_settings")
+}

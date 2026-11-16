@@ -1,36 +1,407 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
-  version: 0.1.0
-  description: API specification
+  version: 0.2.0
+  description: SOFIA STORE shared retail API. Initial foundation and catalog phase.
 servers:
   - url: /api
-    description: Base API path
-tags:
-  - name: health
-    description: Health operations
 paths:
   /healthz:
     get:
       operationId: healthCheck
-      tags: [health]
-      summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
           content:
             application/json:
+              schema: { $ref: "#/components/schemas/HealthStatus" }
+  /store:
+    get:
+      operationId: getStore
+      responses:
+        "200":
+          description: Public store identity
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Store" }
+  /categories:
+    get:
+      operationId: listCategories
+      responses:
+        "200":
+          description: Categories
+          content:
+            application/json:
               schema:
-                $ref: "#/components/schemas/HealthStatus"
+                type: array
+                items: { $ref: "#/components/schemas/Category" }
+  /products:
+    get:
+      operationId: listProducts
+      parameters:
+        - { name: search, in: query, schema: { type: string, maxLength: 100 } }
+        - { name: category, in: query, schema: { type: string } }
+      responses:
+        "200":
+          description: Public products; preview products cannot be purchased
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Product" }
+  /products/{slug}:
+    get:
+      operationId: getProduct
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Product
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Product" }
+  /auth/session:
+    get:
+      operationId: getSession
+      responses:
+        "200":
+          description: Current session and CSRF token
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+  /auth/login:
+    post:
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoginInput" }
+      responses:
+        "200":
+          description: Signed in
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+  /auth/logout:
+    post:
+      operationId: logout
+      responses:
+        "200":
+          description: Signed out
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Message" }
+  /auth/password:
+    post:
+      operationId: changePassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PasswordInput" }
+      responses:
+        "200":
+          description: Password changed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+  /auth/activate:
+    post:
+      operationId: activateOwner
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ActivationInput" }
+      responses:
+        "201":
+          description: One-time credential, never returned again
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ActivationResult" }
+  /admin/summary:
+    get:
+      operationId: getAdminSummary
+      responses:
+        "200":
+          description: Actual catalog statistics
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Summary" }
+  /admin/products:
+    get:
+      operationId: listAdminProducts
+      responses:
+        "200":
+          description: All products including archived
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AdminProduct" }
+    post:
+      operationId: createProduct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProductInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminProduct" }
+  /admin/products/{id}:
+    put:
+      operationId: updateProduct
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProductInput" }
+      responses:
+        "200":
+          description: Updated or safely archived
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminProduct" }
+  /admin/products/{id}/variants:
+    post:
+      operationId: createVariant
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/VariantInput" }
+      responses:
+        "201":
+          description: Created with zero stock; receive stock through adjustment
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Variant" }
+  /admin/inventory:
+    get:
+      operationId: listInventory
+      responses:
+        "200":
+          description: Shared variant balances
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/InventoryRow" }
+  /admin/inventory/adjust:
+    post:
+      operationId: adjustStock
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdjustmentInput" }
+      responses:
+        "200":
+          description: Stock adjustment saved once
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Message" }
+  /admin/activity:
+    get:
+      operationId: listActivity
+      responses:
+        "200":
+          description: Actual inventory and catalog activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Activity" }
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
-        status:
-          type: string
-      required:
-        - status
-
+        status: { type: string }
+    Message:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }
+    Store:
+      type: object
+      required: [name, phone, location, instagram, facebook, tiktok, commerceEnabled]
+      properties:
+        name: { type: string }
+        phone: { type: string }
+        location: { type: string }
+        instagram: { type: string }
+        facebook: { type: string }
+        tiktok: { type: string }
+        commerceEnabled: { type: boolean }
+    Category:
+      type: object
+      required: [id, slug, nameFr, nameAr]
+      properties:
+        id: { type: integer }
+        slug: { type: string }
+        nameFr: { type: string }
+        nameAr: { type: string }
+    Product:
+      type: object
+      required: [id, slug, nameFr, nameAr, descriptionFr, descriptionAr, category, images, featured, status, variants]
+      properties:
+        id: { type: integer }
+        slug: { type: string }
+        nameFr: { type: string }
+        nameAr: { type: string }
+        descriptionFr: { type: string }
+        descriptionAr: { type: string }
+        category: { $ref: "#/components/schemas/Category" }
+        images:
+          type: array
+          items: { type: string }
+        featured: { type: boolean }
+        status: { type: string, enum: [PREVIEW, ACTIVE, ARCHIVED] }
+        variants:
+          type: array
+          items: { $ref: "#/components/schemas/Variant" }
+    Variant:
+      type: object
+      required: [id, sku, barcode, size, color, priceMinor, available]
+      properties:
+        id: { type: integer }
+        sku: { type: string }
+        barcode: { type: string }
+        size: { type: string }
+        color: { type: string }
+        priceMinor: { type: integer }
+        available: { type: integer }
+    AdminProduct:
+      allOf:
+        - $ref: "#/components/schemas/Product"
+        - type: object
+          required: [categoryId]
+          properties:
+            categoryId: { type: integer }
+    ProductInput:
+      type: object
+      required: [nameFr, nameAr, descriptionFr, descriptionAr, categoryId, featured, status, images]
+      properties:
+        nameFr: { type: string, minLength: 1, maxLength: 150 }
+        nameAr: { type: string, maxLength: 150 }
+        descriptionFr: { type: string, maxLength: 5000 }
+        descriptionAr: { type: string, maxLength: 5000 }
+        categoryId: { type: integer, minimum: 1 }
+        featured: { type: boolean }
+        status: { type: string, enum: [PREVIEW, ACTIVE, ARCHIVED] }
+        images:
+          type: array
+          maxItems: 12
+          items: { type: string, maxLength: 500 }
+    VariantInput:
+      type: object
+      required: [sku, barcode, size, color, priceMinor, costMinor]
+      properties:
+        sku: { type: string, minLength: 1, maxLength: 80 }
+        barcode: { type: string, minLength: 1, maxLength: 80 }
+        size: { type: string, minLength: 1, maxLength: 30 }
+        color: { type: string, minLength: 1, maxLength: 60 }
+        priceMinor: { type: integer, minimum: 1, maximum: 100000000 }
+        costMinor: { type: integer, minimum: 0, maximum: 100000000 }
+    User:
+      type: object
+      required: [id, email, role, mustChangePassword]
+      properties:
+        id: { type: integer }
+        email: { type: string }
+        role: { type: string, enum: [STORE_OWNER, MANAGER, CASHIER] }
+        mustChangePassword: { type: boolean }
+    Session:
+      type: object
+      required: [user, csrfToken, setupRequired, setupEnabled]
+      properties:
+        user:
+          anyOf:
+            - $ref: "#/components/schemas/User"
+            - type: "null"
+        csrfToken: { type: string }
+        setupRequired: { type: boolean }
+        setupEnabled: { type: boolean }
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 1, maxLength: 200 }
+    PasswordInput:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword: { type: string, minLength: 1, maxLength: 200 }
+        newPassword: { type: string, minLength: 14, maxLength: 200 }
+    ActivationInput:
+      type: object
+      required: [email, token]
+      properties:
+        email: { type: string, format: email }
+        token: { type: string, minLength: 24, maxLength: 200 }
+    ActivationResult:
+      type: object
+      required: [email, temporaryPassword]
+      properties:
+        email: { type: string }
+        temporaryPassword: { type: string }
+    Summary:
+      type: object
+      required: [products, variants, availableUnits, reservedUnits, lowStock, valuationMinor, recentActivity]
+      properties:
+        products: { type: integer }
+        variants: { type: integer }
+        availableUnits: { type: integer }
+        reservedUnits: { type: integer }
+        lowStock: { type: integer }
+        valuationMinor: { type: integer }
+        recentActivity:
+          type: array
+          items: { $ref: "#/components/schemas/Activity" }
+    InventoryRow:
+      type: object
+      required: [id, productId, productName, image, sku, barcode, size, color, priceMinor, costMinor, onHand, reserved, available]
+      properties:
+        id: { type: integer }
+        productId: { type: integer }
+        productName: { type: string }
+        image: { type: string }
+        sku: { type: string }
+        barcode: { type: string }
+        size: { type: string }
+        color: { type: string }
+        priceMinor: { type: integer }
+        costMinor: { type: integer }
+        onHand: { type: integer }
+        reserved: { type: integer }
+        available: { type: integer }
+    AdjustmentInput:
+      type: object
+      required: [variantId, quantity, reason, kind, requestId]
+      properties:
+        variantId: { type: integer, minimum: 1 }
+        quantity: { type: integer, minimum: -100000, maximum: 100000 }
+        reason: { type: string, minLength: 3, maxLength: 500 }
+        kind: { type: string, enum: [RECEIPT, ADJUSTMENT, DAMAGE, RETURN] }
+        requestId: { type: string, minLength: 16, maxLength: 100 }
+    Activity:
+      type: object
+      required: [id, action, detail, createdAt, actor]
+      properties:
+        id: { type: integer }
+        action: { type: string }
+        detail: { type: string }
+        createdAt: { type: string }
+        actor: { type: string }

@@ -1,0 +1,1 @@
+- [Retail scope and hosting](retail-scope.md) — owner-confirmed development MySQL and Node.js hosting; production readiness requires later retail and hardware gates.
