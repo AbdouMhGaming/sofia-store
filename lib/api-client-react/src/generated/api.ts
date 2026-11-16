@@ -2558,6 +2558,89 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getRequestUploadUrlMutationOptions(options), queryClient);
     }
 
+export const getPutMediaUploadUrl = (id: string,) => {
+
+
+
+
+  return `/api/storage/uploads/${id}`
+}
+
+export const putMediaUpload = async (id: string,
+    putMediaUploadBody: Blob, options?: Parameters<typeof customFetch>[1]): Promise<Message> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<Message>(getPutMediaUploadUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'image/jpeg', ...getHeaders(options?.headers) },
+    body: putMediaUploadBody
+  }
+);}
+
+
+
+
+
+export const getPutMediaUploadMutationKey = () => ['putMediaUpload'] as const;
+
+export const getPutMediaUploadMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putMediaUpload>>, TError,PutMediaUploadMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof putMediaUpload>>, TError,PutMediaUploadMutationVariables, TContext> => {
+
+const mutationKey = getPutMediaUploadMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof putMediaUpload>>, PutMediaUploadMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  putMediaUpload(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PutMediaUploadMutationResult = NonNullable<Awaited<ReturnType<typeof putMediaUpload>>>
+    export type PutMediaUploadMutationBody = BodyType<Blob>
+    export type PutMediaUploadMutationError = ErrorType<unknown>
+    export type PutMediaUploadMutationVariables = {id: string;data: BodyType<Blob>}
+
+    export const usePutMediaUpload = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putMediaUpload>>, TError,PutMediaUploadMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof putMediaUpload>>,
+        TError,
+        PutMediaUploadMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPutMediaUploadMutationOptions(options), queryClient);
+    }
+
 export const getCompleteMediaUrl = (id: string,) => {
 
 

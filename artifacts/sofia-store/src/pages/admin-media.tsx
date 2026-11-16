@@ -46,8 +46,12 @@ export function AdminMediaPage() {
         if (f.size > MAX) throw new Error("Fichier trop lourd : 8 Mo maximum.");
         if (f.size < 1) throw new Error("Fichier vide.");
         const ticket = await requestUpload.mutateAsync({ data: { name: f.name.slice(0, 190), size: f.size, contentType: f.type as UploadInputContentType } });
-        const put = await fetch(ticket.uploadURL, { method: "PUT", body: f, headers: { "Content-Type": f.type } });
-        if (!put.ok) throw new Error(`Envoi refusé par le stockage (${put.status}).`);
+        if (!/^\/api\/storage\/uploads\/[a-f0-9-]{36}$/.test(ticket.uploadURL)) throw new Error("Adresse de téléversement inattendue.");
+        const put = await fetch(ticket.uploadURL, { method: "PUT", body: f, credentials: "same-origin", headers: { "Content-Type": f.type, "x-csrf-token": token } });
+        if (!put.ok) {
+          const failure = await put.json().catch(() => null) as { error?: string } | null;
+          throw new Error(failure?.error || `Envoi refusé par le stockage (${put.status}).`);
+        }
         await complete.mutateAsync({ id: ticket.uploadId });
         setJob(i, { state: "done" });
       } catch (e) {
@@ -93,7 +97,7 @@ export function AdminMediaPage() {
             <AlertTriangle className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
             <div>
               <p className="font-serif text-2xl">Stockage indisponible</p>
-              <p className="text-sm text-muted-foreground mt-1">Le stockage des photos n'est pas configuré ou ne répond pas. Aucun fichier ne peut être téléversé pour l'instant. Les photos fournies restent utilisables dans les fiches produits.</p>
+              <p className="text-sm text-muted-foreground mt-1">Le dossier persistant des photos Hostinger n'est pas encore configuré ou accessible. Aucun service de stockage Replit n'est nécessaire. Les photos fournies restent utilisables dans les fiches produits.</p>
               <button className={`${btnGhost} mt-4`} onClick={() => q.refetch()} disabled={q.isFetching} data-testid="button-retry-media"><RefreshCw className="w-3.5 h-3.5" />Vérifier à nouveau</button>
             </div>
           </div>

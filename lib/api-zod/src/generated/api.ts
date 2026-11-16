@@ -650,6 +650,15 @@ export const RequestUploadUrlResponse = zod.object({
 })
 
 
+export const PutMediaUploadParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const PutMediaUploadResponse = zod.object({
+  "message": zod.string()
+})
+
+
 export const CompleteMediaParams = zod.object({
   "id": zod.coerce.string().uuid()
 })

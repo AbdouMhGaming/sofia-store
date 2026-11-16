@@ -90,12 +90,15 @@ Six real supplied clothing photos are explicitly labeled as previews; descriptiv
 names are provisional. No product prices, stock counts, materials, reviews, or sales
 are invented. Publication needs owner-verified variants, prices, and stock.
 
-The Phase 3 media library implements direct-to-object-storage upload, actual image
+The Phase 3 media library implements authenticated same-origin binary uploads, actual image
 validation, WebP optimization, thumbnails, and photo ordering/replacement/removal.
-The current upload adapter is Replit-specific and disabled; it must be replaced
-with Hostinger-compatible persistent storage. A Replit bucket is not required.
+The upload adapter uses a configurable private Hostinger directory (`SOFIA_UPLOAD_DIR`).
+The old Replit adapter has been removed. A Replit bucket is not required.
 Hostinger's deployment-managed directories cannot be assumed durable for uploads.
-Packaged supplied photos still work. See `docs/phase3-catalog.md`.
+Packaged supplied photos still work. Real upload, optimization, ordering/replacement,
+and access control passed local API/disk-fixture tests. Hostinger account permissions
+and persistence across actual redeployment remain unverified. No customer-upload
+directory is configured on temporary Replit disk. See `docs/phase3-catalog.md`.
 No upload to temporary Replit storage is represented as a durable upload.
 
 ## Delivery roadmap and gates

@@ -66,10 +66,14 @@ budget (60 seconds for the multi-record setup seed).
 
 Current phase: **Phase 3 — catalog and inventory**. Next: **Phase 4 — POS and receipts**.
 Category CRUD, variant editing, barcode labels, CSV preview/atomic import/export,
-and detailed stock history are implemented. New-photo validation/optimization is
-implemented, but the disabled Replit-specific storage adapter must be replaced with
-Hostinger-compatible persistence. Do not require a Replit bucket or call uploads
-verified or Phase 3 finished. Everything is intended to be hosted on Hostinger.
+and detailed stock history are implemented. The image pipeline now uses a private
+filesystem directory configured with `SOFIA_UPLOAD_DIR`; Replit storage code and
+dependencies were removed. Authenticated upload, optimization, photo ordering,
+replacement, visibility and deletion protection passed local API/disk-fixture tests.
+Everything is intended to be hosted on Hostinger Business or Cloud managed hosting,
+not VPS. Do not require a Replit bucket, use deployment-managed/temporary folders
+for customer photos, or claim actual Hostinger permissions/redeploy persistence
+verified. Those account-specific checks remain open for staging/deployment.
 The active owner account was created through the one-time activation process.
 
 Cash checkout, sale receipts, orders/reservations, delivery, reports, staff account
