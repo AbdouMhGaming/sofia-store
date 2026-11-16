@@ -92,9 +92,10 @@ are invented. Publication needs owner-verified variants, prices, and stock.
 
 The Phase 3 media library implements direct-to-object-storage upload, actual image
 validation, WebP optimization, thumbnails, and photo ordering/replacement/removal.
-Provisioning of the development storage bucket is currently blocked, so new uploads
-remain explicitly unavailable. Packaged supplied photos still work. A Hostinger
-production storage adapter remains a deployment requirement.
+The current upload adapter is Replit-specific and disabled; it must be replaced
+with Hostinger-compatible persistent storage. A Replit bucket is not required.
+Hostinger's deployment-managed directories cannot be assumed durable for uploads.
+Packaged supplied photos still work. See `docs/phase3-catalog.md`.
 No upload to temporary Replit storage is represented as a durable upload.
 
 ## Delivery roadmap and gates

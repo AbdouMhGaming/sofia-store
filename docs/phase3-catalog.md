@@ -75,20 +75,29 @@ New-photo workflow is implemented at `/admin/medias`:
    first. Library deletion revokes serving access and preserves storage objects for
    recovery; physical garbage collection/retention remains an operations task.
 
-### Current storage blocker
+### Hostinger storage requirement
 
-Automatic persistent storage provisioning failed twice at the platform service,
-and no bucket configuration was supplied. Therefore, upload controls explicitly show
-storage unavailable and the API returns 503. No pretend successful or temporary upload
-was substituted. End-to-end upload/CORS verification remains open.
+The owner intends to host everything on Hostinger. Creating a Replit App Storage
+bucket is **not required**, and its failed provisioning is not a user setup task.
 
-Creating a bucket in the App Storage pane is the next setup action. When provisioned,
-verify a real upload, optimized thumbnail, image ordering/replacement/removal, attachment
-visibility, and refusal to delete a used photo before closing this gate.
+The current, disabled upload adapter uses Replit's storage sidecar. Its image
+validation/optimization can be reused, but the storage and upload transport must be
+adapted to Hostinger. Until that is implemented and verified, upload controls correctly
+show storage unavailable and no successful upload is claimed.
 
-The development adapter uses Replit's storage sidecar. Hostinger production will need
-an explicitly configured compatible persistent-storage adapter or a reviewed asset
-migration. Do not assume the Replit sidecar exists on Hostinger.
+Hostinger's managed Node.js deployments replace files under both `hbuilds/` and
+`public_html`; do not put durable customer-uploaded photographs there. The intended
+Hostinger-only approach is a configurable persistent uploads directory outside
+deployment-managed directories, **subject to verifying this plan's filesystem access
+and permissions**. The exact managed-hosting versus VPS plan determines setup.
+
+Source: https://docs.hostinger.com/node.js/file-structure
+
+Before closing the upload gate, verify write access, a real upload, optimized
+thumbnail, image ordering/replacement/removal, access control, refusal to delete an
+attached photo, and survival across restart and redeployment. Back up the upload
+directory together with MySQL metadata. Do not substitute temporary Replit disk for
+production-persistent storage.
 
 ## Verification commands
 

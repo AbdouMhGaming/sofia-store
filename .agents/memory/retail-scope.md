@@ -6,6 +6,16 @@ description: Owner-confirmed hosting facts and retail launch constraints not inf
 The owner confirmed the supplied Hostinger MySQL database is a development database
 and their Hostinger plan supports Node.js.
 
+The owner intends to host everything on Hostinger. A Replit App Storage bucket is
+not a required part of the hosting plan.
+
+**Why:** The owner corrected the unnecessary requirement to create a Replit bucket
+when their intended hosting is entirely on Hostinger.
+
+**How to apply:** Choose a Hostinger-compatible persistent upload setup. Do not make
+a Replit storage bucket a prerequisite. Verify writable storage and persistence
+across Hostinger redeployments before claiming uploads are production-ready.
+
 **Why:** The project brief requires these checks before development and forbids
 substitution with a temporary or unrelated database.
 
