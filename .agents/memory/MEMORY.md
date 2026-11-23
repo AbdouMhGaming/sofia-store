@@ -1,2 +1,3 @@
 - [Retail scope and hosting](retail-scope.md) — Hostinger MySQL/Node.js, owner-editable delivery and reservation settings, and retail/hardware launch gates.
 - [Financial safety](financial-safety.md) — locking reads need appropriate isolation; a missing receipt cannot resolve an uncertain payment without durable cancellation.
+- [Retail reporting basis](reporting-basis.md) — physical merchandise returns, actual payments and courier debt are distinct; unfulfilled losses cannot reverse nonexistent costs.

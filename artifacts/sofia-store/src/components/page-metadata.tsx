@@ -21,6 +21,7 @@ const pages: Record<string, [string, string]> = {
   "/commande/confirmation": ["Commande reçue", "Récapitulatif de votre commande SOFIA STORE."],
   "/admin/vente-en-ligne": ["Vente en ligne", "Réglages de la commande en ligne SOFIA STORE."],
   "/admin/commandes": ["Commandes", "Commandes en ligne reçues par SOFIA STORE."],
+  "/admin/rapports": ["Rapports", "Rapports financiers réservés à la propriétaire SOFIA STORE."],
   "/pos": ["Caisse", "Encaissement en boutique SOFIA STORE."],
   "/pos/historique": ["Tickets de caisse", "Historique des ventes en boutique SOFIA STORE."],
   "/pos/sessions": ["Tiroir-caisse", "Ouvertures et clôtures du tiroir SOFIA STORE."],

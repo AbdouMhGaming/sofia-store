@@ -44,6 +44,8 @@ import type {
   CheckoutQuote,
   CheckoutSettings,
   CheckoutSubmission,
+  ExportRetailReportParams,
+  GetRetailReportParams,
   HealthStatus,
   InventoryRow,
   ListAdminOrdersParams,
@@ -74,6 +76,7 @@ import type {
   RegisterOpening,
   RegisterPage,
   RegisterSession,
+  RetailReport,
   SaleCancellationResult,
   SalePage,
   SearchPosVariantsParams,
@@ -116,6 +119,210 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetRetailReportUrl = (params: GetRetailReportParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/admin/reports?${stringifiedParams}` : `/api/admin/reports`
+}
+
+export const getRetailReport = async (params: GetRetailReportParams, options?: Parameters<typeof customFetch>[1]): Promise<RetailReport> => {
+
+  return customFetch<RetailReport>(getGetRetailReportUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetRetailReportQueryKey = (params?: GetRetailReportParams,) => {
+    return [
+    `/api/admin/reports`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetRetailReportQueryOptions = <TData = Awaited<ReturnType<typeof getRetailReport>>, TError = ErrorType<void>>(params: GetRetailReportParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRetailReport>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetRetailReportQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRetailReport>>> = ({ signal }) => getRetailReport(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRetailReport>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetRetailReportQueryResult = NonNullable<Awaited<ReturnType<typeof getRetailReport>>>
+export type GetRetailReportQueryError = ErrorType<void>
+
+
+export function useGetRetailReport<TData = Awaited<ReturnType<typeof getRetailReport>>, TError = ErrorType<void>>(
+ params: GetRetailReportParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRetailReport>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getRetailReport>>,
+          TError,
+          Awaited<ReturnType<typeof getRetailReport>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetRetailReport<TData = Awaited<ReturnType<typeof getRetailReport>>, TError = ErrorType<void>>(
+ params: GetRetailReportParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRetailReport>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getRetailReport>>,
+          TError,
+          Awaited<ReturnType<typeof getRetailReport>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetRetailReport<TData = Awaited<ReturnType<typeof getRetailReport>>, TError = ErrorType<void>>(
+ params: GetRetailReportParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRetailReport>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetRetailReport<TData = Awaited<ReturnType<typeof getRetailReport>>, TError = ErrorType<void>>(
+ params: GetRetailReportParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRetailReport>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetRetailReportQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getExportRetailReportUrl = (params: ExportRetailReportParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/admin/reports/export?${stringifiedParams}` : `/api/admin/reports/export`
+}
+
+export const exportRetailReport = async (params: ExportRetailReportParams, options?: Parameters<typeof customFetch>[1]): Promise<string> => {
+
+  return customFetch<string>(getExportRetailReportUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getExportRetailReportQueryKey = (params?: ExportRetailReportParams,) => {
+    return [
+    `/api/admin/reports/export`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getExportRetailReportQueryOptions = <TData = Awaited<ReturnType<typeof exportRetailReport>>, TError = ErrorType<void>>(params: ExportRetailReportParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof exportRetailReport>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getExportRetailReportQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof exportRetailReport>>> = ({ signal }) => exportRetailReport(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof exportRetailReport>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ExportRetailReportQueryResult = NonNullable<Awaited<ReturnType<typeof exportRetailReport>>>
+export type ExportRetailReportQueryError = ErrorType<void>
+
+
+export function useExportRetailReport<TData = Awaited<ReturnType<typeof exportRetailReport>>, TError = ErrorType<void>>(
+ params: ExportRetailReportParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof exportRetailReport>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof exportRetailReport>>,
+          TError,
+          Awaited<ReturnType<typeof exportRetailReport>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useExportRetailReport<TData = Awaited<ReturnType<typeof exportRetailReport>>, TError = ErrorType<void>>(
+ params: ExportRetailReportParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof exportRetailReport>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof exportRetailReport>>,
+          TError,
+          Awaited<ReturnType<typeof exportRetailReport>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useExportRetailReport<TData = Awaited<ReturnType<typeof exportRetailReport>>, TError = ErrorType<void>>(
+ params: ExportRetailReportParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof exportRetailReport>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useExportRetailReport<TData = Awaited<ReturnType<typeof exportRetailReport>>, TError = ErrorType<void>>(
+ params: ExportRetailReportParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof exportRetailReport>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getExportRetailReportQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getGetCheckoutConfigUrl = () => {
 

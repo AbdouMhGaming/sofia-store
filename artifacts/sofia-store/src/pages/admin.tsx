@@ -3,7 +3,7 @@ import { Link, useLocation, Redirect } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Archive, Boxes, Tags, FileSpreadsheet, Images, History, Barcode, Check, Copy, KeyRound, LayoutGrid, LogOut, Package, Pencil, Plus, ScrollText, ShoppingBag, Receipt, Wallet, ExternalLink, AlertTriangle,
-  ClipboardList, Globe } from "lucide-react";
+  ClipboardList, Globe, BarChart3 } from "lucide-react";
 import {
   useLogin, useLogout, useChangePassword, useActivateOwner, useGetAdminSummary, useListAdminProducts, useCreateProduct,
   useUpdateProduct, useCreateVariant, useListInventory, useAdjustStock, useListActivity, useListCategories,
@@ -189,7 +189,8 @@ export function AdminShell({ title, sub, actions, children }: { title: string; s
   if (user.mustChangePassword) return <ChangePasswordScreen />;
   const cashier = user.role === "CASHIER";
   if (cashier && !loc.startsWith("/pos")) return <Redirect to="/pos" />;
-  const items = cashier ? CASHIER_NAV : NAV;
+  const owner = user.role === "STORE_OWNER";
+  const items = cashier ? CASHIER_NAV : owner ? [...NAV.slice(0, -1), { href: "/admin/rapports", label: "Rapports", icon: BarChart3 }, NAV[NAV.length - 1]] : NAV;
   return (
     <div className="min-h-[100dvh] md:grid md:grid-cols-[250px_1fr] bg-[#fbf8f5]" dir="ltr">
       <aside className="no-print bg-sidebar border-e border-sidebar-border md:sticky md:top-0 md:h-[100dvh] flex md:flex-col">

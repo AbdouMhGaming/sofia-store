@@ -8,6 +8,191 @@
 import * as zod from 'zod';
 
 
+export const getRetailReportQueryFromRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getRetailReportQueryToRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getRetailReportQueryGroupByDefault = `DAY`;
+export const getRetailReportQueryChannelDefault = `ALL`;
+export const getRetailReportQueryExpectedFingerprintRegExp = new RegExp('^[a-f0-9]{64}$');
+
+
+export const GetRetailReportQueryParams = zod.object({
+  "from": zod.coerce.string().regex(getRetailReportQueryFromRegExp),
+  "to": zod.coerce.string().regex(getRetailReportQueryToRegExp),
+  "groupBy": zod.enum(['DAY', 'MONTH']).default(getRetailReportQueryGroupByDefault),
+  "channel": zod.enum(['ALL', 'POS', 'ONLINE', 'PICKUP', 'DELIVERY']).default(getRetailReportQueryChannelDefault),
+  "expectedFingerprint": zod.coerce.string().regex(getRetailReportQueryExpectedFingerprintRegExp).optional()
+})
+
+export const getRetailReportResponseFingerprintRegExp = new RegExp('^[a-f0-9]{64}$');
+
+
+export const GetRetailReportResponse = zod.object({
+  "fingerprint": zod.string().regex(getRetailReportResponseFingerprintRegExp),
+  "from": zod.string(),
+  "to": zod.string(),
+  "groupBy": zod.enum(['DAY', 'MONTH']),
+  "channel": zod.enum(['ALL', 'POS', 'ONLINE', 'PICKUP', 'DELIVERY']),
+  "timezone": zod.string(),
+  "generatedAt": zod.coerce.date(),
+  "summary": zod.object({
+  "key": zod.string(),
+  "label": zod.string(),
+  "salesCount": zod.number().int(),
+  "activity": zod.object({
+  "unitsSold": zod.number().int(),
+  "unitsReturned": zod.number().int(),
+  "grossMinor": zod.number().int(),
+  "discountMinor": zod.number().int(),
+  "returnsMinor": zod.number().int(),
+  "netMinor": zod.number().int(),
+  "costSoldMinor": zod.number().int(),
+  "costRecoveredMinor": zod.number().int(),
+  "damagedUnfulfilledMinor": zod.number().int(),
+  "netCostMinor": zod.number().int(),
+  "marginMinor": zod.number().int()
+}),
+  "money": zod.object({
+  "cashInMinor": zod.number().int(),
+  "bankInMinor": zod.number().int(),
+  "cashOutMinor": zod.number().int(),
+  "bankOutMinor": zod.number().int(),
+  "netInMinor": zod.number().int(),
+  "merchandiseRefundsMinor": zod.number().int(),
+  "shippingInMinor": zod.number().int(),
+  "shippingRefundsMinor": zod.number().int(),
+  "carrierFeesMinor": zod.number().int(),
+  "netFeesMinor": zod.number().int()
+}),
+  "estimatedMarginMinor": zod.number().int()
+}),
+  "periods": zod.array(zod.object({
+  "key": zod.string(),
+  "label": zod.string(),
+  "salesCount": zod.number().int(),
+  "activity": zod.object({
+  "unitsSold": zod.number().int(),
+  "unitsReturned": zod.number().int(),
+  "grossMinor": zod.number().int(),
+  "discountMinor": zod.number().int(),
+  "returnsMinor": zod.number().int(),
+  "netMinor": zod.number().int(),
+  "costSoldMinor": zod.number().int(),
+  "costRecoveredMinor": zod.number().int(),
+  "damagedUnfulfilledMinor": zod.number().int(),
+  "netCostMinor": zod.number().int(),
+  "marginMinor": zod.number().int()
+}),
+  "money": zod.object({
+  "cashInMinor": zod.number().int(),
+  "bankInMinor": zod.number().int(),
+  "cashOutMinor": zod.number().int(),
+  "bankOutMinor": zod.number().int(),
+  "netInMinor": zod.number().int(),
+  "merchandiseRefundsMinor": zod.number().int(),
+  "shippingInMinor": zod.number().int(),
+  "shippingRefundsMinor": zod.number().int(),
+  "carrierFeesMinor": zod.number().int(),
+  "netFeesMinor": zod.number().int()
+}),
+  "estimatedMarginMinor": zod.number().int()
+})),
+  "channels": zod.array(zod.object({
+  "key": zod.string(),
+  "label": zod.string(),
+  "salesCount": zod.number().int(),
+  "activity": zod.object({
+  "unitsSold": zod.number().int(),
+  "unitsReturned": zod.number().int(),
+  "grossMinor": zod.number().int(),
+  "discountMinor": zod.number().int(),
+  "returnsMinor": zod.number().int(),
+  "netMinor": zod.number().int(),
+  "costSoldMinor": zod.number().int(),
+  "costRecoveredMinor": zod.number().int(),
+  "damagedUnfulfilledMinor": zod.number().int(),
+  "netCostMinor": zod.number().int(),
+  "marginMinor": zod.number().int()
+}),
+  "money": zod.object({
+  "cashInMinor": zod.number().int(),
+  "bankInMinor": zod.number().int(),
+  "cashOutMinor": zod.number().int(),
+  "bankOutMinor": zod.number().int(),
+  "netInMinor": zod.number().int(),
+  "merchandiseRefundsMinor": zod.number().int(),
+  "shippingInMinor": zod.number().int(),
+  "shippingRefundsMinor": zod.number().int(),
+  "carrierFeesMinor": zod.number().int(),
+  "netFeesMinor": zod.number().int()
+}),
+  "estimatedMarginMinor": zod.number().int()
+})),
+  "products": zod.array(zod.object({
+  "key": zod.string(),
+  "label": zod.string(),
+  "activity": zod.object({
+  "unitsSold": zod.number().int(),
+  "unitsReturned": zod.number().int(),
+  "grossMinor": zod.number().int(),
+  "discountMinor": zod.number().int(),
+  "returnsMinor": zod.number().int(),
+  "netMinor": zod.number().int(),
+  "costSoldMinor": zod.number().int(),
+  "costRecoveredMinor": zod.number().int(),
+  "damagedUnfulfilledMinor": zod.number().int(),
+  "netCostMinor": zod.number().int(),
+  "marginMinor": zod.number().int()
+})
+})),
+  "categories": zod.array(zod.object({
+  "key": zod.string(),
+  "label": zod.string(),
+  "activity": zod.object({
+  "unitsSold": zod.number().int(),
+  "unitsReturned": zod.number().int(),
+  "grossMinor": zod.number().int(),
+  "discountMinor": zod.number().int(),
+  "returnsMinor": zod.number().int(),
+  "netMinor": zod.number().int(),
+  "costSoldMinor": zod.number().int(),
+  "costRecoveredMinor": zod.number().int(),
+  "damagedUnfulfilledMinor": zod.number().int(),
+  "netCostMinor": zod.number().int(),
+  "marginMinor": zod.number().int()
+})
+})),
+  "outstanding": zod.object({
+  "count": zod.number().int(),
+  "grossMinor": zod.number().int(),
+  "asOf": zod.coerce.date()
+}),
+  "definitions": zod.array(zod.object({
+  "key": zod.string(),
+  "label": zod.string(),
+  "explanation": zod.string()
+})),
+  "warnings": zod.array(zod.string())
+})
+
+
+export const exportRetailReportQueryFromRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const exportRetailReportQueryToRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const exportRetailReportQueryGroupByDefault = `DAY`;
+export const exportRetailReportQueryChannelDefault = `ALL`;
+export const exportRetailReportQueryExpectedFingerprintRegExp = new RegExp('^[a-f0-9]{64}$');
+
+
+export const ExportRetailReportQueryParams = zod.object({
+  "from": zod.coerce.string().regex(exportRetailReportQueryFromRegExp),
+  "to": zod.coerce.string().regex(exportRetailReportQueryToRegExp),
+  "groupBy": zod.enum(['DAY', 'MONTH']).default(exportRetailReportQueryGroupByDefault),
+  "channel": zod.enum(['ALL', 'POS', 'ONLINE', 'PICKUP', 'DELIVERY']).default(exportRetailReportQueryChannelDefault),
+  "expectedFingerprint": zod.coerce.string().regex(exportRetailReportQueryExpectedFingerprintRegExp).optional()
+})
+
+export const ExportRetailReportResponse = zod.unknown()
+
+
 export const getCheckoutConfigResponsePickupAddressFrMax = 500;
 
 export const getCheckoutConfigResponsePickupAddressArMax = 500;

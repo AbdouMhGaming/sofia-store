@@ -10,6 +10,7 @@ import catalogTransferRouter from "./catalog-transfer";
 import mediaRouter from "./media";
 import posRouter from "./pos";
 import checkoutRouter from "./checkout";
+import reportsRouter from "./reports";
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use(catalogTransferRouter);
 router.use(mediaRouter);
 router.use("/pos", posRouter);
 router.use(checkoutRouter);
+router.use(reportsRouter);
 
 export default router;

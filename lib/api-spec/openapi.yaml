@@ -6,6 +6,39 @@ info:
 servers:
   - url: /api
 paths:
+  /admin/reports:
+    get:
+      operationId: getRetailReport
+      parameters: &reportParameters
+        - { in: query, name: from, required: true, schema: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' } }
+        - { in: query, name: to, required: true, schema: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' } }
+        - { in: query, name: groupBy, schema: { type: string, enum: [DAY, MONTH], default: DAY } }
+        - { in: query, name: channel, schema: { type: string, enum: [ALL, POS, ONLINE, PICKUP, DELIVERY], default: ALL } }
+        - { in: query, name: expectedFingerprint, schema: { type: string, pattern: '^[a-f0-9]{64}$' } }
+      responses:
+        "200":
+          description: Owner-only activity, actual settlements and as-of courier balances
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RetailReport" }
+        "400": { description: Invalid dates or more than 366 days }
+        "403": { description: Owner access required }
+        "409": { description: Financial data changed or inconsistent history }
+        "413": { description: "Too many records; narrow the range, never a truncated report" }
+  /admin/reports/export:
+    get:
+      operationId: exportRetailReport
+      parameters: *reportParameters
+      responses:
+        "200":
+          description: Complete filtered report and definitions, integer centimes, safe CSV text
+          content:
+            text/csv:
+              schema: { type: string }
+        "400": { description: Invalid dates }
+        "403": { description: Owner access required }
+        "409": { description: Financial data changed; refresh before export }
+        "413": { description: Narrow the range; no partial export }
   /checkout/config:
     get:
       operationId: getCheckoutConfig
@@ -769,6 +802,97 @@ paths:
               schema: { $ref: "#/components/schemas/ReceiptSettings" }
 components:
   schemas:
+    ReportActivity:
+      type: object
+      required: [unitsSold, unitsReturned, grossMinor, discountMinor, returnsMinor, netMinor, costSoldMinor, costRecoveredMinor, damagedUnfulfilledMinor, netCostMinor, marginMinor]
+      properties:
+        unitsSold: { type: integer }
+        unitsReturned: { type: integer }
+        grossMinor: { type: integer }
+        discountMinor: { type: integer }
+        returnsMinor: { type: integer }
+        netMinor: { type: integer }
+        costSoldMinor: { type: integer }
+        costRecoveredMinor: { type: integer }
+        damagedUnfulfilledMinor: { type: integer }
+        netCostMinor: { type: integer }
+        marginMinor: { type: integer }
+    ReportMoney:
+      type: object
+      required: [cashInMinor, bankInMinor, cashOutMinor, bankOutMinor, netInMinor, merchandiseRefundsMinor, shippingInMinor, shippingRefundsMinor, carrierFeesMinor, netFeesMinor]
+      properties:
+        cashInMinor: { type: integer }
+        bankInMinor: { type: integer }
+        cashOutMinor: { type: integer }
+        bankOutMinor: { type: integer }
+        netInMinor: { type: integer }
+        merchandiseRefundsMinor: { type: integer }
+        shippingInMinor: { type: integer }
+        shippingRefundsMinor: { type: integer }
+        carrierFeesMinor: { type: integer }
+        netFeesMinor: { type: integer }
+    ReportBucket:
+      type: object
+      required: [key, label, salesCount, activity, money, estimatedMarginMinor]
+      properties:
+        key: { type: string }
+        label: { type: string }
+        salesCount: { type: integer }
+        activity: { $ref: "#/components/schemas/ReportActivity" }
+        money: { $ref: "#/components/schemas/ReportMoney" }
+        estimatedMarginMinor: { type: integer }
+    ReportMerchandiseGroup:
+      type: object
+      required: [key, label, activity]
+      properties:
+        key: { type: string }
+        label: { type: string }
+        activity: { $ref: "#/components/schemas/ReportActivity" }
+    ReportDefinition:
+      type: object
+      required: [key, label, explanation]
+      properties:
+        key: { type: string }
+        label: { type: string }
+        explanation: { type: string }
+    ReportOutstanding:
+      type: object
+      required: [count, grossMinor, asOf]
+      properties:
+        count: { type: integer }
+        grossMinor: { type: integer }
+        asOf: { type: string, format: date-time }
+    RetailReport:
+      type: object
+      required: [from, to, groupBy, channel, timezone, generatedAt, fingerprint, summary, periods, channels, products, categories, outstanding, definitions, warnings]
+      properties:
+        fingerprint: { type: string, pattern: '^[a-f0-9]{64}$' }
+        from: { type: string }
+        to: { type: string }
+        groupBy: { type: string, enum: [DAY, MONTH] }
+        channel: { type: string, enum: [ALL, POS, ONLINE, PICKUP, DELIVERY] }
+        timezone: { type: string }
+        generatedAt: { type: string, format: date-time }
+        summary: { $ref: "#/components/schemas/ReportBucket" }
+        periods:
+          type: array
+          items: { $ref: "#/components/schemas/ReportBucket" }
+        channels:
+          type: array
+          items: { $ref: "#/components/schemas/ReportBucket" }
+        products:
+          type: array
+          items: { $ref: "#/components/schemas/ReportMerchandiseGroup" }
+        categories:
+          type: array
+          items: { $ref: "#/components/schemas/ReportMerchandiseGroup" }
+        outstanding: { $ref: "#/components/schemas/ReportOutstanding" }
+        definitions:
+          type: array
+          items: { $ref: "#/components/schemas/ReportDefinition" }
+        warnings:
+          type: array
+          items: { type: string }
     DeliveryZone:
       type: object
       required: [code, nameFr, nameAr, enabled, homeFeeMinor, deskFeeMinor, homeMinDays, homeMaxDays, deskMinDays, deskMaxDays]

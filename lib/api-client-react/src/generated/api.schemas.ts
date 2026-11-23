@@ -5,6 +5,98 @@
  * SOFIA STORE shared retail API. Initial foundation and catalog phase.
  * OpenAPI spec version: 0.2.0
  */
+export interface ReportActivity {
+  unitsSold: number;
+  unitsReturned: number;
+  grossMinor: number;
+  discountMinor: number;
+  returnsMinor: number;
+  netMinor: number;
+  costSoldMinor: number;
+  costRecoveredMinor: number;
+  damagedUnfulfilledMinor: number;
+  netCostMinor: number;
+  marginMinor: number;
+}
+
+export interface ReportMoney {
+  cashInMinor: number;
+  bankInMinor: number;
+  cashOutMinor: number;
+  bankOutMinor: number;
+  netInMinor: number;
+  merchandiseRefundsMinor: number;
+  shippingInMinor: number;
+  shippingRefundsMinor: number;
+  carrierFeesMinor: number;
+  netFeesMinor: number;
+}
+
+export interface ReportBucket {
+  key: string;
+  label: string;
+  salesCount: number;
+  activity: ReportActivity;
+  money: ReportMoney;
+  estimatedMarginMinor: number;
+}
+
+export interface ReportMerchandiseGroup {
+  key: string;
+  label: string;
+  activity: ReportActivity;
+}
+
+export interface ReportDefinition {
+  key: string;
+  label: string;
+  explanation: string;
+}
+
+export interface ReportOutstanding {
+  count: number;
+  grossMinor: number;
+  asOf: string;
+}
+
+export type RetailReportGroupBy = typeof RetailReportGroupBy[keyof typeof RetailReportGroupBy];
+
+
+export const RetailReportGroupBy = {
+  DAY: 'DAY',
+  MONTH: 'MONTH',
+} as const;
+
+export type RetailReportChannel = typeof RetailReportChannel[keyof typeof RetailReportChannel];
+
+
+export const RetailReportChannel = {
+  ALL: 'ALL',
+  POS: 'POS',
+  ONLINE: 'ONLINE',
+  PICKUP: 'PICKUP',
+  DELIVERY: 'DELIVERY',
+} as const;
+
+export interface RetailReport {
+  /** @pattern ^[a-f0-9]{64}$ */
+  fingerprint: string;
+  from: string;
+  to: string;
+  groupBy: RetailReportGroupBy;
+  channel: RetailReportChannel;
+  timezone: string;
+  generatedAt: string;
+  summary: ReportBucket;
+  periods: ReportBucket[];
+  channels: ReportBucket[];
+  products: ReportMerchandiseGroup[];
+  categories: ReportMerchandiseGroup[];
+  outstanding: ReportOutstanding;
+  definitions: ReportDefinition[];
+  warnings: string[];
+}
+
 export interface DeliveryZone {
   /** @pattern ^(0[1-9]|[1-4][0-9]|5[0-8])$ */
   code: string;
@@ -1188,6 +1280,78 @@ export interface UploadTicket {
   uploadURL: string;
   objectPath: string;
 }
+
+export type GetRetailReportParams = {
+/**
+ * @pattern ^\d{4}-\d{2}-\d{2}$
+ */
+from: string;
+/**
+ * @pattern ^\d{4}-\d{2}-\d{2}$
+ */
+to: string;
+groupBy?: GetRetailReportGroupBy;
+channel?: GetRetailReportChannel;
+/**
+ * @pattern ^[a-f0-9]{64}$
+ */
+expectedFingerprint?: string;
+};
+
+export type GetRetailReportGroupBy = typeof GetRetailReportGroupBy[keyof typeof GetRetailReportGroupBy];
+
+
+export const GetRetailReportGroupBy = {
+  DAY: 'DAY',
+  MONTH: 'MONTH',
+} as const;
+
+export type GetRetailReportChannel = typeof GetRetailReportChannel[keyof typeof GetRetailReportChannel];
+
+
+export const GetRetailReportChannel = {
+  ALL: 'ALL',
+  POS: 'POS',
+  ONLINE: 'ONLINE',
+  PICKUP: 'PICKUP',
+  DELIVERY: 'DELIVERY',
+} as const;
+
+export type ExportRetailReportParams = {
+/**
+ * @pattern ^\d{4}-\d{2}-\d{2}$
+ */
+from: string;
+/**
+ * @pattern ^\d{4}-\d{2}-\d{2}$
+ */
+to: string;
+groupBy?: ExportRetailReportGroupBy;
+channel?: ExportRetailReportChannel;
+/**
+ * @pattern ^[a-f0-9]{64}$
+ */
+expectedFingerprint?: string;
+};
+
+export type ExportRetailReportGroupBy = typeof ExportRetailReportGroupBy[keyof typeof ExportRetailReportGroupBy];
+
+
+export const ExportRetailReportGroupBy = {
+  DAY: 'DAY',
+  MONTH: 'MONTH',
+} as const;
+
+export type ExportRetailReportChannel = typeof ExportRetailReportChannel[keyof typeof ExportRetailReportChannel];
+
+
+export const ExportRetailReportChannel = {
+  ALL: 'ALL',
+  POS: 'POS',
+  ONLINE: 'ONLINE',
+  PICKUP: 'PICKUP',
+  DELIVERY: 'DELIVERY',
+} as const;
 
 export type ListAdminOrdersParams = {
 /**

@@ -37,6 +37,8 @@ replace the store's existing Safe-POS installation yet.
   `docs/phase5-checkout.md`.
 - Order fulfillment, collection, courier settlement, physical returns and
   cash/bank refund rules: `docs/phase6-fulfillment.md`.
+- Owner-only retail reports, recognition dates, estimated margins and CSV:
+  `docs/phase7-reports.md`.
 
 ## Run and validate
 
@@ -70,8 +72,9 @@ budget (60 seconds for the multi-record setup seed).
 
 ## Current phase boundary
 
-Current phase: **Phase 6 — order fulfillment and settlement**.
-Next: **Phase 7 — reporting and staff management**.
+Current phase: **Phase 7 — reporting and staff management**.
+Reports are implemented; secure staff controls are the next separate task.
+Next phase: **Phase 8 — hardening and Hostinger preparation**.
 Category CRUD, variant editing, barcode labels, CSV preview/atomic import/export,
 and detailed stock history are implemented. The image pipeline now uses a private
 filesystem directory configured with `SOFIA_UPLOAD_DIR`; Replit storage code and
@@ -90,8 +93,9 @@ altering real store records. See `docs/phase4-pos.md` for outstanding hardware g
 
 Cart/checkout, pending unpaid orders, atomic stock reservations, configurable
 home/desk fees and delivery times for all 58 wilayas, reservation expiry and basic
-staff cancellation are implemented. Checkout remains off until the owner supplies
-real fees/delays/duration/terms; do not seed business values. See `docs/phase5-checkout.md`.
+staff cancellation are implemented. Checkout availability and real delivery fees,
+delays, reservation duration and terms are owner-configured; do not seed business
+values or override the owner's current checkout setting. See `docs/phase5-checkout.md`.
 
 Order confirmation/preparation/dispatch/delivery, distinct staff/courier collection,
 actual courier cash/bank payouts, whole-order physical returns and separately
@@ -100,6 +104,11 @@ bank entries never do. Actions and payments use durable operator/order-bound
 idempotency, recoverable browser pending requests and server-side abandonment.
 See `docs/phase6-fulfillment.md` for exact limits and verification.
 
-Reporting, staff account management, notification automation/provider decisions,
+Owner reports separate commercial activity, physical returns, actual cash/bank
+flows and an as-of courier balance. Margins use historical costs and actual recorded
+fees; categories are explicitly current. JSON/CSV are owner-only, bounded and
+read-only. See `docs/phase7-reports.md` for the basis and verification.
+
+Staff account management, notification automation/provider decisions,
 Hostinger production setup, restore rehearsal, hardware verification and Safe-POS
 migration remain launch work. Do not imply unavailable screens implement them.

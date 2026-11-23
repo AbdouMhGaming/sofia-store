@@ -11,6 +11,7 @@ import { AdminCategoriesPage, AdminImportExportPage } from '@/pages/admin-catalo
 import { AdminMediaPage } from '@/pages/admin-media';
 import { AdminMovementsPage } from '@/pages/admin-stock';
 import { AdminLoginPage, AdminDashboardPage, AdminProductsPage, AdminInventoryPage, AdminActivityPage } from '@/pages/admin';
+import { AdminReportsPage } from '@/pages/admin-reports';
 import { PosRegisterPage } from '@/pages/pos-register';
 import { PosHistoryPage } from '@/pages/pos-history';
 import { PosTicketPage } from '@/pages/pos-ticket';
@@ -56,6 +57,7 @@ function Router() {
         <Route path="/admin/import-export" component={AdminImportExportPage} />
         <Route path="/admin/medias" component={AdminMediaPage} />
         <Route path="/admin/mouvements" component={AdminMovementsPage} />
+        <Route path="/admin/rapports" component={AdminReportsPage} />
         <Route path="/pos" component={PosRegisterPage} />
         <Route path="/pos/historique" component={PosHistoryPage} />
         <Route path="/pos/tickets/:id" component={PosTicketPage} />
