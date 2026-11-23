@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Lock, Search } from "lucide-react";
+import { Lock, Search } from "lucide-react";
 import {
-  useGetAdminCheckoutSettings, useSaveAdminCheckoutSettings, useListAdminOrders, useGetAdminOrder, useCancelAdminOrder,
-  getGetAdminCheckoutSettingsQueryKey, getGetCheckoutConfigQueryKey, getListAdminOrdersQueryKey, getGetAdminOrderQueryKey,
-  type CheckoutSettings, type ListAdminOrdersParams, type ListAdminOrdersStatus,
+  useGetAdminCheckoutSettings, useSaveAdminCheckoutSettings, useListAdminOrders,
+  getGetAdminCheckoutSettingsQueryKey, getGetCheckoutConfigQueryKey, getListAdminOrdersQueryKey,
+  type CheckoutSettings, type ListAdminOrdersParams, type WebOrderStatus, type ListAdminOrdersPayment,
 } from "@workspace/api-client-react";
 import { useSessionCsrf } from "@/lib/auth";
 import { daToMinor, formatDA } from "@/lib/util";
-import { fmtDate, fmtDateLong } from "@/lib/pos";
+import { fmtDate } from "@/lib/pos";
+import { ORDER_STATUS, StatusBadge, PAY_STATUS } from "@/pages/admin-order-detail";
 import { useInvalidateCommerce } from "@/lib/shop";
 import { AdminShell } from "@/pages/admin";
 import { inputCls, btnDark, btnGhost, Field, ErrorText, Skel } from "@/components/admin/shell-primitives";
@@ -71,6 +72,8 @@ function Toggle({ on, onChange, label, disabled, testId }: { on: boolean; onChan
     </button>
   );
 }
+
+export { AdminOrderDetailPage, AdminOrderReceiptPage } from "@/pages/admin-order-detail";
 
 export function AdminCheckoutSettingsPage() {
   const { session, request } = useSessionCsrf();
@@ -165,34 +168,38 @@ export function AdminCheckoutSettingsPage() {
   );
 }
 
-const STATUS: Record<string, [string, string]> = {
-  PENDING: ["En attente", "bg-[#f7e6ec] text-[#a82d64]"],
-  CANCELLED: ["Annulée", "bg-destructive/10 text-destructive"],
-  EXPIRED: ["Expirée", "bg-muted text-muted-foreground"],
-};
-const Badge = ({ s }: { s: string }) => <span className={`text-xs px-2.5 py-1 rounded-full ${STATUS[s]?.[1] ?? "bg-muted"}`}>{STATUS[s]?.[0] ?? s}</span>;
+const PAY_FILTER: Record<string, string> = { UNPAID: "Non encaissées", COURIER_DUE: "Dues par le transporteur", RECEIVED: "Reçues en boutique", REFUNDED: "Remboursées" };
 
 export function AdminOrdersPage() {
+  const { session } = useSessionCsrf();
+  const u = session.data?.user;
+  const staff = !!u && !u.mustChangePassword && u.role !== "CASHIER";
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<ListAdminOrdersStatus | "">("");
+  const [status, setStatus] = useState<WebOrderStatus | "">("");
+  const [payment, setPayment] = useState<ListAdminOrdersPayment | "">("");
   const [cursors, setCursors] = useState<number[]>([]);
   const params: ListAdminOrdersParams = {};
   if (search.trim()) params.q = search.trim().slice(0, 100);
   if (status) params.status = status;
+  if (payment) params.payment = payment;
   const before = cursors[cursors.length - 1];
   if (before) params.before = before;
-  const q = useListAdminOrders(params, { query: { queryKey: getListAdminOrdersQueryKey(params), placeholderData: (p) => p, refetchInterval: 20_000 } });
+  const q = useListAdminOrders(params, { query: { queryKey: getListAdminOrdersQueryKey(params), enabled: staff, placeholderData: (p) => p, refetchInterval: 20_000 } });
   const reset = () => setCursors([]);
   return (
-    <AdminShell title="Commandes" sub="Commandes en ligne reçues. Préparation, expédition et encaissement : phase suivante.">
+    <AdminShell title="Commandes" sub="Pièces sorties, argent chez le transporteur, argent réellement en caisse : trois choses distinctes.">
       <div className="flex flex-col md:flex-row gap-3 mb-6">
         <label className="relative flex-1 md:max-w-sm">
           <Search className="w-4 h-4 absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input className={`${inputCls} ps-9`} placeholder="Référence, nom, téléphone" value={search} onChange={(e) => { setSearch(e.target.value); reset(); }} data-testid="input-order-search" />
         </label>
-        <select className={`${inputCls} md:w-48`} value={status} onChange={(e) => { setStatus(e.target.value as ListAdminOrdersStatus | ""); reset(); }} data-testid="select-order-status">
+        <select className={`${inputCls} md:w-48`} value={status} onChange={(e) => { setStatus(e.target.value as WebOrderStatus | ""); reset(); }} data-testid="select-order-status">
           <option value="">Tous les statuts</option>
-          {Object.entries(STATUS).map(([k, [l]]) => <option key={k} value={k}>{l}</option>)}
+          {Object.entries(ORDER_STATUS).map(([k, [l]]) => <option key={k} value={k}>{l}</option>)}
+        </select>
+        <select className={`${inputCls} md:w-56`} value={payment} onChange={(e) => { setPayment(e.target.value as ListAdminOrdersPayment | ""); reset(); }} data-testid="select-order-payment">
+          <option value="">Tous les paiements</option>
+          {Object.entries(PAY_FILTER).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
         </select>
       </div>
       {q.isLoading ? <Skel h="h-72" /> : q.isError ? (
@@ -206,7 +213,7 @@ export function AdminOrdersPage() {
         <div className="bg-card border border-border rounded-md overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-xs uppercase tracking-wide text-muted-foreground border-b border-border">
-              <tr><th className="text-start p-3">Référence</th><th className="text-start p-3">Date</th><th className="text-start p-3">Cliente</th><th className="text-start p-3">Mode</th><th className="text-end p-3">Total</th><th className="text-start p-3">Statut</th></tr>
+              <tr><th className="text-start p-3">Référence</th><th className="text-start p-3">Date</th><th className="text-start p-3">Cliente</th><th className="text-start p-3">Mode</th><th className="text-end p-3">Total brut</th><th className="text-end p-3">Reçu boutique</th><th className="text-start p-3">Statut</th><th className="text-start p-3">Argent</th></tr>
             </thead>
             <tbody>
               {q.data!.items.map((o) => (
@@ -216,7 +223,9 @@ export function AdminOrdersPage() {
                   <td className="p-3">{o.customerName}<span className="block text-xs text-muted-foreground">{o.customerPhone}</span></td>
                   <td className="p-3">{o.fulfillment === "DELIVERY" ? `Livraison ${o.deliveryMode === "DESK" ? "bureau" : "domicile"} · ${o.zoneNameFr}` : "Retrait"}</td>
                   <td className="p-3 text-end tabular-nums">{formatDA(o.totalMinor)}</td>
-                  <td className="p-3"><Badge s={o.status} /></td>
+                  <td className="p-3 text-end tabular-nums">{o.storeReceivedMinor ? formatDA(o.storeReceivedMinor) : "-"}{o.refundedMinor > 0 && <span className="block text-xs text-destructive">-{formatDA(o.refundedMinor)}</span>}</td>
+                  <td className="p-3"><StatusBadge s={o.status} /></td>
+                  <td className="p-3 text-xs">{PAY_STATUS[o.paymentStatus] ?? o.paymentStatus}{o.courierOutstandingMinor > 0 && <span className="block text-[#a65429]">Transporteur doit {formatDA(o.courierOutstandingMinor)}</span>}</td>
                 </tr>
               ))}
             </tbody>
@@ -227,80 +236,6 @@ export function AdminOrdersPage() {
         {cursors.length > 0 && <button className={btnGhost} onClick={() => setCursors(cursors.slice(0, -1))} data-testid="button-prev-page">Plus récentes</button>}
         {q.data?.nextCursor && <button className={btnGhost} onClick={() => setCursors([...cursors, q.data!.nextCursor!])} data-testid="button-next-page">Plus anciennes</button>}
       </div>
-    </AdminShell>
-  );
-}
-
-export function AdminOrderDetailPage() {
-  const { id: raw = "" } = useParams<{ id: string }>();
-  const id = Number(raw);
-  const valid = Number.isSafeInteger(id) && id > 0;
-  const { request } = useSessionCsrf();
-  const qc = useQueryClient();
-  const invalidate = useInvalidateCommerce();
-  const q = useGetAdminOrder(id, { query: { queryKey: getGetAdminOrderQueryKey(id), enabled: valid, refetchInterval: 20_000 } });
-  const cancel = useCancelAdminOrder({ request });
-  const [reason, setReason] = useState("");
-  const o = q.data;
-  const doCancel = () => {
-    const r = reason.trim();
-    if (r.length < 3 || r.length > 500 || !window.confirm("Annuler cette commande ? Le stock réservé sera libéré.")) return;
-    cancel.mutate({ id, data: { reason: r } }, {
-      onSuccess: (updated) => { qc.setQueryData(getGetAdminOrderQueryKey(id), updated); invalidate(); setReason(""); },
-    });
-  };
-  return (
-    <AdminShell title={o ? `Commande ${o.reference}` : "Commande"} actions={<Link href="/admin/commandes" className={btnGhost}><ArrowLeft className="w-4 h-4" />Commandes</Link>}>
-      {!valid ? <p>Identifiant invalide.</p> : q.isLoading ? <Skel h="h-96" /> : q.isError || !o ? (
-        <div className="space-y-3"><ErrorText e={q.error} /><button className={btnGhost} onClick={() => q.refetch()}>Réessayer</button></div>
-      ) : (
-        <div className="grid lg:grid-cols-[1.4fr_1fr] gap-6">
-          <div className="space-y-6">
-            <section className="bg-card border border-border rounded-md p-6">
-              <div className="flex flex-wrap gap-3 items-center justify-between"><Badge s={o.status} /><span className="text-xs px-2.5 py-1 rounded-full bg-muted">Non payée · {o.paymentMethod === "COD" ? "Paiement à la livraison" : "Paiement au retrait"}</span></div>
-              {o.deliveryMinDays !== null && <p className="text-sm mt-3">Délai annoncé : {o.deliveryMinDays}–{o.deliveryMaxDays} jours</p>}
-              <p className="text-sm text-muted-foreground mt-3">Créée le {fmtDateLong(o.createdAt)} · expire le {fmtDateLong(o.expiresAt)} (Alger)</p>
-              <ul className="divide-y divide-border mt-4">
-                {o.items.map((l) => (
-                  <li key={l.variantId} className="py-3 flex justify-between gap-4 text-sm">
-                    <span>{l.productName}<span className="block text-xs text-muted-foreground">{l.sku} · {l.size} · {l.color} · x{l.quantity} · {formatDA(l.unitPriceMinor)}</span></span>
-                    <span className="tabular-nums">{formatDA(l.lineTotalMinor)}</span>
-                  </li>
-                ))}
-              </ul>
-              <dl className="text-sm border-t border-border pt-3 space-y-1">
-                <div className="flex justify-between"><dt>Sous-total</dt><dd>{formatDA(o.subtotalMinor)}</dd></div>
-                <div className="flex justify-between"><dt>Frais</dt><dd>{formatDA(o.feeMinor)}</dd></div>
-                <div className="flex justify-between font-serif text-xl"><dt>Total</dt><dd data-testid="text-order-total">{formatDA(o.totalMinor)}</dd></div>
-              </dl>
-            </section>
-            <section className="bg-card border border-border rounded-md p-6">
-              <h2 className="font-serif text-2xl mb-3">Historique</h2>
-              <ol className="space-y-2 text-sm">
-                {o.events.map((e, i) => <li key={i} className="flex gap-3"><span className="text-muted-foreground whitespace-nowrap">{fmtDate(e.createdAt)}</span><span className="font-medium">{e.kind}</span>{e.reason && <span className="text-muted-foreground">{e.reason}</span>}</li>)}
-              </ol>
-            </section>
-          </div>
-          <div className="space-y-6">
-            <section className="bg-card border border-border rounded-md p-6 text-sm space-y-2" data-testid="panel-customer">
-              <h2 className="font-serif text-2xl mb-2">Cliente</h2>
-              <p className="font-medium">{o.customerName}</p>
-              <p dir="ltr" className="text-start"><a href={`tel:${o.customerPhone}`} className="text-primary link-underline">{o.customerPhone}</a></p>
-              <p>{o.fulfillment === "DELIVERY" ? `Livraison ${o.deliveryMode === "DESK" ? "bureau" : "domicile"} · ${o.zoneNameFr}` : `Retrait · ${o.pickupAddressFr}`}</p>
-              {o.fulfillment === "DELIVERY" && <p className="text-muted-foreground">{o.commune}{o.address && <><br />{o.address}</>}</p>}
-              {o.notes && <p className="text-muted-foreground border-t border-border pt-2">{o.notes}</p>}
-            </section>
-            {o.status === "PENDING" && (
-              <section className="bg-card border border-destructive/30 rounded-md p-6 space-y-3">
-                <h2 className="font-serif text-2xl">Annuler la commande</h2>
-                <Field label="Motif (3 à 500 caractères)"><textarea className={`${inputCls} min-h-20`} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} data-testid="input-cancel-reason" /></Field>
-                <ErrorText e={cancel.error} />
-                <button className={`${btnDark} !bg-destructive`} disabled={reason.trim().length < 3 || cancel.isPending} onClick={doCancel} data-testid="button-cancel-order">{cancel.isPending ? "Annulation..." : "Annuler et libérer le stock"}</button>
-              </section>
-            )}
-          </div>
-        </div>
-      )}
     </AdminShell>
   );
 }

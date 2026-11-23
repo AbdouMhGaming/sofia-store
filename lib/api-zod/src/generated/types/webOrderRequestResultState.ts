@@ -6,11 +6,10 @@
  * OpenAPI spec version: 0.2.0
  */
 
-export type ListAdminOrdersStatus = typeof ListAdminOrdersStatus[keyof typeof ListAdminOrdersStatus];
+export type WebOrderRequestResultState = typeof WebOrderRequestResultState[keyof typeof WebOrderRequestResultState];
 
 
-export const ListAdminOrdersStatus = {
-  PENDING: 'PENDING',
+export const WebOrderRequestResultState = {
+  COMPLETED: 'COMPLETED',
   CANCELLED: 'CANCELLED',
-  EXPIRED: 'EXPIRED',
 } as const;

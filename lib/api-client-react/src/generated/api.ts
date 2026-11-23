@@ -83,7 +83,11 @@ import type {
   UploadInput,
   UploadTicket,
   Variant,
-  VariantInput
+  VariantInput,
+  WebOrderAction,
+  WebOrderPaymentInput,
+  WebOrderRequestKey,
+  WebOrderRequestResult
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -991,6 +995,358 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getCancelAdminOrderMutationOptions(options), queryClient);
+    }
+
+export const getActOnAdminOrderUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/orders/${id}/actions`
+}
+
+export const actOnAdminOrder = async (id: number,
+    webOrderAction: WebOrderAction, options?: Parameters<typeof customFetch>[1]): Promise<AdminCheckoutOrder> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<AdminCheckoutOrder>(getActOnAdminOrderUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(webOrderAction)
+  }
+);}
+
+
+
+
+
+export const getActOnAdminOrderMutationKey = () => ['actOnAdminOrder'] as const;
+
+export const getActOnAdminOrderMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof actOnAdminOrder>>, TError,ActOnAdminOrderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof actOnAdminOrder>>, TError,ActOnAdminOrderMutationVariables, TContext> => {
+
+const mutationKey = getActOnAdminOrderMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof actOnAdminOrder>>, ActOnAdminOrderMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  actOnAdminOrder(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ActOnAdminOrderMutationResult = NonNullable<Awaited<ReturnType<typeof actOnAdminOrder>>>
+    export type ActOnAdminOrderMutationBody = BodyType<WebOrderAction>
+    export type ActOnAdminOrderMutationError = ErrorType<unknown>
+    export type ActOnAdminOrderMutationVariables = {id: number;data: BodyType<WebOrderAction>}
+
+    export const useActOnAdminOrder = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof actOnAdminOrder>>, TError,ActOnAdminOrderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof actOnAdminOrder>>,
+        TError,
+        ActOnAdminOrderMutationVariables,
+        TContext
+      > => {
+      return useMutation(getActOnAdminOrderMutationOptions(options), queryClient);
+    }
+
+export const getRecordAdminOrderPaymentUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/orders/${id}/payments`
+}
+
+export const recordAdminOrderPayment = async (id: number,
+    webOrderPaymentInput: WebOrderPaymentInput, options?: Parameters<typeof customFetch>[1]): Promise<AdminCheckoutOrder> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<AdminCheckoutOrder>(getRecordAdminOrderPaymentUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(webOrderPaymentInput)
+  }
+);}
+
+
+
+
+
+export const getRecordAdminOrderPaymentMutationKey = () => ['recordAdminOrderPayment'] as const;
+
+export const getRecordAdminOrderPaymentMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordAdminOrderPayment>>, TError,RecordAdminOrderPaymentMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof recordAdminOrderPayment>>, TError,RecordAdminOrderPaymentMutationVariables, TContext> => {
+
+const mutationKey = getRecordAdminOrderPaymentMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof recordAdminOrderPayment>>, RecordAdminOrderPaymentMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  recordAdminOrderPayment(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RecordAdminOrderPaymentMutationResult = NonNullable<Awaited<ReturnType<typeof recordAdminOrderPayment>>>
+    export type RecordAdminOrderPaymentMutationBody = BodyType<WebOrderPaymentInput>
+    export type RecordAdminOrderPaymentMutationError = ErrorType<unknown>
+    export type RecordAdminOrderPaymentMutationVariables = {id: number;data: BodyType<WebOrderPaymentInput>}
+
+    export const useRecordAdminOrderPayment = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordAdminOrderPayment>>, TError,RecordAdminOrderPaymentMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof recordAdminOrderPayment>>,
+        TError,
+        RecordAdminOrderPaymentMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRecordAdminOrderPaymentMutationOptions(options), queryClient);
+    }
+
+export const getRecoverAdminOrderRequestUrl = (id: number,
+    requestId: string,) => {
+
+
+
+
+  return `/api/admin/orders/${id}/requests/${requestId}`
+}
+
+export const recoverAdminOrderRequest = async (id: number,
+    requestId: string, options?: Parameters<typeof customFetch>[1]): Promise<WebOrderRequestResult> => {
+
+  return customFetch<WebOrderRequestResult>(getRecoverAdminOrderRequestUrl(id,requestId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getRecoverAdminOrderRequestQueryKey = (id: number,
+    requestId: string,) => {
+    return [
+    `/api/admin/orders/${id}/requests/${requestId}`
+    ] as const;
+    }
+
+
+export const getRecoverAdminOrderRequestQueryOptions = <TData = Awaited<ReturnType<typeof recoverAdminOrderRequest>>, TError = ErrorType<unknown>>(id: number,
+    requestId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof recoverAdminOrderRequest>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getRecoverAdminOrderRequestQueryKey(id,requestId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof recoverAdminOrderRequest>>> = ({ signal }) => recoverAdminOrderRequest(id,requestId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined && requestId !== null && requestId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof recoverAdminOrderRequest>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type RecoverAdminOrderRequestQueryResult = NonNullable<Awaited<ReturnType<typeof recoverAdminOrderRequest>>>
+export type RecoverAdminOrderRequestQueryError = ErrorType<unknown>
+
+
+export function useRecoverAdminOrderRequest<TData = Awaited<ReturnType<typeof recoverAdminOrderRequest>>, TError = ErrorType<unknown>>(
+ id: number,
+    requestId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof recoverAdminOrderRequest>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof recoverAdminOrderRequest>>,
+          TError,
+          Awaited<ReturnType<typeof recoverAdminOrderRequest>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useRecoverAdminOrderRequest<TData = Awaited<ReturnType<typeof recoverAdminOrderRequest>>, TError = ErrorType<unknown>>(
+ id: number,
+    requestId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof recoverAdminOrderRequest>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof recoverAdminOrderRequest>>,
+          TError,
+          Awaited<ReturnType<typeof recoverAdminOrderRequest>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useRecoverAdminOrderRequest<TData = Awaited<ReturnType<typeof recoverAdminOrderRequest>>, TError = ErrorType<unknown>>(
+ id: number,
+    requestId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof recoverAdminOrderRequest>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useRecoverAdminOrderRequest<TData = Awaited<ReturnType<typeof recoverAdminOrderRequest>>, TError = ErrorType<unknown>>(
+ id: number,
+    requestId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof recoverAdminOrderRequest>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getRecoverAdminOrderRequestQueryOptions(id,requestId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getAbandonAdminOrderRequestUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/orders/${id}/requests/cancel`
+}
+
+export const abandonAdminOrderRequest = async (id: number,
+    webOrderRequestKey: WebOrderRequestKey, options?: Parameters<typeof customFetch>[1]): Promise<WebOrderRequestResult> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<WebOrderRequestResult>(getAbandonAdminOrderRequestUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(webOrderRequestKey)
+  }
+);}
+
+
+
+
+
+export const getAbandonAdminOrderRequestMutationKey = () => ['abandonAdminOrderRequest'] as const;
+
+export const getAbandonAdminOrderRequestMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof abandonAdminOrderRequest>>, TError,AbandonAdminOrderRequestMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof abandonAdminOrderRequest>>, TError,AbandonAdminOrderRequestMutationVariables, TContext> => {
+
+const mutationKey = getAbandonAdminOrderRequestMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof abandonAdminOrderRequest>>, AbandonAdminOrderRequestMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  abandonAdminOrderRequest(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AbandonAdminOrderRequestMutationResult = NonNullable<Awaited<ReturnType<typeof abandonAdminOrderRequest>>>
+    export type AbandonAdminOrderRequestMutationBody = BodyType<WebOrderRequestKey>
+    export type AbandonAdminOrderRequestMutationError = ErrorType<unknown>
+    export type AbandonAdminOrderRequestMutationVariables = {id: number;data: BodyType<WebOrderRequestKey>}
+
+    export const useAbandonAdminOrderRequest = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof abandonAdminOrderRequest>>, TError,AbandonAdminOrderRequestMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof abandonAdminOrderRequest>>,
+        TError,
+        AbandonAdminOrderRequestMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAbandonAdminOrderRequestMutationOptions(options), queryClient);
     }
 
 export const getHealthCheckUrl = () => {

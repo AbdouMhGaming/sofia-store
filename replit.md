@@ -35,6 +35,8 @@ replace the store's existing Safe-POS installation yet.
   `docs/phase4-pos.md`.
 - Cart, 58-wilaya home/desk settings, private order recovery and reservations:
   `docs/phase5-checkout.md`.
+- Order fulfillment, collection, courier settlement, physical returns and
+  cash/bank refund rules: `docs/phase6-fulfillment.md`.
 
 ## Run and validate
 
@@ -68,7 +70,8 @@ budget (60 seconds for the multi-record setup seed).
 
 ## Current phase boundary
 
-Current phase: **Phase 5 — storefront checkout**. Next: **Phase 6 — order fulfillment**.
+Current phase: **Phase 6 — order fulfillment and settlement**.
+Next: **Phase 7 — reporting and staff management**.
 Category CRUD, variant editing, barcode labels, CSV preview/atomic import/export,
 and detailed stock history are implemented. The image pipeline now uses a private
 filesystem directory configured with `SOFIA_UPLOAD_DIR`; Replit storage code and
@@ -90,6 +93,13 @@ home/desk fees and delivery times for all 58 wilayas, reservation expiry and bas
 staff cancellation are implemented. Checkout remains off until the owner supplies
 real fees/delays/duration/terms; do not seed business values. See `docs/phase5-checkout.md`.
 
-Full order confirmation/fulfillment and cash settlement, reporting, staff account
-management, Hostinger production setup, restore rehearsal, and Safe-POS migration
-remain separate phases. Do not imply unavailable screens implement those functions.
+Order confirmation/preparation/dispatch/delivery, distinct staff/courier collection,
+actual courier cash/bank payouts, whole-order physical returns and separately
+recorded refunds are implemented. Cash entries feed the active POS drawer;
+bank entries never do. Actions and payments use durable operator/order-bound
+idempotency, recoverable browser pending requests and server-side abandonment.
+See `docs/phase6-fulfillment.md` for exact limits and verification.
+
+Reporting, staff account management, notification automation/provider decisions,
+Hostinger production setup, restore rehearsal, hardware verification and Safe-POS
+migration remain launch work. Do not imply unavailable screens implement them.

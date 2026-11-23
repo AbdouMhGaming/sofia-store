@@ -10,12 +10,12 @@ import type { CheckoutOrderFulfillment } from './checkoutOrderFulfillment';
 import type { CheckoutOrderLine } from './checkoutOrderLine';
 import type { CheckoutOrderPaymentMethod } from './checkoutOrderPaymentMethod';
 import type { CheckoutOrderPaymentStatus } from './checkoutOrderPaymentStatus';
-import type { CheckoutOrderStatus } from './checkoutOrderStatus';
+import type { WebOrderStatus } from './webOrderStatus';
 
 export interface CheckoutOrder {
   reference: string;
   requestId: string;
-  status: CheckoutOrderStatus;
+  status: WebOrderStatus;
   createdAt: Date;
   expiresAt: Date;
   fulfillment: CheckoutOrderFulfillment;
@@ -27,6 +27,10 @@ export interface CheckoutOrder {
   deliveryMaxDays: number | null;
   paymentMethod: CheckoutOrderPaymentMethod;
   paymentStatus: CheckoutOrderPaymentStatus;
+  storePaymentReceived: boolean;
+  refundedMinor: number;
+  carrierName: string;
+  trackingNumber: string;
   maskedPhone: string;
   items: CheckoutOrderLine[];
   subtotalMinor: number;

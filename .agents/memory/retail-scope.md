@@ -53,3 +53,12 @@ providing fixed fees or a reservation policy during development.
 
 **How to apply:** Preserve owner-editable business configuration. Never substitute
 invented fees, delivery times or hold duration when a value has not been entered.
+
+The owner chose **both payment-collection methods** for delivered orders: store
+staff collecting directly, and couriers collecting with a later payout to the shop.
+
+**Why:** The owner explicitly selected “Support both methods.”
+
+**How to apply:** Preserve the collector choice. Delivery, customer payment to a
+courier, and money actually received by the shop are distinct facts. A refund
+funded by the shop does not erase money still held by the courier.

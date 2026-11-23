@@ -98,7 +98,8 @@ paths:
       operationId: listAdminOrders
       parameters:
         - { in: query, name: before, schema: { type: integer, minimum: 1 } }
-        - { in: query, name: status, schema: { type: string, enum: [PENDING, CANCELLED, EXPIRED] } }
+        - { in: query, name: status, schema: { $ref: "#/components/schemas/WebOrderStatus" } }
+        - { in: query, name: payment, schema: { type: string, enum: [UNPAID, COURIER_DUE, RECEIVED, REFUNDED] } }
         - { in: query, name: q, schema: { type: string, maxLength: 100 } }
       responses:
         "200":
@@ -133,6 +134,66 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/AdminCheckoutOrder" }
+  /admin/orders/{id}/actions:
+    post:
+      operationId: actOnAdminOrder
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, minimum: 1 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/WebOrderAction" }
+      responses:
+        "200":
+          description: Order operation applied once
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminCheckoutOrder" }
+  /admin/orders/{id}/payments:
+    post:
+      operationId: recordAdminOrderPayment
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, minimum: 1 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/WebOrderPaymentInput" }
+      responses:
+        "200":
+          description: Actual store receipt or refund recorded once
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminCheckoutOrder" }
+  /admin/orders/{id}/requests/{requestId}:
+    get:
+      operationId: recoverAdminOrderRequest
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, minimum: 1 } }
+        - { in: path, name: requestId, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Saved result; a missing request does not prove it cannot commit
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WebOrderRequestResult" }
+  /admin/orders/{id}/requests/cancel:
+    post:
+      operationId: abandonAdminOrderRequest
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, minimum: 1 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/WebOrderRequestKey" }
+      responses:
+        "200":
+          description: Existing committed result or durable cancellation marker
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WebOrderRequestResult" }
   /healthz:
     get:
       operationId: healthCheck
@@ -807,11 +868,11 @@ components:
         reservationMinutes: { type: integer }
     CheckoutOrder:
       type: object
-      required: [reference, requestId, status, createdAt, expiresAt, fulfillment, deliveryMode, deliveryMinDays, deliveryMaxDays, paymentMethod, paymentStatus, maskedPhone, items, subtotalMinor, feeMinor, totalMinor, zoneNameFr, zoneNameAr, pickupAddressFr, pickupAddressAr, policyFr, policyAr]
+      required: [reference, requestId, status, createdAt, expiresAt, fulfillment, deliveryMode, deliveryMinDays, deliveryMaxDays, paymentMethod, paymentStatus, storePaymentReceived, refundedMinor, carrierName, trackingNumber, maskedPhone, items, subtotalMinor, feeMinor, totalMinor, zoneNameFr, zoneNameAr, pickupAddressFr, pickupAddressAr, policyFr, policyAr]
       properties:
         reference: { type: string }
         requestId: { type: string }
-        status: { type: string, enum: [PENDING, CANCELLED, EXPIRED] }
+        status: { $ref: "#/components/schemas/WebOrderStatus" }
         createdAt: { type: string, format: date-time }
         expiresAt: { type: string, format: date-time }
         fulfillment: { type: string, enum: [DELIVERY, PICKUP] }
@@ -819,7 +880,11 @@ components:
         deliveryMinDays: { type: [integer, "null"] }
         deliveryMaxDays: { type: [integer, "null"] }
         paymentMethod: { type: string, enum: [COD, CASH_PICKUP] }
-        paymentStatus: { type: string, enum: [UNPAID] }
+        paymentStatus: { type: string, enum: [UNPAID, COLLECTED_BY_COURIER, PAID, REFUNDED] }
+        storePaymentReceived: { type: boolean }
+        refundedMinor: { type: integer }
+        carrierName: { type: string }
+        trackingNumber: { type: string }
         maskedPhone: { type: string }
         items: { type: array, items: { $ref: "#/components/schemas/CheckoutOrderLine" } }
         subtotalMinor: { type: integer }
@@ -856,7 +921,7 @@ components:
       allOf:
         - { $ref: "#/components/schemas/CheckoutOrder" }
         - type: object
-          required: [id, customerName, customerPhone, commune, address, notes, events]
+          required: [id, customerName, customerPhone, commune, address, notes, events, collector, payments, storeReceivedMinor, carrierFeesMinor, refundedMinor, courierOutstandingMinor, allowedActions, canReceivePayment, canRefund]
           properties:
             id: { type: integer }
             customerName: { type: string }
@@ -865,6 +930,81 @@ components:
             address: { type: string }
             notes: { type: string }
             events: { type: array, items: { $ref: "#/components/schemas/OrderEventView" } }
+            collector: { type: [string, "null"], enum: [STAFF, COURIER, null] }
+            payments: { type: array, items: { $ref: "#/components/schemas/WebOrderPayment" } }
+            storeReceivedMinor: { type: integer }
+            carrierFeesMinor: { type: integer }
+            refundedMinor: { type: integer }
+            courierOutstandingMinor: { type: integer }
+            allowedActions: { type: array, items: { $ref: "#/components/schemas/WebOrderOperation" } }
+            canReceivePayment: { type: boolean }
+            canRefund: { type: boolean }
+    WebOrderStatus:
+      type: string
+      enum: [PENDING, CONFIRMED, PREPARING, READY, DISPATCHED, DELIVERED, COMPLETED, RETURNING, RETURNED, CANCELLED, EXPIRED]
+    WebOrderOperation:
+      type: string
+      enum: [CONFIRM, PREPARE, READY, DISPATCH, DELIVER, COURIER_COLLECT, RETURN_START, RETURN_RECEIVE, CANCEL]
+    WebOrderAction:
+      type: object
+      required: [requestId, expectedStatus, action, reason, collector, carrierName, trackingNumber, restockVariantIds]
+      properties:
+        requestId: { type: string, format: uuid }
+        expectedStatus: { $ref: "#/components/schemas/WebOrderStatus" }
+        action: { $ref: "#/components/schemas/WebOrderOperation" }
+        reason: { type: string, minLength: 3, maxLength: 500 }
+        collector: { type: [string, "null"], enum: [STAFF, COURIER, null] }
+        carrierName: { type: string, maxLength: 150 }
+        trackingNumber: { type: string, maxLength: 150 }
+        restockVariantIds: { type: [array, "null"], items: { type: integer, minimum: 1 }, maxItems: 20 }
+    WebOrderPaymentInput:
+      type: object
+      required: [requestId, expectedStatus, kind, method, amountMinor, feeMinor, feeRefundMinor, tenderedMinor, registerSessionId, reference, reason]
+      properties:
+        requestId: { type: string, format: uuid }
+        expectedStatus: { $ref: "#/components/schemas/WebOrderStatus" }
+        kind: { type: string, enum: [RECEIPT, REFUND] }
+        method: { type: string, enum: [CASH, BANK] }
+        amountMinor: { type: integer, minimum: 0, maximum: 1000000000 }
+        feeMinor: { type: integer, minimum: 0, maximum: 1000000000 }
+        feeRefundMinor: { type: integer, minimum: 0, maximum: 1000000000 }
+        tenderedMinor: { type: [integer, "null"], minimum: 0, maximum: 1000000000 }
+        registerSessionId: { type: [integer, "null"], minimum: 1 }
+        reference: { type: string, maxLength: 150 }
+        reason: { type: string, minLength: 3, maxLength: 500 }
+    WebOrderPayment:
+      type: object
+      required: [id, number, kind, method, amountMinor, feeMinor, feeRefundMinor, tenderedMinor, changeMinor, reference, reason, registerSessionId, actorId, receiptSettings, createdAt]
+      properties:
+        id: { type: integer }
+        number: { type: string }
+        kind: { type: string, enum: [RECEIPT, REFUND] }
+        method: { type: string, enum: [CASH, BANK] }
+        amountMinor: { type: integer }
+        feeMinor: { type: integer }
+        feeRefundMinor: { type: integer }
+        tenderedMinor: { type: [integer, "null"] }
+        changeMinor: { type: integer }
+        reference: { type: string }
+        reason: { type: string }
+        registerSessionId: { type: [integer, "null"] }
+        actorId: { type: integer }
+        receiptSettings: { $ref: "#/components/schemas/ReceiptSettings" }
+        createdAt: { type: string, format: date-time }
+    WebOrderRequestKey:
+      type: object
+      required: [requestId]
+      properties:
+        requestId: { type: string, format: uuid }
+    WebOrderRequestResult:
+      type: object
+      required: [state, order]
+      properties:
+        state: { type: string, enum: [COMPLETED, CANCELLED] }
+        order:
+          oneOf:
+            - { $ref: "#/components/schemas/AdminCheckoutOrder" }
+            - { type: "null" }
     AdminOrderPage:
       type: object
       required: [items, nextCursor]
@@ -960,7 +1100,7 @@ components:
         requestId: { type: string, minLength: 16, maxLength: 100 }
     RegisterSession:
       type: object
-      required: [id, openedById, openedBy, status, openingMinor, salesMinor, refundsMinor, expectedMinor, countedMinor, varianceMinor, openedAt, closedAt, closedBy, closeReason]
+      required: [id, openedById, openedBy, status, openingMinor, salesMinor, refundsMinor, webReceiptsMinor, webRefundsMinor, expectedMinor, countedMinor, varianceMinor, openedAt, closedAt, closedBy, closeReason]
       properties:
         id: { type: integer }
         openedById: { type: integer }
@@ -968,6 +1108,8 @@ components:
         status: { type: string, enum: [OPEN, CLOSED] }
         openingMinor: { type: integer }
         salesMinor: { type: integer }
+        webReceiptsMinor: { type: integer }
+        webRefundsMinor: { type: integer }
         refundsMinor: { type: integer }
         expectedMinor: { type: integer }
         countedMinor: { type: [integer, "null"] }

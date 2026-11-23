@@ -20,10 +20,12 @@ export function PosSessionsPage() {
     <AdminShell title="Tiroir-caisse" sub="Ouvertures, clôtures et écarts de caisse.">
       <PosTabs />
       {active ? (
-        <div className="mb-6 grid sm:grid-cols-4 gap-px bg-border border border-border rounded-md overflow-hidden" data-testid="panel-active-session">
+        <div className="mb-6 grid sm:grid-cols-3 lg:grid-cols-6 gap-px bg-border border border-border rounded-md overflow-hidden" data-testid="panel-active-session">
           <Stat k="Fond d'ouverture" v={formatDA(active.openingMinor)} />
           <Stat k="Ventes" v={`+${formatDA(active.salesMinor)}`} />
           <Stat k="Remboursements" v={`-${formatDA(active.refundsMinor)}`} />
+          <Stat k="Encaiss. web" v={`+${formatDA(active.webReceiptsMinor)}`} />
+          <Stat k="Rembours. web" v={`-${formatDA(active.webRefundsMinor)}`} />
           <div className="bg-[#282326] text-[#f6efe9] p-4">
             <p className="text-[10px] uppercase tracking-wider opacity-70">Attendu en tiroir</p>
             <p className="font-serif text-3xl mt-1">{formatDA(active.expectedMinor)}</p>
@@ -38,9 +40,9 @@ export function PosSessionsPage() {
         </div>
       )}
       <div className="bg-card border border-border rounded-md overflow-x-auto">
-        <table className="w-full text-sm min-w-[820px]">
+        <table className="w-full text-sm min-w-[980px]">
           <thead className="text-[10px] uppercase tracking-wider text-muted-foreground bg-muted/40">
-            <tr className="text-left">{["Session", "Ouverte", "Clôturée", "Fond", "Ventes", "Rembours.", "Attendu", "Compté", "Écart", ""].map((h) => <th key={h} className="px-3 py-2 font-normal">{h}</th>)}</tr>
+            <tr className="text-left">{["Session", "Ouverte", "Clôturée", "Fond", "Ventes", "Rembours.", "Web +", "Web -", "Attendu", "Compté", "Écart", ""].map((h) => <th key={h} className="px-3 py-2 font-normal">{h}</th>)}</tr>
           </thead>
           <tbody>
             {cursors.map((cur, i) => (
@@ -64,10 +66,10 @@ function SessionRows({ enabled, before, last, onMore, canClose, onClose }: {
 }) {
   const params = before ? { before } : {};
   const r = useListRegisterSessions(params, { query: { queryKey: getListRegisterSessionsQueryKey(params), enabled } });
-  if (r.isLoading || !enabled) return <tr><td colSpan={10} className="p-4"><div className="h-24 bg-muted animate-pulse rounded" /></td></tr>;
-  if (r.isError) return <tr><td colSpan={10} className="p-4"><ErrorText e={r.error} /><button className={`${btnGhost} mt-2`} onClick={() => r.refetch()}>Réessayer</button></td></tr>;
+  if (r.isLoading || !enabled) return <tr><td colSpan={12} className="p-4"><div className="h-24 bg-muted animate-pulse rounded" /></td></tr>;
+  if (r.isError) return <tr><td colSpan={12} className="p-4"><ErrorText e={r.error} /><button className={`${btnGhost} mt-2`} onClick={() => r.refetch()}>Réessayer</button></td></tr>;
   const items = r.data?.items ?? [];
-  if (!before && items.length === 0) return <tr><td colSpan={10} className="py-14 text-center font-serif text-2xl" data-testid="status-sessions-empty">Aucune session de caisse.</td></tr>;
+  if (!before && items.length === 0) return <tr><td colSpan={12} className="py-14 text-center font-serif text-2xl" data-testid="status-sessions-empty">Aucune session de caisse.</td></tr>;
   return (
     <>
       {items.map((s) => {
@@ -81,6 +83,8 @@ function SessionRows({ enabled, before, last, onMore, canClose, onClose }: {
             <td className="px-3 py-2.5 font-mono">{formatDA(s.openingMinor)}</td>
             <td className="px-3 py-2.5 font-mono">{formatDA(s.salesMinor)}</td>
             <td className="px-3 py-2.5 font-mono">{formatDA(s.refundsMinor)}</td>
+            <td className="px-3 py-2.5 font-mono" data-testid={`text-web-receipts-${s.id}`}>{formatDA(s.webReceiptsMinor)}</td>
+            <td className="px-3 py-2.5 font-mono" data-testid={`text-web-refunds-${s.id}`}>{formatDA(s.webRefundsMinor)}</td>
             <td className="px-3 py-2.5 font-mono">{formatDA(s.expectedMinor)}</td>
             <td className="px-3 py-2.5 font-mono">{s.countedMinor != null ? formatDA(s.countedMinor) : "-"}</td>
             <td className={`px-3 py-2.5 font-mono ${v == null ? "" : v === 0 ? "text-emerald-700" : "text-destructive"}`}>{v == null ? "-" : `${v > 0 ? "+" : ""}${formatDA(v)}`}</td>
@@ -89,7 +93,7 @@ function SessionRows({ enabled, before, last, onMore, canClose, onClose }: {
         );
       })}
       {last && r.data?.nextCursor != null && (
-        <tr><td colSpan={10} className="p-3 text-center"><button className={btnGhost} onClick={() => onMore(r.data!.nextCursor!)} data-testid="button-sessions-more">Sessions plus anciennes</button></td></tr>
+        <tr><td colSpan={12} className="p-3 text-center"><button className={btnGhost} onClick={() => onMore(r.data!.nextCursor!)} data-testid="button-sessions-more">Sessions plus anciennes</button></td></tr>
       )}
     </>
   );
@@ -142,6 +146,11 @@ function CloseDialog({ session, userId, onClose, request, isOther }: { session: 
           <DialogDescription>{isOther ? `Session ouverte par ${session.openedBy}. Clôture par un responsable.` : "Comptez les espèces réellement présentes."}</DialogDescription>
         </DialogHeader>
         {storageError && <p role="alert" className="text-sm text-destructive">{storageError}</p>}
+        <dl className="text-xs space-y-0.5 border-b border-border pb-2" data-testid="panel-close-summary">
+          {([["Fond", session.openingMinor, ""], ["Ventes caisse", session.salesMinor, "+"], ["Remboursements caisse", session.refundsMinor, "-"], ["Encaissements web (espèces)", session.webReceiptsMinor, "+"], ["Remboursements web (espèces)", session.webRefundsMinor, "-"]] as const).map(([k, v, sg]) => (
+            <div key={k} className="flex justify-between"><dt className="text-muted-foreground">{k}</dt><dd className="font-mono">{sg}{formatDA(v)}</dd></div>
+          ))}
+        </dl>
         <div className="flex justify-between text-sm"><span className="text-muted-foreground">Attendu (serveur)</span><span className="font-mono">{formatDA(session.expectedMinor)}</span></div>
         <label className="block"><span className="text-xs uppercase tracking-wide text-muted-foreground">Espèces comptées (DA)</span>
           <input inputMode="decimal" className={`${inputCls} mt-1 font-mono text-lg`} value={raw} disabled={!!pending} onChange={(e) => { setRaw(e.target.value); setAck(false); }} data-testid="input-counted" /></label>

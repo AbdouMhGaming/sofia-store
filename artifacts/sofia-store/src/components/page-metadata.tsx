@@ -29,7 +29,7 @@ const pages: Record<string, [string, string]> = {
 export function PageMetadata() {
   const [location] = useLocation();
   useEffect(() => {
-    const [label, description] = pages[location] || (location.startsWith("/pos/tickets/") ? ["Ticket de caisse", "Ticket de vente SOFIA STORE."] as [string, string] : null) || (location.startsWith("/admin/commandes/") ? ["Détail de commande", "Détail d'une commande en ligne SOFIA STORE."] as [string, string] : null) || (location.startsWith("/produit/")
+    const [label, description] = pages[location] || (location.startsWith("/pos/tickets/") ? ["Ticket de caisse", "Ticket de vente SOFIA STORE."] as [string, string] : null) || (/^\/admin\/commandes\/\d+\/recu\/\d+$/.test(location) ? ["Reçu de commande", "Reçu interne d'encaissement ou de remboursement SOFIA STORE."] as [string, string] : null) || (location.startsWith("/admin/commandes/") ? ["Détail de commande", "Détail d'une commande en ligne SOFIA STORE."] as [string, string] : null) || (location.startsWith("/produit/")
       ? [decodeURIComponent(location.split("/").pop() || "").replace(/^apercu-/, "").replace(/-/g, " "), "Découvrez cette pièce SOFIA STORE. Prix, tailles et disponibilités à confirmer auprès de la boutique."]
       : ["Page introuvable", "Cette page SOFIA STORE est introuvable."]);
     const title = `${label} | SOFIA STORE`;

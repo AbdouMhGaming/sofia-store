@@ -18,7 +18,7 @@ import { PosSessionsPage } from '@/pages/pos-sessions';
 import { PosSettingsPage } from '@/pages/pos-settings';
 import { CartPage } from '@/pages/cart';
 import { CheckoutPage, ConfirmationPage } from '@/pages/checkout';
-import { AdminCheckoutSettingsPage, AdminOrdersPage, AdminOrderDetailPage } from '@/pages/admin-orders';
+import { AdminCheckoutSettingsPage, AdminOrdersPage, AdminOrderDetailPage, AdminOrderReceiptPage } from '@/pages/admin-orders';
 import {
   Route,
   Switch,
@@ -46,6 +46,7 @@ function Router() {
         <Route path="/admin/vente-en-ligne" component={AdminCheckoutSettingsPage} />
         <Route path="/admin/commandes" component={AdminOrdersPage} />
         <Route path="/admin/commandes/:id" component={AdminOrderDetailPage} />
+        <Route path="/admin/commandes/:id/recu/:paymentId" component={AdminOrderReceiptPage} />
         <Route path="/admin/login" component={AdminLoginPage} />
         <Route path="/admin" component={AdminDashboardPage} />
         <Route path="/admin/produits" component={AdminProductsPage} />

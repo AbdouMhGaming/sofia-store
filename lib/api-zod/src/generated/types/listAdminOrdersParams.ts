@@ -5,14 +5,16 @@
  * SOFIA STORE shared retail API. Initial foundation and catalog phase.
  * OpenAPI spec version: 0.2.0
  */
-import type { ListAdminOrdersStatus } from './listAdminOrdersStatus';
+import type { ListAdminOrdersPayment } from './listAdminOrdersPayment';
+import type { WebOrderStatus } from './webOrderStatus';
 
 export type ListAdminOrdersParams = {
 /**
  * @minimum 1
  */
 before?: number;
-status?: ListAdminOrdersStatus;
+status?: WebOrderStatus;
+payment?: ListAdminOrdersPayment;
 /**
  * @maxLength 100
  */

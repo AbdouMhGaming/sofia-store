@@ -14,6 +14,8 @@ export interface RegisterSession {
   status: RegisterSessionStatus;
   openingMinor: number;
   salesMinor: number;
+  webReceiptsMinor: number;
+  webRefundsMinor: number;
   refundsMinor: number;
   expectedMinor: number;
   /** @nullable */

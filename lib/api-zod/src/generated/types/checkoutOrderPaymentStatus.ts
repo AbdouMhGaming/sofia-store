@@ -11,4 +11,7 @@ export type CheckoutOrderPaymentStatus = typeof CheckoutOrderPaymentStatus[keyof
 
 export const CheckoutOrderPaymentStatus = {
   UNPAID: 'UNPAID',
+  COLLECTED_BY_COURIER: 'COLLECTED_BY_COURIER',
+  PAID: 'PAID',
+  REFUNDED: 'REFUNDED',
 } as const;

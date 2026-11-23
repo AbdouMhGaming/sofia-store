@@ -169,7 +169,7 @@ export const PlaceCheckoutOrderBody = zod.object({
 export const PlaceCheckoutOrderResponse = zod.object({
   "reference": zod.string(),
   "requestId": zod.string(),
-  "status": zod.enum(['PENDING', 'CANCELLED', 'EXPIRED']),
+  "status": zod.enum(['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DISPATCHED', 'DELIVERED', 'COMPLETED', 'RETURNING', 'RETURNED', 'CANCELLED', 'EXPIRED']),
   "createdAt": zod.coerce.date(),
   "expiresAt": zod.coerce.date(),
   "fulfillment": zod.enum(['DELIVERY', 'PICKUP']),
@@ -177,7 +177,11 @@ export const PlaceCheckoutOrderResponse = zod.object({
   "deliveryMinDays": zod.number().int().nullable(),
   "deliveryMaxDays": zod.number().int().nullable(),
   "paymentMethod": zod.enum(['COD', 'CASH_PICKUP']),
-  "paymentStatus": zod.enum(['UNPAID']),
+  "paymentStatus": zod.enum(['UNPAID', 'COLLECTED_BY_COURIER', 'PAID', 'REFUNDED']),
+  "storePaymentReceived": zod.boolean(),
+  "refundedMinor": zod.number().int(),
+  "carrierName": zod.string(),
+  "trackingNumber": zod.string(),
   "maskedPhone": zod.string(),
   "items": zod.array(zod.object({
   "variantId": zod.number().int(),
@@ -214,7 +218,7 @@ export const RecoverCheckoutOrderBody = zod.object({
 export const RecoverCheckoutOrderResponse = zod.object({
   "reference": zod.string(),
   "requestId": zod.string(),
-  "status": zod.enum(['PENDING', 'CANCELLED', 'EXPIRED']),
+  "status": zod.enum(['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DISPATCHED', 'DELIVERED', 'COMPLETED', 'RETURNING', 'RETURNED', 'CANCELLED', 'EXPIRED']),
   "createdAt": zod.coerce.date(),
   "expiresAt": zod.coerce.date(),
   "fulfillment": zod.enum(['DELIVERY', 'PICKUP']),
@@ -222,7 +226,11 @@ export const RecoverCheckoutOrderResponse = zod.object({
   "deliveryMinDays": zod.number().int().nullable(),
   "deliveryMaxDays": zod.number().int().nullable(),
   "paymentMethod": zod.enum(['COD', 'CASH_PICKUP']),
-  "paymentStatus": zod.enum(['UNPAID']),
+  "paymentStatus": zod.enum(['UNPAID', 'COLLECTED_BY_COURIER', 'PAID', 'REFUNDED']),
+  "storePaymentReceived": zod.boolean(),
+  "refundedMinor": zod.number().int(),
+  "carrierName": zod.string(),
+  "trackingNumber": zod.string(),
   "maskedPhone": zod.string(),
   "items": zod.array(zod.object({
   "variantId": zod.number().int(),
@@ -261,7 +269,7 @@ export const CancelCheckoutRequestResponse = zod.object({
   "order": zod.union([zod.object({
   "reference": zod.string(),
   "requestId": zod.string(),
-  "status": zod.enum(['PENDING', 'CANCELLED', 'EXPIRED']),
+  "status": zod.enum(['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DISPATCHED', 'DELIVERED', 'COMPLETED', 'RETURNING', 'RETURNED', 'CANCELLED', 'EXPIRED']),
   "createdAt": zod.coerce.date(),
   "expiresAt": zod.coerce.date(),
   "fulfillment": zod.enum(['DELIVERY', 'PICKUP']),
@@ -269,7 +277,11 @@ export const CancelCheckoutRequestResponse = zod.object({
   "deliveryMinDays": zod.number().int().nullable(),
   "deliveryMaxDays": zod.number().int().nullable(),
   "paymentMethod": zod.enum(['COD', 'CASH_PICKUP']),
-  "paymentStatus": zod.enum(['UNPAID']),
+  "paymentStatus": zod.enum(['UNPAID', 'COLLECTED_BY_COURIER', 'PAID', 'REFUNDED']),
+  "storePaymentReceived": zod.boolean(),
+  "refundedMinor": zod.number().int(),
+  "carrierName": zod.string(),
+  "trackingNumber": zod.string(),
   "maskedPhone": zod.string(),
   "items": zod.array(zod.object({
   "variantId": zod.number().int(),
@@ -491,15 +503,24 @@ export const listAdminOrdersQueryQMax = 100;
 
 export const ListAdminOrdersQueryParams = zod.object({
   "before": zod.coerce.number().int().min(1).optional(),
-  "status": zod.enum(['PENDING', 'CANCELLED', 'EXPIRED']).optional(),
+  "status": zod.enum(['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DISPATCHED', 'DELIVERED', 'COMPLETED', 'RETURNING', 'RETURNED', 'CANCELLED', 'EXPIRED']).optional(),
+  "payment": zod.enum(['UNPAID', 'COURIER_DUE', 'RECEIVED', 'REFUNDED']).optional(),
   "q": zod.coerce.string().max(listAdminOrdersQueryQMax).optional()
 })
+
+export const listAdminOrdersResponseItemsItemTwoPaymentsItemReceiptSettingsAddressMax = 500;
+
+export const listAdminOrdersResponseItemsItemTwoPaymentsItemReceiptSettingsPhoneMax = 60;
+
+export const listAdminOrdersResponseItemsItemTwoPaymentsItemReceiptSettingsFooterMax = 500;
+
+
 
 export const ListAdminOrdersResponse = zod.object({
   "items": zod.array(zod.object({
   "reference": zod.string(),
   "requestId": zod.string(),
-  "status": zod.enum(['PENDING', 'CANCELLED', 'EXPIRED']),
+  "status": zod.enum(['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DISPATCHED', 'DELIVERED', 'COMPLETED', 'RETURNING', 'RETURNED', 'CANCELLED', 'EXPIRED']),
   "createdAt": zod.coerce.date(),
   "expiresAt": zod.coerce.date(),
   "fulfillment": zod.enum(['DELIVERY', 'PICKUP']),
@@ -507,7 +528,11 @@ export const ListAdminOrdersResponse = zod.object({
   "deliveryMinDays": zod.number().int().nullable(),
   "deliveryMaxDays": zod.number().int().nullable(),
   "paymentMethod": zod.enum(['COD', 'CASH_PICKUP']),
-  "paymentStatus": zod.enum(['UNPAID']),
+  "paymentStatus": zod.enum(['UNPAID', 'COLLECTED_BY_COURIER', 'PAID', 'REFUNDED']),
+  "storePaymentReceived": zod.boolean(),
+  "refundedMinor": zod.number().int(),
+  "carrierName": zod.string(),
+  "trackingNumber": zod.string(),
   "maskedPhone": zod.string(),
   "items": zod.array(zod.object({
   "variantId": zod.number().int(),
@@ -541,7 +566,36 @@ export const ListAdminOrdersResponse = zod.object({
   "kind": zod.string(),
   "reason": zod.string(),
   "createdAt": zod.coerce.date()
-}))
+})),
+  "collector": zod.union([zod.literal('STAFF'),zod.literal('COURIER'),zod.literal(null)]).nullable(),
+  "payments": zod.array(zod.object({
+  "id": zod.number().int(),
+  "number": zod.string(),
+  "kind": zod.enum(['RECEIPT', 'REFUND']),
+  "method": zod.enum(['CASH', 'BANK']),
+  "amountMinor": zod.number().int(),
+  "feeMinor": zod.number().int(),
+  "feeRefundMinor": zod.number().int(),
+  "tenderedMinor": zod.number().int().nullable(),
+  "changeMinor": zod.number().int(),
+  "reference": zod.string(),
+  "reason": zod.string(),
+  "registerSessionId": zod.number().int().nullable(),
+  "actorId": zod.number().int(),
+  "receiptSettings": zod.object({
+  "address": zod.string().max(listAdminOrdersResponseItemsItemTwoPaymentsItemReceiptSettingsAddressMax),
+  "phone": zod.string().max(listAdminOrdersResponseItemsItemTwoPaymentsItemReceiptSettingsPhoneMax),
+  "footer": zod.string().max(listAdminOrdersResponseItemsItemTwoPaymentsItemReceiptSettingsFooterMax)
+}),
+  "createdAt": zod.coerce.date()
+})),
+  "storeReceivedMinor": zod.number().int(),
+  "carrierFeesMinor": zod.number().int(),
+  "refundedMinor": zod.number().int(),
+  "courierOutstandingMinor": zod.number().int(),
+  "allowedActions": zod.array(zod.enum(['CONFIRM', 'PREPARE', 'READY', 'DISPATCH', 'DELIVER', 'COURIER_COLLECT', 'RETURN_START', 'RETURN_RECEIVE', 'CANCEL'])),
+  "canReceivePayment": zod.boolean(),
+  "canRefund": zod.boolean()
 }))),
   "nextCursor": zod.number().int().nullable()
 })
@@ -554,10 +608,18 @@ export const GetAdminOrderParams = zod.object({
   "id": zod.coerce.number().int().min(1)
 })
 
+export const getAdminOrderResponseTwoPaymentsItemReceiptSettingsAddressMax = 500;
+
+export const getAdminOrderResponseTwoPaymentsItemReceiptSettingsPhoneMax = 60;
+
+export const getAdminOrderResponseTwoPaymentsItemReceiptSettingsFooterMax = 500;
+
+
+
 export const GetAdminOrderResponse = zod.object({
   "reference": zod.string(),
   "requestId": zod.string(),
-  "status": zod.enum(['PENDING', 'CANCELLED', 'EXPIRED']),
+  "status": zod.enum(['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DISPATCHED', 'DELIVERED', 'COMPLETED', 'RETURNING', 'RETURNED', 'CANCELLED', 'EXPIRED']),
   "createdAt": zod.coerce.date(),
   "expiresAt": zod.coerce.date(),
   "fulfillment": zod.enum(['DELIVERY', 'PICKUP']),
@@ -565,7 +627,11 @@ export const GetAdminOrderResponse = zod.object({
   "deliveryMinDays": zod.number().int().nullable(),
   "deliveryMaxDays": zod.number().int().nullable(),
   "paymentMethod": zod.enum(['COD', 'CASH_PICKUP']),
-  "paymentStatus": zod.enum(['UNPAID']),
+  "paymentStatus": zod.enum(['UNPAID', 'COLLECTED_BY_COURIER', 'PAID', 'REFUNDED']),
+  "storePaymentReceived": zod.boolean(),
+  "refundedMinor": zod.number().int(),
+  "carrierName": zod.string(),
+  "trackingNumber": zod.string(),
   "maskedPhone": zod.string(),
   "items": zod.array(zod.object({
   "variantId": zod.number().int(),
@@ -599,7 +665,36 @@ export const GetAdminOrderResponse = zod.object({
   "kind": zod.string(),
   "reason": zod.string(),
   "createdAt": zod.coerce.date()
-}))
+})),
+  "collector": zod.union([zod.literal('STAFF'),zod.literal('COURIER'),zod.literal(null)]).nullable(),
+  "payments": zod.array(zod.object({
+  "id": zod.number().int(),
+  "number": zod.string(),
+  "kind": zod.enum(['RECEIPT', 'REFUND']),
+  "method": zod.enum(['CASH', 'BANK']),
+  "amountMinor": zod.number().int(),
+  "feeMinor": zod.number().int(),
+  "feeRefundMinor": zod.number().int(),
+  "tenderedMinor": zod.number().int().nullable(),
+  "changeMinor": zod.number().int(),
+  "reference": zod.string(),
+  "reason": zod.string(),
+  "registerSessionId": zod.number().int().nullable(),
+  "actorId": zod.number().int(),
+  "receiptSettings": zod.object({
+  "address": zod.string().max(getAdminOrderResponseTwoPaymentsItemReceiptSettingsAddressMax),
+  "phone": zod.string().max(getAdminOrderResponseTwoPaymentsItemReceiptSettingsPhoneMax),
+  "footer": zod.string().max(getAdminOrderResponseTwoPaymentsItemReceiptSettingsFooterMax)
+}),
+  "createdAt": zod.coerce.date()
+})),
+  "storeReceivedMinor": zod.number().int(),
+  "carrierFeesMinor": zod.number().int(),
+  "refundedMinor": zod.number().int(),
+  "courierOutstandingMinor": zod.number().int(),
+  "allowedActions": zod.array(zod.enum(['CONFIRM', 'PREPARE', 'READY', 'DISPATCH', 'DELIVER', 'COURIER_COLLECT', 'RETURN_START', 'RETURN_RECEIVE', 'CANCEL'])),
+  "canReceivePayment": zod.boolean(),
+  "canRefund": zod.boolean()
 }))
 
 
@@ -619,10 +714,18 @@ export const CancelAdminOrderBody = zod.object({
   "reason": zod.string().min(cancelAdminOrderBodyReasonMin).max(cancelAdminOrderBodyReasonMax)
 })
 
+export const cancelAdminOrderResponseTwoPaymentsItemReceiptSettingsAddressMax = 500;
+
+export const cancelAdminOrderResponseTwoPaymentsItemReceiptSettingsPhoneMax = 60;
+
+export const cancelAdminOrderResponseTwoPaymentsItemReceiptSettingsFooterMax = 500;
+
+
+
 export const CancelAdminOrderResponse = zod.object({
   "reference": zod.string(),
   "requestId": zod.string(),
-  "status": zod.enum(['PENDING', 'CANCELLED', 'EXPIRED']),
+  "status": zod.enum(['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DISPATCHED', 'DELIVERED', 'COMPLETED', 'RETURNING', 'RETURNED', 'CANCELLED', 'EXPIRED']),
   "createdAt": zod.coerce.date(),
   "expiresAt": zod.coerce.date(),
   "fulfillment": zod.enum(['DELIVERY', 'PICKUP']),
@@ -630,7 +733,11 @@ export const CancelAdminOrderResponse = zod.object({
   "deliveryMinDays": zod.number().int().nullable(),
   "deliveryMaxDays": zod.number().int().nullable(),
   "paymentMethod": zod.enum(['COD', 'CASH_PICKUP']),
-  "paymentStatus": zod.enum(['UNPAID']),
+  "paymentStatus": zod.enum(['UNPAID', 'COLLECTED_BY_COURIER', 'PAID', 'REFUNDED']),
+  "storePaymentReceived": zod.boolean(),
+  "refundedMinor": zod.number().int(),
+  "carrierName": zod.string(),
+  "trackingNumber": zod.string(),
   "maskedPhone": zod.string(),
   "items": zod.array(zod.object({
   "variantId": zod.number().int(),
@@ -664,8 +771,493 @@ export const CancelAdminOrderResponse = zod.object({
   "kind": zod.string(),
   "reason": zod.string(),
   "createdAt": zod.coerce.date()
+})),
+  "collector": zod.union([zod.literal('STAFF'),zod.literal('COURIER'),zod.literal(null)]).nullable(),
+  "payments": zod.array(zod.object({
+  "id": zod.number().int(),
+  "number": zod.string(),
+  "kind": zod.enum(['RECEIPT', 'REFUND']),
+  "method": zod.enum(['CASH', 'BANK']),
+  "amountMinor": zod.number().int(),
+  "feeMinor": zod.number().int(),
+  "feeRefundMinor": zod.number().int(),
+  "tenderedMinor": zod.number().int().nullable(),
+  "changeMinor": zod.number().int(),
+  "reference": zod.string(),
+  "reason": zod.string(),
+  "registerSessionId": zod.number().int().nullable(),
+  "actorId": zod.number().int(),
+  "receiptSettings": zod.object({
+  "address": zod.string().max(cancelAdminOrderResponseTwoPaymentsItemReceiptSettingsAddressMax),
+  "phone": zod.string().max(cancelAdminOrderResponseTwoPaymentsItemReceiptSettingsPhoneMax),
+  "footer": zod.string().max(cancelAdminOrderResponseTwoPaymentsItemReceiptSettingsFooterMax)
+}),
+  "createdAt": zod.coerce.date()
+})),
+  "storeReceivedMinor": zod.number().int(),
+  "carrierFeesMinor": zod.number().int(),
+  "refundedMinor": zod.number().int(),
+  "courierOutstandingMinor": zod.number().int(),
+  "allowedActions": zod.array(zod.enum(['CONFIRM', 'PREPARE', 'READY', 'DISPATCH', 'DELIVER', 'COURIER_COLLECT', 'RETURN_START', 'RETURN_RECEIVE', 'CANCEL'])),
+  "canReceivePayment": zod.boolean(),
+  "canRefund": zod.boolean()
 }))
+
+
+
+
+
+export const ActOnAdminOrderParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const actOnAdminOrderBodyReasonMin = 3;
+export const actOnAdminOrderBodyReasonMax = 500;
+
+export const actOnAdminOrderBodyCarrierNameMax = 150;
+
+export const actOnAdminOrderBodyTrackingNumberMax = 150;
+
+
+export const actOnAdminOrderBodyRestockVariantIdsMax = 20;
+
+
+
+export const ActOnAdminOrderBody = zod.object({
+  "requestId": zod.string().uuid(),
+  "expectedStatus": zod.enum(['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DISPATCHED', 'DELIVERED', 'COMPLETED', 'RETURNING', 'RETURNED', 'CANCELLED', 'EXPIRED']),
+  "action": zod.enum(['CONFIRM', 'PREPARE', 'READY', 'DISPATCH', 'DELIVER', 'COURIER_COLLECT', 'RETURN_START', 'RETURN_RECEIVE', 'CANCEL']),
+  "reason": zod.string().min(actOnAdminOrderBodyReasonMin).max(actOnAdminOrderBodyReasonMax),
+  "collector": zod.union([zod.literal('STAFF'),zod.literal('COURIER'),zod.literal(null)]).nullable(),
+  "carrierName": zod.string().max(actOnAdminOrderBodyCarrierNameMax),
+  "trackingNumber": zod.string().max(actOnAdminOrderBodyTrackingNumberMax),
+  "restockVariantIds": zod.array(zod.number().int().min(1)).max(actOnAdminOrderBodyRestockVariantIdsMax).nullable()
+})
+
+export const actOnAdminOrderResponseTwoPaymentsItemReceiptSettingsAddressMax = 500;
+
+export const actOnAdminOrderResponseTwoPaymentsItemReceiptSettingsPhoneMax = 60;
+
+export const actOnAdminOrderResponseTwoPaymentsItemReceiptSettingsFooterMax = 500;
+
+
+
+export const ActOnAdminOrderResponse = zod.object({
+  "reference": zod.string(),
+  "requestId": zod.string(),
+  "status": zod.enum(['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DISPATCHED', 'DELIVERED', 'COMPLETED', 'RETURNING', 'RETURNED', 'CANCELLED', 'EXPIRED']),
+  "createdAt": zod.coerce.date(),
+  "expiresAt": zod.coerce.date(),
+  "fulfillment": zod.enum(['DELIVERY', 'PICKUP']),
+  "deliveryMode": zod.union([zod.literal('HOME'),zod.literal('DESK'),zod.literal(null)]).nullable(),
+  "deliveryMinDays": zod.number().int().nullable(),
+  "deliveryMaxDays": zod.number().int().nullable(),
+  "paymentMethod": zod.enum(['COD', 'CASH_PICKUP']),
+  "paymentStatus": zod.enum(['UNPAID', 'COLLECTED_BY_COURIER', 'PAID', 'REFUNDED']),
+  "storePaymentReceived": zod.boolean(),
+  "refundedMinor": zod.number().int(),
+  "carrierName": zod.string(),
+  "trackingNumber": zod.string(),
+  "maskedPhone": zod.string(),
+  "items": zod.array(zod.object({
+  "variantId": zod.number().int(),
+  "productName": zod.string(),
+  "nameAr": zod.string(),
+  "sku": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "image": zod.string(),
+  "quantity": zod.number().int(),
+  "unitPriceMinor": zod.number().int(),
+  "lineTotalMinor": zod.number().int()
+})),
+  "subtotalMinor": zod.number().int(),
+  "feeMinor": zod.number().int(),
+  "totalMinor": zod.number().int(),
+  "zoneNameFr": zod.string(),
+  "zoneNameAr": zod.string(),
+  "pickupAddressFr": zod.string(),
+  "pickupAddressAr": zod.string(),
+  "policyFr": zod.string(),
+  "policyAr": zod.string()
+}).and(zod.object({
+  "id": zod.number().int(),
+  "customerName": zod.string(),
+  "customerPhone": zod.string(),
+  "commune": zod.string(),
+  "address": zod.string(),
+  "notes": zod.string(),
+  "events": zod.array(zod.object({
+  "kind": zod.string(),
+  "reason": zod.string(),
+  "createdAt": zod.coerce.date()
+})),
+  "collector": zod.union([zod.literal('STAFF'),zod.literal('COURIER'),zod.literal(null)]).nullable(),
+  "payments": zod.array(zod.object({
+  "id": zod.number().int(),
+  "number": zod.string(),
+  "kind": zod.enum(['RECEIPT', 'REFUND']),
+  "method": zod.enum(['CASH', 'BANK']),
+  "amountMinor": zod.number().int(),
+  "feeMinor": zod.number().int(),
+  "feeRefundMinor": zod.number().int(),
+  "tenderedMinor": zod.number().int().nullable(),
+  "changeMinor": zod.number().int(),
+  "reference": zod.string(),
+  "reason": zod.string(),
+  "registerSessionId": zod.number().int().nullable(),
+  "actorId": zod.number().int(),
+  "receiptSettings": zod.object({
+  "address": zod.string().max(actOnAdminOrderResponseTwoPaymentsItemReceiptSettingsAddressMax),
+  "phone": zod.string().max(actOnAdminOrderResponseTwoPaymentsItemReceiptSettingsPhoneMax),
+  "footer": zod.string().max(actOnAdminOrderResponseTwoPaymentsItemReceiptSettingsFooterMax)
+}),
+  "createdAt": zod.coerce.date()
+})),
+  "storeReceivedMinor": zod.number().int(),
+  "carrierFeesMinor": zod.number().int(),
+  "refundedMinor": zod.number().int(),
+  "courierOutstandingMinor": zod.number().int(),
+  "allowedActions": zod.array(zod.enum(['CONFIRM', 'PREPARE', 'READY', 'DISPATCH', 'DELIVER', 'COURIER_COLLECT', 'RETURN_START', 'RETURN_RECEIVE', 'CANCEL'])),
+  "canReceivePayment": zod.boolean(),
+  "canRefund": zod.boolean()
 }))
+
+
+
+
+
+export const RecordAdminOrderPaymentParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const recordAdminOrderPaymentBodyAmountMinorMin = 0;
+export const recordAdminOrderPaymentBodyAmountMinorMax = 1000000000;
+
+export const recordAdminOrderPaymentBodyFeeMinorMin = 0;
+export const recordAdminOrderPaymentBodyFeeMinorMax = 1000000000;
+
+export const recordAdminOrderPaymentBodyFeeRefundMinorMin = 0;
+export const recordAdminOrderPaymentBodyFeeRefundMinorMax = 1000000000;
+
+export const recordAdminOrderPaymentBodyTenderedMinorMin = 0;
+export const recordAdminOrderPaymentBodyTenderedMinorMax = 1000000000;
+
+
+export const recordAdminOrderPaymentBodyReferenceMax = 150;
+
+export const recordAdminOrderPaymentBodyReasonMin = 3;
+export const recordAdminOrderPaymentBodyReasonMax = 500;
+
+
+
+export const RecordAdminOrderPaymentBody = zod.object({
+  "requestId": zod.string().uuid(),
+  "expectedStatus": zod.enum(['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DISPATCHED', 'DELIVERED', 'COMPLETED', 'RETURNING', 'RETURNED', 'CANCELLED', 'EXPIRED']),
+  "kind": zod.enum(['RECEIPT', 'REFUND']),
+  "method": zod.enum(['CASH', 'BANK']),
+  "amountMinor": zod.number().int().min(recordAdminOrderPaymentBodyAmountMinorMin).max(recordAdminOrderPaymentBodyAmountMinorMax),
+  "feeMinor": zod.number().int().min(recordAdminOrderPaymentBodyFeeMinorMin).max(recordAdminOrderPaymentBodyFeeMinorMax),
+  "feeRefundMinor": zod.number().int().min(recordAdminOrderPaymentBodyFeeRefundMinorMin).max(recordAdminOrderPaymentBodyFeeRefundMinorMax),
+  "tenderedMinor": zod.number().int().min(recordAdminOrderPaymentBodyTenderedMinorMin).max(recordAdminOrderPaymentBodyTenderedMinorMax).nullable(),
+  "registerSessionId": zod.number().int().min(1).nullable(),
+  "reference": zod.string().max(recordAdminOrderPaymentBodyReferenceMax),
+  "reason": zod.string().min(recordAdminOrderPaymentBodyReasonMin).max(recordAdminOrderPaymentBodyReasonMax)
+})
+
+export const recordAdminOrderPaymentResponseTwoPaymentsItemReceiptSettingsAddressMax = 500;
+
+export const recordAdminOrderPaymentResponseTwoPaymentsItemReceiptSettingsPhoneMax = 60;
+
+export const recordAdminOrderPaymentResponseTwoPaymentsItemReceiptSettingsFooterMax = 500;
+
+
+
+export const RecordAdminOrderPaymentResponse = zod.object({
+  "reference": zod.string(),
+  "requestId": zod.string(),
+  "status": zod.enum(['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DISPATCHED', 'DELIVERED', 'COMPLETED', 'RETURNING', 'RETURNED', 'CANCELLED', 'EXPIRED']),
+  "createdAt": zod.coerce.date(),
+  "expiresAt": zod.coerce.date(),
+  "fulfillment": zod.enum(['DELIVERY', 'PICKUP']),
+  "deliveryMode": zod.union([zod.literal('HOME'),zod.literal('DESK'),zod.literal(null)]).nullable(),
+  "deliveryMinDays": zod.number().int().nullable(),
+  "deliveryMaxDays": zod.number().int().nullable(),
+  "paymentMethod": zod.enum(['COD', 'CASH_PICKUP']),
+  "paymentStatus": zod.enum(['UNPAID', 'COLLECTED_BY_COURIER', 'PAID', 'REFUNDED']),
+  "storePaymentReceived": zod.boolean(),
+  "refundedMinor": zod.number().int(),
+  "carrierName": zod.string(),
+  "trackingNumber": zod.string(),
+  "maskedPhone": zod.string(),
+  "items": zod.array(zod.object({
+  "variantId": zod.number().int(),
+  "productName": zod.string(),
+  "nameAr": zod.string(),
+  "sku": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "image": zod.string(),
+  "quantity": zod.number().int(),
+  "unitPriceMinor": zod.number().int(),
+  "lineTotalMinor": zod.number().int()
+})),
+  "subtotalMinor": zod.number().int(),
+  "feeMinor": zod.number().int(),
+  "totalMinor": zod.number().int(),
+  "zoneNameFr": zod.string(),
+  "zoneNameAr": zod.string(),
+  "pickupAddressFr": zod.string(),
+  "pickupAddressAr": zod.string(),
+  "policyFr": zod.string(),
+  "policyAr": zod.string()
+}).and(zod.object({
+  "id": zod.number().int(),
+  "customerName": zod.string(),
+  "customerPhone": zod.string(),
+  "commune": zod.string(),
+  "address": zod.string(),
+  "notes": zod.string(),
+  "events": zod.array(zod.object({
+  "kind": zod.string(),
+  "reason": zod.string(),
+  "createdAt": zod.coerce.date()
+})),
+  "collector": zod.union([zod.literal('STAFF'),zod.literal('COURIER'),zod.literal(null)]).nullable(),
+  "payments": zod.array(zod.object({
+  "id": zod.number().int(),
+  "number": zod.string(),
+  "kind": zod.enum(['RECEIPT', 'REFUND']),
+  "method": zod.enum(['CASH', 'BANK']),
+  "amountMinor": zod.number().int(),
+  "feeMinor": zod.number().int(),
+  "feeRefundMinor": zod.number().int(),
+  "tenderedMinor": zod.number().int().nullable(),
+  "changeMinor": zod.number().int(),
+  "reference": zod.string(),
+  "reason": zod.string(),
+  "registerSessionId": zod.number().int().nullable(),
+  "actorId": zod.number().int(),
+  "receiptSettings": zod.object({
+  "address": zod.string().max(recordAdminOrderPaymentResponseTwoPaymentsItemReceiptSettingsAddressMax),
+  "phone": zod.string().max(recordAdminOrderPaymentResponseTwoPaymentsItemReceiptSettingsPhoneMax),
+  "footer": zod.string().max(recordAdminOrderPaymentResponseTwoPaymentsItemReceiptSettingsFooterMax)
+}),
+  "createdAt": zod.coerce.date()
+})),
+  "storeReceivedMinor": zod.number().int(),
+  "carrierFeesMinor": zod.number().int(),
+  "refundedMinor": zod.number().int(),
+  "courierOutstandingMinor": zod.number().int(),
+  "allowedActions": zod.array(zod.enum(['CONFIRM', 'PREPARE', 'READY', 'DISPATCH', 'DELIVER', 'COURIER_COLLECT', 'RETURN_START', 'RETURN_RECEIVE', 'CANCEL'])),
+  "canReceivePayment": zod.boolean(),
+  "canRefund": zod.boolean()
+}))
+
+
+
+
+
+export const RecoverAdminOrderRequestParams = zod.object({
+  "id": zod.coerce.number().int().min(1),
+  "requestId": zod.coerce.string().uuid()
+})
+
+export const recoverAdminOrderRequestResponseOrderOneTwoPaymentsItemReceiptSettingsAddressMax = 500;
+
+export const recoverAdminOrderRequestResponseOrderOneTwoPaymentsItemReceiptSettingsPhoneMax = 60;
+
+export const recoverAdminOrderRequestResponseOrderOneTwoPaymentsItemReceiptSettingsFooterMax = 500;
+
+
+
+export const RecoverAdminOrderRequestResponse = zod.object({
+  "state": zod.enum(['COMPLETED', 'CANCELLED']),
+  "order": zod.union([zod.object({
+  "reference": zod.string(),
+  "requestId": zod.string(),
+  "status": zod.enum(['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DISPATCHED', 'DELIVERED', 'COMPLETED', 'RETURNING', 'RETURNED', 'CANCELLED', 'EXPIRED']),
+  "createdAt": zod.coerce.date(),
+  "expiresAt": zod.coerce.date(),
+  "fulfillment": zod.enum(['DELIVERY', 'PICKUP']),
+  "deliveryMode": zod.union([zod.literal('HOME'),zod.literal('DESK'),zod.literal(null)]).nullable(),
+  "deliveryMinDays": zod.number().int().nullable(),
+  "deliveryMaxDays": zod.number().int().nullable(),
+  "paymentMethod": zod.enum(['COD', 'CASH_PICKUP']),
+  "paymentStatus": zod.enum(['UNPAID', 'COLLECTED_BY_COURIER', 'PAID', 'REFUNDED']),
+  "storePaymentReceived": zod.boolean(),
+  "refundedMinor": zod.number().int(),
+  "carrierName": zod.string(),
+  "trackingNumber": zod.string(),
+  "maskedPhone": zod.string(),
+  "items": zod.array(zod.object({
+  "variantId": zod.number().int(),
+  "productName": zod.string(),
+  "nameAr": zod.string(),
+  "sku": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "image": zod.string(),
+  "quantity": zod.number().int(),
+  "unitPriceMinor": zod.number().int(),
+  "lineTotalMinor": zod.number().int()
+})),
+  "subtotalMinor": zod.number().int(),
+  "feeMinor": zod.number().int(),
+  "totalMinor": zod.number().int(),
+  "zoneNameFr": zod.string(),
+  "zoneNameAr": zod.string(),
+  "pickupAddressFr": zod.string(),
+  "pickupAddressAr": zod.string(),
+  "policyFr": zod.string(),
+  "policyAr": zod.string()
+}).and(zod.object({
+  "id": zod.number().int(),
+  "customerName": zod.string(),
+  "customerPhone": zod.string(),
+  "commune": zod.string(),
+  "address": zod.string(),
+  "notes": zod.string(),
+  "events": zod.array(zod.object({
+  "kind": zod.string(),
+  "reason": zod.string(),
+  "createdAt": zod.coerce.date()
+})),
+  "collector": zod.union([zod.literal('STAFF'),zod.literal('COURIER'),zod.literal(null)]).nullable(),
+  "payments": zod.array(zod.object({
+  "id": zod.number().int(),
+  "number": zod.string(),
+  "kind": zod.enum(['RECEIPT', 'REFUND']),
+  "method": zod.enum(['CASH', 'BANK']),
+  "amountMinor": zod.number().int(),
+  "feeMinor": zod.number().int(),
+  "feeRefundMinor": zod.number().int(),
+  "tenderedMinor": zod.number().int().nullable(),
+  "changeMinor": zod.number().int(),
+  "reference": zod.string(),
+  "reason": zod.string(),
+  "registerSessionId": zod.number().int().nullable(),
+  "actorId": zod.number().int(),
+  "receiptSettings": zod.object({
+  "address": zod.string().max(recoverAdminOrderRequestResponseOrderOneTwoPaymentsItemReceiptSettingsAddressMax),
+  "phone": zod.string().max(recoverAdminOrderRequestResponseOrderOneTwoPaymentsItemReceiptSettingsPhoneMax),
+  "footer": zod.string().max(recoverAdminOrderRequestResponseOrderOneTwoPaymentsItemReceiptSettingsFooterMax)
+}),
+  "createdAt": zod.coerce.date()
+})),
+  "storeReceivedMinor": zod.number().int(),
+  "carrierFeesMinor": zod.number().int(),
+  "refundedMinor": zod.number().int(),
+  "courierOutstandingMinor": zod.number().int(),
+  "allowedActions": zod.array(zod.enum(['CONFIRM', 'PREPARE', 'READY', 'DISPATCH', 'DELIVER', 'COURIER_COLLECT', 'RETURN_START', 'RETURN_RECEIVE', 'CANCEL'])),
+  "canReceivePayment": zod.boolean(),
+  "canRefund": zod.boolean()
+})),zod.null()])
+})
+
+
+
+
+
+export const AbandonAdminOrderRequestParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const AbandonAdminOrderRequestBody = zod.object({
+  "requestId": zod.string().uuid()
+})
+
+export const abandonAdminOrderRequestResponseOrderOneTwoPaymentsItemReceiptSettingsAddressMax = 500;
+
+export const abandonAdminOrderRequestResponseOrderOneTwoPaymentsItemReceiptSettingsPhoneMax = 60;
+
+export const abandonAdminOrderRequestResponseOrderOneTwoPaymentsItemReceiptSettingsFooterMax = 500;
+
+
+
+export const AbandonAdminOrderRequestResponse = zod.object({
+  "state": zod.enum(['COMPLETED', 'CANCELLED']),
+  "order": zod.union([zod.object({
+  "reference": zod.string(),
+  "requestId": zod.string(),
+  "status": zod.enum(['PENDING', 'CONFIRMED', 'PREPARING', 'READY', 'DISPATCHED', 'DELIVERED', 'COMPLETED', 'RETURNING', 'RETURNED', 'CANCELLED', 'EXPIRED']),
+  "createdAt": zod.coerce.date(),
+  "expiresAt": zod.coerce.date(),
+  "fulfillment": zod.enum(['DELIVERY', 'PICKUP']),
+  "deliveryMode": zod.union([zod.literal('HOME'),zod.literal('DESK'),zod.literal(null)]).nullable(),
+  "deliveryMinDays": zod.number().int().nullable(),
+  "deliveryMaxDays": zod.number().int().nullable(),
+  "paymentMethod": zod.enum(['COD', 'CASH_PICKUP']),
+  "paymentStatus": zod.enum(['UNPAID', 'COLLECTED_BY_COURIER', 'PAID', 'REFUNDED']),
+  "storePaymentReceived": zod.boolean(),
+  "refundedMinor": zod.number().int(),
+  "carrierName": zod.string(),
+  "trackingNumber": zod.string(),
+  "maskedPhone": zod.string(),
+  "items": zod.array(zod.object({
+  "variantId": zod.number().int(),
+  "productName": zod.string(),
+  "nameAr": zod.string(),
+  "sku": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "image": zod.string(),
+  "quantity": zod.number().int(),
+  "unitPriceMinor": zod.number().int(),
+  "lineTotalMinor": zod.number().int()
+})),
+  "subtotalMinor": zod.number().int(),
+  "feeMinor": zod.number().int(),
+  "totalMinor": zod.number().int(),
+  "zoneNameFr": zod.string(),
+  "zoneNameAr": zod.string(),
+  "pickupAddressFr": zod.string(),
+  "pickupAddressAr": zod.string(),
+  "policyFr": zod.string(),
+  "policyAr": zod.string()
+}).and(zod.object({
+  "id": zod.number().int(),
+  "customerName": zod.string(),
+  "customerPhone": zod.string(),
+  "commune": zod.string(),
+  "address": zod.string(),
+  "notes": zod.string(),
+  "events": zod.array(zod.object({
+  "kind": zod.string(),
+  "reason": zod.string(),
+  "createdAt": zod.coerce.date()
+})),
+  "collector": zod.union([zod.literal('STAFF'),zod.literal('COURIER'),zod.literal(null)]).nullable(),
+  "payments": zod.array(zod.object({
+  "id": zod.number().int(),
+  "number": zod.string(),
+  "kind": zod.enum(['RECEIPT', 'REFUND']),
+  "method": zod.enum(['CASH', 'BANK']),
+  "amountMinor": zod.number().int(),
+  "feeMinor": zod.number().int(),
+  "feeRefundMinor": zod.number().int(),
+  "tenderedMinor": zod.number().int().nullable(),
+  "changeMinor": zod.number().int(),
+  "reference": zod.string(),
+  "reason": zod.string(),
+  "registerSessionId": zod.number().int().nullable(),
+  "actorId": zod.number().int(),
+  "receiptSettings": zod.object({
+  "address": zod.string().max(abandonAdminOrderRequestResponseOrderOneTwoPaymentsItemReceiptSettingsAddressMax),
+  "phone": zod.string().max(abandonAdminOrderRequestResponseOrderOneTwoPaymentsItemReceiptSettingsPhoneMax),
+  "footer": zod.string().max(abandonAdminOrderRequestResponseOrderOneTwoPaymentsItemReceiptSettingsFooterMax)
+}),
+  "createdAt": zod.coerce.date()
+})),
+  "storeReceivedMinor": zod.number().int(),
+  "carrierFeesMinor": zod.number().int(),
+  "refundedMinor": zod.number().int(),
+  "courierOutstandingMinor": zod.number().int(),
+  "allowedActions": zod.array(zod.enum(['CONFIRM', 'PREPARE', 'READY', 'DISPATCH', 'DELIVER', 'COURIER_COLLECT', 'RETURN_START', 'RETURN_RECEIVE', 'CANCEL'])),
+  "canReceivePayment": zod.boolean(),
+  "canRefund": zod.boolean()
+})),zod.null()])
+})
 
 
 export const HealthCheckResponse = zod.object({
@@ -1363,6 +1955,8 @@ export const GetPosContextResponse = zod.object({
   "status": zod.enum(['OPEN', 'CLOSED']),
   "openingMinor": zod.number().int(),
   "salesMinor": zod.number().int(),
+  "webReceiptsMinor": zod.number().int(),
+  "webRefundsMinor": zod.number().int(),
   "refundsMinor": zod.number().int(),
   "expectedMinor": zod.number().int(),
   "countedMinor": zod.number().int().nullable(),
@@ -1444,6 +2038,8 @@ export const ListRegisterSessionsResponse = zod.object({
   "status": zod.enum(['OPEN', 'CLOSED']),
   "openingMinor": zod.number().int(),
   "salesMinor": zod.number().int(),
+  "webReceiptsMinor": zod.number().int(),
+  "webRefundsMinor": zod.number().int(),
   "refundsMinor": zod.number().int(),
   "expectedMinor": zod.number().int(),
   "countedMinor": zod.number().int().nullable(),
@@ -1477,6 +2073,8 @@ export const OpenRegisterResponse = zod.object({
   "status": zod.enum(['OPEN', 'CLOSED']),
   "openingMinor": zod.number().int(),
   "salesMinor": zod.number().int(),
+  "webReceiptsMinor": zod.number().int(),
+  "webRefundsMinor": zod.number().int(),
   "refundsMinor": zod.number().int(),
   "expectedMinor": zod.number().int(),
   "countedMinor": zod.number().int().nullable(),
@@ -1519,6 +2117,8 @@ export const CloseRegisterResponse = zod.object({
   "status": zod.enum(['OPEN', 'CLOSED']),
   "openingMinor": zod.number().int(),
   "salesMinor": zod.number().int(),
+  "webReceiptsMinor": zod.number().int(),
+  "webRefundsMinor": zod.number().int(),
   "refundsMinor": zod.number().int(),
   "expectedMinor": zod.number().int(),
   "countedMinor": zod.number().int().nullable(),
@@ -1956,6 +2556,8 @@ export const CancelRegisterRequestResponse = zod.object({
   "status": zod.enum(['OPEN', 'CLOSED']),
   "openingMinor": zod.number().int(),
   "salesMinor": zod.number().int(),
+  "webReceiptsMinor": zod.number().int(),
+  "webRefundsMinor": zod.number().int(),
   "refundsMinor": zod.number().int(),
   "expectedMinor": zod.number().int(),
   "countedMinor": zod.number().int().nullable(),

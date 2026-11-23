@@ -47,33 +47,39 @@ export async function receiptSettings(tx: Tx): Promise<ReceiptSettings> {
   return { address: get("address"), phone: get("phone"), footer: get("footer") };
 }
 export async function drawerTotals(tx: Tx, sessionId: number, openingMinor: number) {
-  const [sales, refunds] = await Promise.all([
+  const [sales, refunds, web] = await Promise.all([
     tx.sale.aggregate({ where: { registerSessionId: sessionId }, _sum: { totalMinor: true } }),
     tx.refund.aggregate({ where: { registerSessionId: sessionId }, _sum: { amountMinor: true } }),
+    tx.webOrderPayment.groupBy({ by: ["kind"], where: { registerSessionId: sessionId, method: "CASH" }, _sum: { amountMinor: true } }),
   ]);
   const salesMinor = sales._sum.totalMinor || 0, refundsMinor = refunds._sum.amountMinor || 0;
-  return { salesMinor, refundsMinor, expectedMinor: money(openingMinor + salesMinor - refundsMinor) };
+  const webReceiptsMinor = web.find(p => p.kind === "RECEIPT")?._sum.amountMinor ?? 0;
+  const webRefundsMinor = web.find(p => p.kind === "REFUND")?._sum.amountMinor ?? 0;
+  return { salesMinor, refundsMinor, webReceiptsMinor, webRefundsMinor, expectedMinor: money(openingMinor + salesMinor + webReceiptsMinor - refundsMinor - webRefundsMinor) };
 }
 export async function registerOutput(tx: Tx, id: number): Promise<RegisterSession> {
   return (await registerOutputs(tx, [id]))[0]!;
 }
 export async function registerOutputs(tx: Tx, ids: number[]): Promise<RegisterSession[]> {
   if (!ids.length) return [];
-  const [rows, sales, refunds] = await Promise.all([
+  const [rows, sales, refunds, web] = await Promise.all([
     tx.registerSession.findMany({ where: { id: { in: ids } }, include: { openedBy: true, closedBy: true } }),
     tx.sale.groupBy({ by: ["registerSessionId"], where: { registerSessionId: { in: ids } }, _sum: { totalMinor: true } }),
     tx.refund.groupBy({ by: ["registerSessionId"], where: { registerSessionId: { in: ids } }, _sum: { amountMinor: true } }),
+    tx.webOrderPayment.groupBy({ by: ["registerSessionId", "kind"], where: { registerSessionId: { in: ids }, method: "CASH" }, _sum: { amountMinor: true } }),
   ]);
   return ids.map(id => {
     const row = rows.find(r => r.id === id);
     if (!row) fail("Session de caisse introuvable.", 404);
     const salesMinor = sales.find(s => s.registerSessionId === id)?._sum.totalMinor || 0;
     const refundsMinor = refunds.find(s => s.registerSessionId === id)?._sum.amountMinor || 0;
-    const expectedMinor = money(row.openingMinor + salesMinor - refundsMinor);
+    const webReceiptsMinor = web.find(p => p.registerSessionId === id && p.kind === "RECEIPT")?._sum.amountMinor ?? 0;
+    const webRefundsMinor = web.find(p => p.registerSessionId === id && p.kind === "REFUND")?._sum.amountMinor ?? 0;
+    const expectedMinor = money(row.openingMinor + salesMinor + webReceiptsMinor - refundsMinor - webRefundsMinor);
     return {
     id: row.id, openedById: row.openedById, openedBy: row.openedBy.email,
     status: row.status as RegisterSession["status"], openingMinor: row.openingMinor,
-    salesMinor, refundsMinor, expectedMinor: row.expectedMinor ?? expectedMinor,
+    salesMinor, refundsMinor, webReceiptsMinor, webRefundsMinor, expectedMinor: row.expectedMinor ?? expectedMinor,
     countedMinor: row.countedMinor, varianceMinor: row.varianceMinor,
     openedAt: row.openedAt.toISOString(), closedAt: row.closedAt?.toISOString() || null,
     closedBy: row.closedBy?.email || null, closeReason: row.closeReason,

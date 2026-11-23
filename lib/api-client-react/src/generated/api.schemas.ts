@@ -217,15 +217,6 @@ export interface CheckoutQuote {
   reservationMinutes: number;
 }
 
-export type CheckoutOrderStatus = typeof CheckoutOrderStatus[keyof typeof CheckoutOrderStatus];
-
-
-export const CheckoutOrderStatus = {
-  PENDING: 'PENDING',
-  CANCELLED: 'CANCELLED',
-  EXPIRED: 'EXPIRED',
-} as const;
-
 export type CheckoutOrderFulfillment = typeof CheckoutOrderFulfillment[keyof typeof CheckoutOrderFulfillment];
 
 
@@ -258,12 +249,32 @@ export type CheckoutOrderPaymentStatus = typeof CheckoutOrderPaymentStatus[keyof
 
 export const CheckoutOrderPaymentStatus = {
   UNPAID: 'UNPAID',
+  COLLECTED_BY_COURIER: 'COLLECTED_BY_COURIER',
+  PAID: 'PAID',
+  REFUNDED: 'REFUNDED',
+} as const;
+
+export type WebOrderStatus = typeof WebOrderStatus[keyof typeof WebOrderStatus];
+
+
+export const WebOrderStatus = {
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  PREPARING: 'PREPARING',
+  READY: 'READY',
+  DISPATCHED: 'DISPATCHED',
+  DELIVERED: 'DELIVERED',
+  COMPLETED: 'COMPLETED',
+  RETURNING: 'RETURNING',
+  RETURNED: 'RETURNED',
+  CANCELLED: 'CANCELLED',
+  EXPIRED: 'EXPIRED',
 } as const;
 
 export interface CheckoutOrder {
   reference: string;
   requestId: string;
-  status: CheckoutOrderStatus;
+  status: WebOrderStatus;
   createdAt: string;
   expiresAt: string;
   fulfillment: CheckoutOrderFulfillment;
@@ -275,6 +286,10 @@ export interface CheckoutOrder {
   deliveryMaxDays: number | null;
   paymentMethod: CheckoutOrderPaymentMethod;
   paymentStatus: CheckoutOrderPaymentStatus;
+  storePaymentReceived: boolean;
+  refundedMinor: number;
+  carrierName: string;
+  trackingNumber: string;
   maskedPhone: string;
   items: CheckoutOrderLine[];
   subtotalMinor: number;
@@ -307,6 +322,77 @@ export interface OrderEventView {
   createdAt: string;
 }
 
+/**
+ * @nullable
+ */
+export type AdminCheckoutOrderCollector = typeof AdminCheckoutOrderCollector[keyof typeof AdminCheckoutOrderCollector] | null;
+
+
+export const AdminCheckoutOrderCollector = {
+  STAFF: 'STAFF',
+  COURIER: 'COURIER',
+} as const;
+
+export type WebOrderPaymentKind = typeof WebOrderPaymentKind[keyof typeof WebOrderPaymentKind];
+
+
+export const WebOrderPaymentKind = {
+  RECEIPT: 'RECEIPT',
+  REFUND: 'REFUND',
+} as const;
+
+export type WebOrderPaymentMethod = typeof WebOrderPaymentMethod[keyof typeof WebOrderPaymentMethod];
+
+
+export const WebOrderPaymentMethod = {
+  CASH: 'CASH',
+  BANK: 'BANK',
+} as const;
+
+export interface ReceiptSettings {
+  /** @maxLength 500 */
+  address: string;
+  /** @maxLength 60 */
+  phone: string;
+  /** @maxLength 500 */
+  footer: string;
+}
+
+export interface WebOrderPayment {
+  id: number;
+  number: string;
+  kind: WebOrderPaymentKind;
+  method: WebOrderPaymentMethod;
+  amountMinor: number;
+  feeMinor: number;
+  feeRefundMinor: number;
+  /** @nullable */
+  tenderedMinor: number | null;
+  changeMinor: number;
+  reference: string;
+  reason: string;
+  /** @nullable */
+  registerSessionId: number | null;
+  actorId: number;
+  receiptSettings: ReceiptSettings;
+  createdAt: string;
+}
+
+export type WebOrderOperation = typeof WebOrderOperation[keyof typeof WebOrderOperation];
+
+
+export const WebOrderOperation = {
+  CONFIRM: 'CONFIRM',
+  PREPARE: 'PREPARE',
+  READY: 'READY',
+  DISPATCH: 'DISPATCH',
+  DELIVER: 'DELIVER',
+  COURIER_COLLECT: 'COURIER_COLLECT',
+  RETURN_START: 'RETURN_START',
+  RETURN_RECEIVE: 'RETURN_RECEIVE',
+  CANCEL: 'CANCEL',
+} as const;
+
 export type AdminCheckoutOrder = CheckoutOrder & {
   id: number;
   customerName: string;
@@ -315,7 +401,124 @@ export type AdminCheckoutOrder = CheckoutOrder & {
   address: string;
   notes: string;
   events: OrderEventView[];
+  /** @nullable */
+  collector: AdminCheckoutOrderCollector;
+  payments: WebOrderPayment[];
+  storeReceivedMinor: number;
+  carrierFeesMinor: number;
+  refundedMinor: number;
+  courierOutstandingMinor: number;
+  allowedActions: WebOrderOperation[];
+  canReceivePayment: boolean;
+  canRefund: boolean;
 };
+
+/**
+ * @nullable
+ */
+export type WebOrderActionCollector = typeof WebOrderActionCollector[keyof typeof WebOrderActionCollector] | null;
+
+
+export const WebOrderActionCollector = {
+  STAFF: 'STAFF',
+  COURIER: 'COURIER',
+} as const;
+
+export interface WebOrderAction {
+  requestId: string;
+  expectedStatus: WebOrderStatus;
+  action: WebOrderOperation;
+  /**
+     * @minLength 3
+     * @maxLength 500
+     */
+  reason: string;
+  /** @nullable */
+  collector: WebOrderActionCollector;
+  /** @maxLength 150 */
+  carrierName: string;
+  /** @maxLength 150 */
+  trackingNumber: string;
+  /**
+     * @maxItems 20
+     * @nullable
+     * @items.minimum 1
+     */
+  restockVariantIds: number[] | null;
+}
+
+export type WebOrderPaymentInputKind = typeof WebOrderPaymentInputKind[keyof typeof WebOrderPaymentInputKind];
+
+
+export const WebOrderPaymentInputKind = {
+  RECEIPT: 'RECEIPT',
+  REFUND: 'REFUND',
+} as const;
+
+export type WebOrderPaymentInputMethod = typeof WebOrderPaymentInputMethod[keyof typeof WebOrderPaymentInputMethod];
+
+
+export const WebOrderPaymentInputMethod = {
+  CASH: 'CASH',
+  BANK: 'BANK',
+} as const;
+
+export interface WebOrderPaymentInput {
+  requestId: string;
+  expectedStatus: WebOrderStatus;
+  kind: WebOrderPaymentInputKind;
+  method: WebOrderPaymentInputMethod;
+  /**
+     * @minimum 0
+     * @maximum 1000000000
+     */
+  amountMinor: number;
+  /**
+     * @minimum 0
+     * @maximum 1000000000
+     */
+  feeMinor: number;
+  /**
+     * @minimum 0
+     * @maximum 1000000000
+     */
+  feeRefundMinor: number;
+  /**
+     * @minimum 0
+     * @maximum 1000000000
+     * @nullable
+     */
+  tenderedMinor: number | null;
+  /**
+     * @minimum 1
+     * @nullable
+     */
+  registerSessionId: number | null;
+  /** @maxLength 150 */
+  reference: string;
+  /**
+     * @minLength 3
+     * @maxLength 500
+     */
+  reason: string;
+}
+
+export interface WebOrderRequestKey {
+  requestId: string;
+}
+
+export type WebOrderRequestResultState = typeof WebOrderRequestResultState[keyof typeof WebOrderRequestResultState];
+
+
+export const WebOrderRequestResultState = {
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface WebOrderRequestResult {
+  state: WebOrderRequestResultState;
+  order: AdminCheckoutOrder | null;
+}
 
 export interface AdminOrderPage {
   items: AdminCheckoutOrder[];
@@ -376,15 +579,6 @@ export const PosSaleStatus = {
   REFUNDED: 'REFUNDED',
   VOIDED: 'VOIDED',
 } as const;
-
-export interface ReceiptSettings {
-  /** @maxLength 500 */
-  address: string;
-  /** @maxLength 60 */
-  phone: string;
-  /** @maxLength 500 */
-  footer: string;
-}
 
 export interface SaleLine {
   id: number;
@@ -462,6 +656,8 @@ export interface RegisterSession {
   status: RegisterSessionStatus;
   openingMinor: number;
   salesMinor: number;
+  webReceiptsMinor: number;
+  webRefundsMinor: number;
   refundsMinor: number;
   expectedMinor: number;
   /** @nullable */
@@ -998,20 +1194,22 @@ export type ListAdminOrdersParams = {
  * @minimum 1
  */
 before?: number;
-status?: ListAdminOrdersStatus;
+status?: WebOrderStatus;
+payment?: ListAdminOrdersPayment;
 /**
  * @maxLength 100
  */
 q?: string;
 };
 
-export type ListAdminOrdersStatus = typeof ListAdminOrdersStatus[keyof typeof ListAdminOrdersStatus];
+export type ListAdminOrdersPayment = typeof ListAdminOrdersPayment[keyof typeof ListAdminOrdersPayment];
 
 
-export const ListAdminOrdersStatus = {
-  PENDING: 'PENDING',
-  CANCELLED: 'CANCELLED',
-  EXPIRED: 'EXPIRED',
+export const ListAdminOrdersPayment = {
+  UNPAID: 'UNPAID',
+  COURIER_DUE: 'COURIER_DUE',
+  RECEIVED: 'RECEIVED',
+  REFUNDED: 'REFUNDED',
 } as const;
 
 export type ListProductsParams = {

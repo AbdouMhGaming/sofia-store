@@ -378,7 +378,14 @@ export function ConfirmationPage() {
 export function OrderView({ order }: { order: CheckoutOrder }) {
   const { pick, lang } = useI18n();
   const s = useShopT();
-  const status = order.status === "PENDING" ? s("confPending") : order.status === "CANCELLED" ? s("confCancelled") : s("confExpired");
+  const st = CUST_STATUS[order.status];
+  const status = st ? pick(st[0], st[1]) : order.status;
+  const closed = ["CANCELLED", "EXPIRED", "RETURNED"].includes(order.status);
+  const refunded = order.refundedMinor;
+  const pay = order.paymentStatus === "REFUNDED" ? pick("Remboursée", "تم الاسترداد")
+    : order.paymentStatus === "PAID" ? pick("Payée : montant reçu par la boutique", "مدفوعة: استلم المتجر المبلغ")
+    : order.paymentStatus === "COLLECTED_BY_COURIER" ? pick("Payée au transporteur", "مدفوعة لشركة التوصيل")
+    : closed ? pick("Aucun montant dû", "لا يوجد مبلغ مستحق") : s("unpaid");
   return (
     <div className="space-y-8 rise" data-testid="panel-order">
       <div className="bg-[#282326] text-[#f6efe9] rounded-sm p-8 md:p-10 grid md:grid-cols-2 gap-6">
@@ -388,7 +395,9 @@ export function OrderView({ order }: { order: CheckoutOrder }) {
           <p className="mt-4 text-[#f3d6e2]" data-testid="text-order-status">{status}</p>
         </div>
         <div className="text-sm space-y-2 md:text-end">
-          <p className="inline-block px-3 py-1 rounded-full border border-white/25" data-testid="text-payment-status">{order.status === "PENDING" ? s("unpaid") : pick("Aucun paiement collecté en ligne.", "لم يُحصّل أي دفع عبر الإنترنت.")}</p>
+          <p className="inline-block px-3 py-1 rounded-full border border-white/25" data-testid="text-payment-status">{pay}</p>
+          {refunded > 0 && <p className="opacity-90" data-testid="text-refunded">{pick("Montant remboursé", "المبلغ المسترد")} : {formatDA(refunded)}</p>}
+          {(order.carrierName || order.trackingNumber) && <p className="opacity-80" data-testid="text-tracking">{pick("Transporteur", "شركة التوصيل")} : {order.carrierName}{order.trackingNumber && <> · <span dir="ltr" className="font-mono">{order.trackingNumber}</span></>}</p>}
           {order.status === "PENDING" && <p className="opacity-80" data-testid="text-expires">{s("expires")} {fmtAlgiers(order.expiresAt, lang)}</p>}
           <p className="opacity-80">{s("maskedPhone")} : <span dir="ltr">{order.maskedPhone}</span></p>
         </div>
@@ -404,7 +413,7 @@ export function OrderView({ order }: { order: CheckoutOrder }) {
           ))}
         </ul>
         <div className="space-y-5">
-          <Totals sub={order.subtotalMinor} fee={order.feeMinor} total={order.totalMinor} historical={order.status !== "PENDING"} />
+          <Totals sub={order.subtotalMinor} fee={order.feeMinor} total={order.totalMinor} historical={closed || order.paymentStatus !== "UNPAID"} />
           <div className="text-sm">
             <p className="eyebrow">{s("fulfil")}</p>
             <p className="mt-2">{order.fulfillment === "DELIVERY" ? `${s("delivery")} · ${pick(order.zoneNameFr, order.zoneNameAr)} · ${order.deliveryMode === "DESK" ? s("desk") : s("home")}` : s("pickup")}</p>
@@ -420,6 +429,20 @@ export function OrderView({ order }: { order: CheckoutOrder }) {
     </div>
   );
 }
+
+const CUST_STATUS: Record<string, [string, string]> = {
+  PENDING: ["Reçue, en attente de confirmation par la boutique.", "تم الاستلام، في انتظار تأكيد المتجر."],
+  CONFIRMED: ["Confirmée par la boutique.", "أكّد المتجر الطلب."],
+  PREPARING: ["En cours de préparation.", "قيد التحضير."],
+  READY: ["Prête.", "جاهزة."],
+  DISPATCHED: ["Remise au transporteur.", "سُلّمت لشركة التوصيل."],
+  DELIVERED: ["Livrée.", "تم التوصيل."],
+  COMPLETED: ["Terminée. Merci.", "مكتملة. شكراً."],
+  RETURNING: ["Retour en cours vers la boutique.", "الإرجاع جارٍ نحو المتجر."],
+  RETURNED: ["Retournée à la boutique.", "أُعيدت إلى المتجر."],
+  CANCELLED: ["Commande annulée.", "أُلغي الطلب."],
+  EXPIRED: ["Commande expirée.", "انتهت صلاحية الطلب."],
+};
 
 function etaText(min: number | null, max: number | null, s: (k: SKey) => string) {
   if (min === null || max === null) return "";

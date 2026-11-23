@@ -26,6 +26,8 @@ model User {
   refunds            Refund[]
   posCancellations   PosCancellation[]
   orderEvents        WebOrderEvent[]
+  webPayments        WebOrderPayment[]
+  webCommands        WebOrderCommand[]
   @@map("users")
 }
 
@@ -257,6 +259,7 @@ model RegisterSession {
   closedBy         User? @relation("RegisterClosedBy", fields: [closedById], references: [id], onDelete: Restrict)
   sales            Sale[]
   refunds          Refund[]
+  webPayments      WebOrderPayment[]
   @@index([openedById, openedAt])
   @@map("register_sessions")
 }
@@ -375,6 +378,10 @@ model WebOrder {
   reference      String @unique @db.VarChar(80)
   requestId      String @unique @db.VarChar(36)
   status         String @default("PENDING") @db.VarChar(20)
+  collector      String? @db.VarChar(20)
+  carrierName    String @default("") @db.VarChar(150)
+  trackingNumber String @default("") @db.VarChar(150)
+  courierCollected Boolean @default(false)
   fulfillment    String @db.VarChar(20)
   customerName   String @db.VarChar(150)
   customerPhone  String @db.VarChar(25)
@@ -390,6 +397,8 @@ model WebOrder {
   items          WebOrderItem[]
   events         WebOrderEvent[]
   attempt        CheckoutAttempt?
+  payments       WebOrderPayment[]
+  commands       WebOrderCommand[]
   @@index([status, expiresAt])
   @@map("web_orders")
 }
@@ -429,4 +438,40 @@ model CheckoutAttempt {
   createdAt   DateTime @default(now())
   order       WebOrder? @relation(fields: [orderId], references: [id], onDelete: Restrict)
   @@map("checkout_attempts")
+}
+
+model WebOrderPayment {
+  id                Int @id @default(autoincrement())
+  orderId           Int
+  kind              String @db.VarChar(20)
+  method            String @db.VarChar(20)
+  amountMinor       Int
+  feeMinor          Int @default(0)
+  feeRefundMinor    Int @default(0)
+  tenderedMinor     Int?
+  changeMinor       Int @default(0)
+  reference         String @db.VarChar(150)
+  reason            String @db.VarChar(500)
+  registerSessionId Int?
+  userId            Int
+  receiptSettings   Json
+  createdAt         DateTime @default(now())
+  order             WebOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  user              User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  registerSession   RegisterSession? @relation(fields: [registerSessionId], references: [id], onDelete: Restrict)
+  @@unique([orderId, kind])
+  @@index([registerSessionId])
+  @@map("web_order_payments")
+}
+
+model WebOrderCommand {
+  requestId   String @id @db.VarChar(36)
+  orderId     Int
+  userId      Int
+  requestHash String? @db.VarChar(64)
+  state       String @db.VarChar(20)
+  createdAt   DateTime @default(now())
+  order       WebOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  user        User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  @@map("web_order_commands")
 }

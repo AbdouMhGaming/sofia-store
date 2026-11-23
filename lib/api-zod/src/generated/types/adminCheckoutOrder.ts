@@ -5,8 +5,11 @@
  * SOFIA STORE shared retail API. Initial foundation and catalog phase.
  * OpenAPI spec version: 0.2.0
  */
+import type { AdminCheckoutOrderCollector } from './adminCheckoutOrderCollector';
 import type { CheckoutOrder } from './checkoutOrder';
 import type { OrderEventView } from './orderEventView';
+import type { WebOrderOperation } from './webOrderOperation';
+import type { WebOrderPayment } from './webOrderPayment';
 
 export type AdminCheckoutOrder = CheckoutOrder & {
   id: number;
@@ -16,4 +19,14 @@ export type AdminCheckoutOrder = CheckoutOrder & {
   address: string;
   notes: string;
   events: OrderEventView[];
+  /** @nullable */
+  collector: AdminCheckoutOrderCollector;
+  payments: WebOrderPayment[];
+  storeReceivedMinor: number;
+  carrierFeesMinor: number;
+  refundedMinor: number;
+  courierOutstandingMinor: number;
+  allowedActions: WebOrderOperation[];
+  canReceivePayment: boolean;
+  canRefund: boolean;
 };

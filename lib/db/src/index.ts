@@ -31,3 +31,6 @@ export { saveCheckoutSettings } from "./checkout/settings";
 export { buildCheckoutQuote } from "./checkout/quote";
 export { placeWebOrder, recoverWebOrder, abandonWebOrderRequest } from "./checkout/orders";
 export { expireCheckoutOrders, cancelWebOrder } from "./checkout/lifecycle";
+export { actOnWebOrder } from "./checkout/fulfillment";
+export { recordWebPayment } from "./checkout/payments";
+export { recoverWebCommand, abandonWebCommand } from "./checkout/commands";
