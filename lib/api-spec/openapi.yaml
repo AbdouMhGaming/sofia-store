@@ -6,6 +6,133 @@ info:
 servers:
   - url: /api
 paths:
+  /checkout/config:
+    get:
+      operationId: getCheckoutConfig
+      responses:
+        "200":
+          description: Published checkout options, disabled until explicitly configured
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CheckoutSettings" }
+  /checkout/quote:
+    post:
+      operationId: quoteCheckout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CheckoutBasket" }
+      responses:
+        "200":
+          description: Server-priced basket; does not reserve stock
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CheckoutQuote" }
+  /checkout/orders:
+    post:
+      operationId: placeCheckoutOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CheckoutSubmission" }
+      responses:
+        "200":
+          description: Order saved once with reserved stock; no cash collected online
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CheckoutOrder" }
+  /checkout/recover:
+    post:
+      operationId: recoverCheckoutOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CheckoutAccess" }
+      responses:
+        "200":
+          description: Capability-protected saved order without exposing address or full phone
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CheckoutOrder" }
+  /checkout/cancel-request:
+    post:
+      operationId: cancelCheckoutRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CheckoutAccess" }
+      responses:
+        "200":
+          description: Durable abandonment or the previously committed order
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CheckoutCancellation" }
+  /admin/checkout-settings:
+    get:
+      operationId: getAdminCheckoutSettings
+      responses:
+        "200":
+          description: Owner-controlled checkout configuration
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CheckoutSettings" }
+    put:
+      operationId: saveAdminCheckoutSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CheckoutSettings" }
+      responses:
+        "200":
+          description: Saved and validated checkout configuration
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CheckoutSettings" }
+  /admin/orders:
+    get:
+      operationId: listAdminOrders
+      parameters:
+        - { in: query, name: before, schema: { type: integer, minimum: 1 } }
+        - { in: query, name: status, schema: { type: string, enum: [PENDING, CANCELLED, EXPIRED] } }
+        - { in: query, name: q, schema: { type: string, maxLength: 100 } }
+      responses:
+        "200":
+          description: Protected orders, newest first
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminOrderPage" }
+  /admin/orders/{id}:
+    get:
+      operationId: getAdminOrder
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, minimum: 1 } }
+      responses:
+        "200":
+          description: Protected order details and reservation events
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminCheckoutOrder" }
+  /admin/orders/{id}/cancel:
+    post:
+      operationId: cancelAdminOrder
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, minimum: 1 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrderCancellationReason" }
+      responses:
+        "200":
+          description: Cancelled order with its stock reservation released exactly once
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminCheckoutOrder" }
   /healthz:
     get:
       operationId: healthCheck
@@ -581,6 +708,169 @@ paths:
               schema: { $ref: "#/components/schemas/ReceiptSettings" }
 components:
   schemas:
+    DeliveryZone:
+      type: object
+      required: [code, nameFr, nameAr, enabled, homeFeeMinor, deskFeeMinor, homeMinDays, homeMaxDays, deskMinDays, deskMaxDays]
+      properties:
+        code: { type: string, pattern: "^(0[1-9]|[1-4][0-9]|5[0-8])$" }
+        nameFr: { type: string, minLength: 1, maxLength: 100 }
+        nameAr: { type: string, minLength: 1, maxLength: 100 }
+        enabled: { type: boolean }
+        homeFeeMinor: { type: [integer, "null"], minimum: 0, maximum: 1000000000 }
+        deskFeeMinor: { type: [integer, "null"], minimum: 0, maximum: 1000000000 }
+        homeMinDays: { type: [integer, "null"], minimum: 1, maximum: 60 }
+        homeMaxDays: { type: [integer, "null"], minimum: 1, maximum: 60 }
+        deskMinDays: { type: [integer, "null"], minimum: 1, maximum: 60 }
+        deskMaxDays: { type: [integer, "null"], minimum: 1, maximum: 60 }
+    CheckoutSettings:
+      type: object
+      required: [enabled, deliveryEnabled, pickupEnabled, pickupAddressFr, pickupAddressAr, pickupFeeMinor, reservationMinutes, policyFr, policyAr, zones]
+      properties:
+        enabled: { type: boolean }
+        deliveryEnabled: { type: boolean }
+        pickupEnabled: { type: boolean }
+        pickupAddressFr: { type: string, maxLength: 500 }
+        pickupAddressAr: { type: string, maxLength: 500 }
+        pickupFeeMinor: { type: [integer, "null"], minimum: 0, maximum: 1000000000 }
+        reservationMinutes: { type: [integer, "null"], minimum: 15, maximum: 10080 }
+        policyFr: { type: string, maxLength: 3000 }
+        policyAr: { type: string, maxLength: 3000 }
+        zones: { type: array, minItems: 58, maxItems: 58, items: { $ref: "#/components/schemas/DeliveryZone" } }
+    CheckoutBasketItem:
+      type: object
+      required: [variantId, quantity]
+      properties:
+        variantId: { type: integer, minimum: 1 }
+        quantity: { type: integer, minimum: 1, maximum: 20 }
+    CheckoutBasket:
+      type: object
+      required: [items, fulfillment, zoneCode, deliveryMode]
+      properties:
+        items: { type: array, minItems: 1, maxItems: 20, items: { $ref: "#/components/schemas/CheckoutBasketItem" } }
+        fulfillment: { type: string, enum: [DELIVERY, PICKUP] }
+        zoneCode: { type: [string, "null"], maxLength: 20 }
+        deliveryMode: { type: [string, "null"], enum: [HOME, DESK, null] }
+    CheckoutAccess:
+      type: object
+      required: [requestId, accessToken]
+      properties:
+        requestId: { type: string, format: uuid }
+        accessToken: { type: string, pattern: "^[a-f0-9]{64}$" }
+    CheckoutSubmission:
+      allOf:
+        - { $ref: "#/components/schemas/CheckoutBasket" }
+        - { $ref: "#/components/schemas/CheckoutAccess" }
+        - type: object
+          required: [expectedQuoteHash, customerName, customerPhone, commune, address, notes, acceptedPolicy]
+          properties:
+            expectedQuoteHash: { type: string, pattern: "^[a-f0-9]{64}$" }
+            customerName: { type: string, minLength: 3, maxLength: 150 }
+            customerPhone: { type: string, minLength: 10, maxLength: 25 }
+            commune: { type: string, maxLength: 150 }
+            address: { type: string, maxLength: 500 }
+            notes: { type: string, maxLength: 1000 }
+            acceptedPolicy: { type: boolean, enum: [true] }
+    CheckoutOrderLine:
+      type: object
+      required: [variantId, productName, nameAr, sku, size, color, image, quantity, unitPriceMinor, lineTotalMinor]
+      properties:
+        variantId: { type: integer }
+        productName: { type: string }
+        nameAr: { type: string }
+        sku: { type: string }
+        size: { type: string }
+        color: { type: string }
+        image: { type: string }
+        quantity: { type: integer }
+        unitPriceMinor: { type: integer }
+        lineTotalMinor: { type: integer }
+    CheckoutQuote:
+      type: object
+      required: [quoteHash, items, subtotalMinor, feeMinor, totalMinor, fulfillment, zoneCode, deliveryMode, deliveryMinDays, deliveryMaxDays, zoneNameFr, zoneNameAr, pickupAddressFr, pickupAddressAr, policyFr, policyAr, reservationMinutes]
+      properties:
+        quoteHash: { type: string }
+        items: { type: array, items: { $ref: "#/components/schemas/CheckoutOrderLine" } }
+        subtotalMinor: { type: integer }
+        feeMinor: { type: integer }
+        totalMinor: { type: integer }
+        fulfillment: { type: string, enum: [DELIVERY, PICKUP] }
+        zoneCode: { type: [string, "null"] }
+        deliveryMode: { type: [string, "null"], enum: [HOME, DESK, null] }
+        deliveryMinDays: { type: [integer, "null"] }
+        deliveryMaxDays: { type: [integer, "null"] }
+        zoneNameFr: { type: string }
+        zoneNameAr: { type: string }
+        pickupAddressFr: { type: string }
+        pickupAddressAr: { type: string }
+        policyFr: { type: string }
+        policyAr: { type: string }
+        reservationMinutes: { type: integer }
+    CheckoutOrder:
+      type: object
+      required: [reference, requestId, status, createdAt, expiresAt, fulfillment, deliveryMode, deliveryMinDays, deliveryMaxDays, paymentMethod, paymentStatus, maskedPhone, items, subtotalMinor, feeMinor, totalMinor, zoneNameFr, zoneNameAr, pickupAddressFr, pickupAddressAr, policyFr, policyAr]
+      properties:
+        reference: { type: string }
+        requestId: { type: string }
+        status: { type: string, enum: [PENDING, CANCELLED, EXPIRED] }
+        createdAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+        fulfillment: { type: string, enum: [DELIVERY, PICKUP] }
+        deliveryMode: { type: [string, "null"], enum: [HOME, DESK, null] }
+        deliveryMinDays: { type: [integer, "null"] }
+        deliveryMaxDays: { type: [integer, "null"] }
+        paymentMethod: { type: string, enum: [COD, CASH_PICKUP] }
+        paymentStatus: { type: string, enum: [UNPAID] }
+        maskedPhone: { type: string }
+        items: { type: array, items: { $ref: "#/components/schemas/CheckoutOrderLine" } }
+        subtotalMinor: { type: integer }
+        feeMinor: { type: integer }
+        totalMinor: { type: integer }
+        zoneNameFr: { type: string }
+        zoneNameAr: { type: string }
+        pickupAddressFr: { type: string }
+        pickupAddressAr: { type: string }
+        policyFr: { type: string }
+        policyAr: { type: string }
+    CheckoutCancellation:
+      type: object
+      required: [cancelled, order]
+      properties:
+        cancelled: { type: boolean }
+        order:
+          oneOf:
+            - { $ref: "#/components/schemas/CheckoutOrder" }
+            - { type: "null" }
+    OrderCancellationReason:
+      type: object
+      required: [reason]
+      properties:
+        reason: { type: string, minLength: 3, maxLength: 500 }
+    OrderEventView:
+      type: object
+      required: [kind, reason, createdAt]
+      properties:
+        kind: { type: string }
+        reason: { type: string }
+        createdAt: { type: string, format: date-time }
+    AdminCheckoutOrder:
+      allOf:
+        - { $ref: "#/components/schemas/CheckoutOrder" }
+        - type: object
+          required: [id, customerName, customerPhone, commune, address, notes, events]
+          properties:
+            id: { type: integer }
+            customerName: { type: string }
+            customerPhone: { type: string }
+            commune: { type: string }
+            address: { type: string }
+            notes: { type: string }
+            events: { type: array, items: { $ref: "#/components/schemas/OrderEventView" } }
+    AdminOrderPage:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/AdminCheckoutOrder" } }
+        nextCursor: { type: [integer, "null"] }
     PosSaleCancellation:
       type: object
       required: [requestId, registerSessionId]

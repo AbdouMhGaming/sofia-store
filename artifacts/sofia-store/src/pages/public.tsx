@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { Link, useParams } from "wouter";
 import { ArrowLeft, ArrowRight, Heart, MapPin, Phone, Search } from "lucide-react";
+import { ProductBuy } from "@/components/product-buy";
+import { useCommerce, useShopT, isBuyable } from "@/lib/shop";
 import {
   useListCategories, useListProducts, useGetProduct,
   getListCategoriesQueryKey, getListProductsQueryKey, getGetProductQueryKey,
@@ -17,6 +19,8 @@ export function HomePage() {
   const list = products.data ?? [];
   const featured = (list.filter((p) => p.featured).length >= 3 ? list.filter((p) => p.featured) : list).slice(0, 6);
   const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
+  const { enabled: commerce } = useCommerce();
+  const s = useShopT();
   return (
     <SiteLayout>
       <section className="max-w-[1500px] mx-auto px-3 md:px-6 pt-4 md:pt-6">
@@ -64,7 +68,7 @@ export function HomePage() {
           <div>
             <p className="eyebrow">SOFIA STORE</p>
             <h2 className="font-serif text-4xl md:text-5xl mt-4 leading-tight">{t("phaseTitle")}</h2>
-            <p className="text-muted-foreground mt-5 leading-relaxed">{t("phaseText")}</p>
+            <p className="text-muted-foreground mt-5 leading-relaxed">{commerce ? s("phaseOn") : t("phaseText")}</p>
             <CallButton label={t("callUs")} className="mt-8" />
           </div>
           <ol className="grid gap-px bg-primary/15 self-start">
@@ -162,8 +166,6 @@ export function ProductPage() {
   const [active, setActive] = useState(0);
   const p = q.data;
   const Back = lang === "ar" ? ArrowRight : ArrowLeft;
-  const sizes = useMemo(() => Array.from(new Set((p?.variants ?? []).map((v) => v.size))), [p]);
-  const colors = useMemo(() => Array.from(new Set((p?.variants ?? []).map((v) => v.color))), [p]);
   return (
     <SiteLayout>
       <div className="max-w-7xl mx-auto px-5 md:px-10 pt-10">
@@ -200,17 +202,11 @@ export function ProductPage() {
             <div className="md:sticky md:top-28 self-start">
               <p className="eyebrow">{pick(p.category.nameFr, p.category.nameAr)}</p>
               <h1 className="font-serif text-5xl md:text-6xl leading-[0.95] mt-4" data-testid="text-product-name">{pick(p.nameFr, p.nameAr)}</h1>
-              <p className="mt-6 inline-block text-sm px-4 py-2 rounded-full bg-[#f7e6ec] text-[#a82d64]" data-testid="text-price-status">{t("toConfirm")}</p>
+              {!isBuyable(p) && <p className="mt-6 inline-block text-sm px-4 py-2 rounded-full bg-[#f7e6ec] text-[#a82d64]" data-testid="text-price-status">{t("toConfirm")}</p>}
               {pick(p.descriptionFr, p.descriptionAr) && (
                 <p className="mt-8 text-muted-foreground leading-relaxed whitespace-pre-line">{pick(p.descriptionFr, p.descriptionAr)}</p>
               )}
-              {(sizes.length > 0 || colors.length > 0) && (
-                <div className="mt-8 border-t border-border pt-6 space-y-4">
-                  <p className="eyebrow">{t("variants")}</p>
-                  {sizes.length > 0 && <div className="flex flex-wrap gap-2 items-center"><span className="text-sm w-20 text-muted-foreground">{t("size")}</span>{sizes.map((s) => <span key={s} className="px-3 py-1 border border-border rounded-full text-sm">{s}</span>)}</div>}
-                  {colors.length > 0 && <div className="flex flex-wrap gap-2 items-center"><span className="text-sm w-20 text-muted-foreground">{t("color")}</span>{colors.map((s) => <span key={s} className="px-3 py-1 border border-border rounded-full text-sm">{s}</span>)}</div>}
-                </div>
-              )}
+              <ProductBuy key={p.id} p={p} />
               <div className="mt-10 flex flex-col gap-3">
                 <CallButton label={t("askAbout")} className="justify-center" />
                 <button onClick={() => fav.toggle(p.id)} data-testid="button-fav-detail"

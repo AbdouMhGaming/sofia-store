@@ -25,6 +25,7 @@ model User {
   sales              Sale[]
   refunds            Refund[]
   posCancellations   PosCancellation[]
+  orderEvents        WebOrderEvent[]
   @@map("users")
 }
 
@@ -130,6 +131,7 @@ model ProductVariant {
   inventory  Inventory[]
   movements  StockMovement[]
   saleItems  SaleItem[]
+  webOrderItems WebOrderItem[]
   @@unique([productId, sizeId, colorId])
   @@map("product_variants")
 }
@@ -366,4 +368,65 @@ model PosCancellation {
   register   CashRegister @relation(fields: [registerId], references: [id], onDelete: Restrict)
   @@id([kind, requestId])
   @@map("pos_cancellations")
+}
+
+model WebOrder {
+  id             Int @id @default(autoincrement())
+  reference      String @unique @db.VarChar(80)
+  requestId      String @unique @db.VarChar(36)
+  status         String @default("PENDING") @db.VarChar(20)
+  fulfillment    String @db.VarChar(20)
+  customerName   String @db.VarChar(150)
+  customerPhone  String @db.VarChar(25)
+  commune        String @db.VarChar(150)
+  address        String @db.VarChar(500)
+  notes          String @db.VarChar(1000)
+  subtotalMinor  Int
+  feeMinor       Int
+  totalMinor     Int
+  snapshot       Json
+  createdAt      DateTime @default(now())
+  expiresAt      DateTime
+  items          WebOrderItem[]
+  events         WebOrderEvent[]
+  attempt        CheckoutAttempt?
+  @@index([status, expiresAt])
+  @@map("web_orders")
+}
+
+model WebOrderItem {
+  id             Int @id @default(autoincrement())
+  orderId        Int
+  variantId      Int
+  quantity       Int
+  unitPriceMinor Int
+  unitCostMinor  Int
+  lineTotalMinor Int
+  order          WebOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  variant        ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  @@unique([orderId, variantId])
+  @@map("web_order_items")
+}
+
+model WebOrderEvent {
+  id        Int @id @default(autoincrement())
+  orderId   Int
+  userId    Int?
+  kind      String @db.VarChar(30)
+  reason    String @db.VarChar(500)
+  createdAt DateTime @default(now())
+  order     WebOrder @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  user      User? @relation(fields: [userId], references: [id], onDelete: Restrict)
+  @@map("web_order_events")
+}
+
+model CheckoutAttempt {
+  requestId   String @id @db.VarChar(36)
+  tokenHash   String @db.VarChar(64)
+  requestHash String? @db.VarChar(64)
+  state       String @db.VarChar(20)
+  orderId     Int? @unique
+  createdAt   DateTime @default(now())
+  order       WebOrder? @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  @@map("checkout_attempts")
 }

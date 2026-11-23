@@ -1,9 +1,10 @@
 import { useState, type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { Heart, Menu, Phone, X, Instagram, Facebook, Music2 } from "lucide-react";
+import { Heart, Menu, Phone, X, Instagram, Facebook, Music2, ShoppingBag } from "lucide-react";
 import { useGetStore, getGetStoreQueryKey, type Product } from "@workspace/api-client-react";
 import { useI18n } from "@/lib/i18n";
-import { asset, telHref, useFavorites } from "@/lib/util";
+import { asset, formatDA, telHref, useFavorites } from "@/lib/util";
+import { fromPrice, isBuyable, useCart, useCommerce, useShopT } from "@/lib/shop";
 
 export const FALLBACK_PHONE = "0792 01 34 53";
 
@@ -20,6 +21,8 @@ export function SiteLayout({ children }: { children: ReactNode }) {
   const [loc] = useLocation();
   const [open, setOpen] = useState(false);
   const { ids } = useFavorites();
+  const cart = useCart();
+  const s = useShopT();
   const store = useStoreInfo().data;
   const phone = store?.phone || FALLBACK_PHONE;
   const nav = [
@@ -57,6 +60,11 @@ export function SiteLayout({ children }: { children: ReactNode }) {
               <Heart className="w-[18px] h-[18px]" strokeWidth={1.5} />
               {ids.length > 0 && <span className="absolute top-1 end-1 min-w-4 h-4 px-1 rounded-full bg-primary text-[10px] text-primary-foreground grid place-items-center">{ids.length}</span>}
             </Link>
+            <Link href="/panier" data-testid="link-cart" aria-label={s("cart")}
+              className="relative p-2.5 rounded-full hover:bg-accent transition-colors">
+              <ShoppingBag className="w-[18px] h-[18px]" strokeWidth={1.5} />
+              {cart.count > 0 && <span className="absolute top-1 end-1 min-w-4 h-4 px-1 rounded-full bg-[#282326] text-[10px] text-[#f6efe9] grid place-items-center" data-testid="text-cart-count">{cart.count}</span>}
+            </Link>
             <button className="md:hidden p-2.5" onClick={() => setOpen(!open)} data-testid="button-menu" aria-label="menu">
               {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -67,6 +75,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
             {nav.map((n) => (
               <Link key={n.href} href={n.href} onClick={() => setOpen(false)} className="font-serif text-2xl py-1">{n.label}</Link>
             ))}
+            <Link href="/panier" onClick={() => setOpen(false)} className="font-serif text-2xl py-1" data-testid="link-mobile-cart">{s("cart")}{cart.count > 0 ? ` (${cart.count})` : ""}</Link>
           </nav>
         )}
       </header>
@@ -131,6 +140,9 @@ export function ProductCard({ p, index = 0 }: { p: Product; index?: number }) {
   const { pick, t } = useI18n();
   const fav = useFavorites();
   const isFav = fav.has(p.id);
+  const { enabled } = useCommerce();
+  const price = isBuyable(p) ? fromPrice(p) : null;
+  const s = useShopT();
   const img = p.images[0];
   return (
     <div className="group rise" style={{ animationDelay: `${index * 70}ms` }} data-testid={`card-product-${p.id}`}>
@@ -151,7 +163,9 @@ export function ProductCard({ p, index = 0 }: { p: Product; index?: number }) {
       </div>
       <Link href={`/produit/${p.slug}`} className="block pt-4">
         <h3 className="font-serif text-xl leading-tight group-hover:text-primary transition-colors">{pick(p.nameFr, p.nameAr)}</h3>
-        <p className="text-xs text-secondary mt-1.5">{t("toConfirm")}</p>
+        {enabled && price !== null
+          ? <p className="text-sm mt-1.5" data-testid={`text-from-price-${p.id}`}><span className="text-muted-foreground text-xs">{s("from")} </span>{formatDA(price)}</p>
+          : <p className="text-xs text-secondary mt-1.5">{t("toConfirm")}</p>}
       </Link>
     </div>
   );

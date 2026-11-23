@@ -16,6 +16,11 @@ const pages: Record<string, [string, string]> = {
   "/admin/import-export": ["Import et export", "Transfert contrôlé du catalogue SOFIA STORE au format CSV."],
   "/admin/medias": ["Médiathèque", "Gestion des photographies produits SOFIA STORE."],
   "/admin/mouvements": ["Mouvements de stock", "Historique attribué des entrées et sorties de stock SOFIA STORE."],
+  "/panier": ["Panier", "Votre sélection SOFIA STORE, enregistrée sur cet appareil."],
+  "/commande": ["Commande", "Finaliser une commande SOFIA STORE : livraison ou retrait en boutique, paiement à la réception."],
+  "/commande/confirmation": ["Commande reçue", "Récapitulatif de votre commande SOFIA STORE."],
+  "/admin/vente-en-ligne": ["Vente en ligne", "Réglages de la commande en ligne SOFIA STORE."],
+  "/admin/commandes": ["Commandes", "Commandes en ligne reçues par SOFIA STORE."],
   "/pos": ["Caisse", "Encaissement en boutique SOFIA STORE."],
   "/pos/historique": ["Tickets de caisse", "Historique des ventes en boutique SOFIA STORE."],
   "/pos/sessions": ["Tiroir-caisse", "Ouvertures et clôtures du tiroir SOFIA STORE."],
@@ -24,7 +29,7 @@ const pages: Record<string, [string, string]> = {
 export function PageMetadata() {
   const [location] = useLocation();
   useEffect(() => {
-    const [label, description] = pages[location] || (location.startsWith("/pos/tickets/") ? ["Ticket de caisse", "Ticket de vente SOFIA STORE."] as [string, string] : null) || (location.startsWith("/produit/")
+    const [label, description] = pages[location] || (location.startsWith("/pos/tickets/") ? ["Ticket de caisse", "Ticket de vente SOFIA STORE."] as [string, string] : null) || (location.startsWith("/admin/commandes/") ? ["Détail de commande", "Détail d'une commande en ligne SOFIA STORE."] as [string, string] : null) || (location.startsWith("/produit/")
       ? [decodeURIComponent(location.split("/").pop() || "").replace(/^apercu-/, "").replace(/-/g, " "), "Découvrez cette pièce SOFIA STORE. Prix, tailles et disponibilités à confirmer auprès de la boutique."]
       : ["Page introuvable", "Cette page SOFIA STORE est introuvable."]);
     const title = `${label} | SOFIA STORE`;

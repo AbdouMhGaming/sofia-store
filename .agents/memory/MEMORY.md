@@ -1,2 +1,2 @@
-- [Retail scope and hosting](retail-scope.md) — owner-confirmed development MySQL and Node.js hosting; production readiness requires later retail and hardware gates.
+- [Retail scope and hosting](retail-scope.md) — Hostinger MySQL/Node.js, owner-editable delivery and reservation settings, and retail/hardware launch gates.
 - [Financial safety](financial-safety.md) — locking reads need appropriate isolation; a missing receipt cannot resolve an uncertain payment without durable cancellation.

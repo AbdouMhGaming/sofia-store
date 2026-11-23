@@ -26,3 +26,8 @@ export { recordCashSale, allocateDiscount } from "./pos/sales";
 export { recordRefund, refundAmount } from "./pos/refunds";
 export { cancelSaleAttempt, cancelRefundAttempt, cancelRegisterAttempt } from "./pos/cancellation";
 export { receiptSettings, registerOutput, registerOutputs, drawerTotals, readSale, saleInclude, saleOutput, manager as posManager, type PosActor } from "./pos/shared";
+export { checkoutSettings, publishCheckoutSettings, disabledCheckout, lockCheckout, webOrderInclude, webOrderOutput, adminWebOrderOutput, readWebOrder } from "./checkout/shared";
+export { saveCheckoutSettings } from "./checkout/settings";
+export { buildCheckoutQuote } from "./checkout/quote";
+export { placeWebOrder, recoverWebOrder, abandonWebOrderRequest } from "./checkout/orders";
+export { expireCheckoutOrders, cancelWebOrder } from "./checkout/lifecycle";

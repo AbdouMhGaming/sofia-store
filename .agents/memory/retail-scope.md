@@ -43,3 +43,13 @@ in this project is finished.
 **How to apply:** Include current and next phase in progress summaries and final
 responses. Do not call a phase complete while its required functionality or critical
 checks remain open.
+
+The owner requested delivery fees for all 58 wilayas in settings, separated into
+home and desk delivery, with delivery times. Unconfirmed-order reservation duration
+must also be a setting rather than a fixed answer collected in chat.
+
+**Why:** The owner explicitly asked to manage these values in the app instead of
+providing fixed fees or a reservation policy during development.
+
+**How to apply:** Preserve owner-editable business configuration. Never substitute
+invented fees, delivery times or hold duration when a value has not been entered.

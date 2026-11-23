@@ -9,6 +9,7 @@ import catalogToolsRouter from "./catalog-tools";
 import catalogTransferRouter from "./catalog-transfer";
 import mediaRouter from "./media";
 import posRouter from "./pos";
+import checkoutRouter from "./checkout";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use(catalogToolsRouter);
 router.use(catalogTransferRouter);
 router.use(mediaRouter);
 router.use("/pos", posRouter);
+router.use(checkoutRouter);
 
 export default router;

@@ -29,14 +29,24 @@ import type {
   ActivationResult,
   Activity,
   AdjustmentInput,
+  AdminCheckoutOrder,
+  AdminOrderPage,
   AdminProduct,
   CashSaleInput,
   CatalogImportInput,
   CatalogImportResult,
   Category,
   CategoryInput,
+  CheckoutAccess,
+  CheckoutBasket,
+  CheckoutCancellation,
+  CheckoutOrder,
+  CheckoutQuote,
+  CheckoutSettings,
+  CheckoutSubmission,
   HealthStatus,
   InventoryRow,
+  ListAdminOrdersParams,
   ListPosSalesParams,
   ListProductsParams,
   ListRegisterSessionsParams,
@@ -47,6 +57,7 @@ import type {
   MediaLibrary,
   Message,
   MovementPage,
+  OrderCancellationReason,
   PasswordInput,
   PosContext,
   PosRefundCancellation,
@@ -101,6 +112,886 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetCheckoutConfigUrl = () => {
+
+
+
+
+  return `/api/checkout/config`
+}
+
+export const getCheckoutConfig = async ( options?: Parameters<typeof customFetch>[1]): Promise<CheckoutSettings> => {
+
+  return customFetch<CheckoutSettings>(getGetCheckoutConfigUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCheckoutConfigQueryKey = () => {
+    return [
+    `/api/checkout/config`
+    ] as const;
+    }
+
+
+export const getGetCheckoutConfigQueryOptions = <TData = Awaited<ReturnType<typeof getCheckoutConfig>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCheckoutConfig>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCheckoutConfigQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCheckoutConfig>>> = ({ signal }) => getCheckoutConfig({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCheckoutConfig>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetCheckoutConfigQueryResult = NonNullable<Awaited<ReturnType<typeof getCheckoutConfig>>>
+export type GetCheckoutConfigQueryError = ErrorType<unknown>
+
+
+export function useGetCheckoutConfig<TData = Awaited<ReturnType<typeof getCheckoutConfig>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCheckoutConfig>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCheckoutConfig>>,
+          TError,
+          Awaited<ReturnType<typeof getCheckoutConfig>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCheckoutConfig<TData = Awaited<ReturnType<typeof getCheckoutConfig>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCheckoutConfig>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCheckoutConfig>>,
+          TError,
+          Awaited<ReturnType<typeof getCheckoutConfig>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetCheckoutConfig<TData = Awaited<ReturnType<typeof getCheckoutConfig>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCheckoutConfig>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetCheckoutConfig<TData = Awaited<ReturnType<typeof getCheckoutConfig>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCheckoutConfig>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetCheckoutConfigQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getQuoteCheckoutUrl = () => {
+
+
+
+
+  return `/api/checkout/quote`
+}
+
+export const quoteCheckout = async (checkoutBasket: CheckoutBasket, options?: Parameters<typeof customFetch>[1]): Promise<CheckoutQuote> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<CheckoutQuote>(getQuoteCheckoutUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(checkoutBasket)
+  }
+);}
+
+
+
+
+
+export const getQuoteCheckoutMutationKey = () => ['quoteCheckout'] as const;
+
+export const getQuoteCheckoutMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof quoteCheckout>>, TError,QuoteCheckoutMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof quoteCheckout>>, TError,QuoteCheckoutMutationVariables, TContext> => {
+
+const mutationKey = getQuoteCheckoutMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof quoteCheckout>>, QuoteCheckoutMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  quoteCheckout(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type QuoteCheckoutMutationResult = NonNullable<Awaited<ReturnType<typeof quoteCheckout>>>
+    export type QuoteCheckoutMutationBody = BodyType<CheckoutBasket>
+    export type QuoteCheckoutMutationError = ErrorType<unknown>
+    export type QuoteCheckoutMutationVariables = {data: BodyType<CheckoutBasket>}
+
+    export const useQuoteCheckout = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof quoteCheckout>>, TError,QuoteCheckoutMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof quoteCheckout>>,
+        TError,
+        QuoteCheckoutMutationVariables,
+        TContext
+      > => {
+      return useMutation(getQuoteCheckoutMutationOptions(options), queryClient);
+    }
+
+export const getPlaceCheckoutOrderUrl = () => {
+
+
+
+
+  return `/api/checkout/orders`
+}
+
+export const placeCheckoutOrder = async (checkoutSubmission: CheckoutSubmission, options?: Parameters<typeof customFetch>[1]): Promise<CheckoutOrder> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<CheckoutOrder>(getPlaceCheckoutOrderUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(checkoutSubmission)
+  }
+);}
+
+
+
+
+
+export const getPlaceCheckoutOrderMutationKey = () => ['placeCheckoutOrder'] as const;
+
+export const getPlaceCheckoutOrderMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof placeCheckoutOrder>>, TError,PlaceCheckoutOrderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof placeCheckoutOrder>>, TError,PlaceCheckoutOrderMutationVariables, TContext> => {
+
+const mutationKey = getPlaceCheckoutOrderMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof placeCheckoutOrder>>, PlaceCheckoutOrderMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  placeCheckoutOrder(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PlaceCheckoutOrderMutationResult = NonNullable<Awaited<ReturnType<typeof placeCheckoutOrder>>>
+    export type PlaceCheckoutOrderMutationBody = BodyType<CheckoutSubmission>
+    export type PlaceCheckoutOrderMutationError = ErrorType<unknown>
+    export type PlaceCheckoutOrderMutationVariables = {data: BodyType<CheckoutSubmission>}
+
+    export const usePlaceCheckoutOrder = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof placeCheckoutOrder>>, TError,PlaceCheckoutOrderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof placeCheckoutOrder>>,
+        TError,
+        PlaceCheckoutOrderMutationVariables,
+        TContext
+      > => {
+      return useMutation(getPlaceCheckoutOrderMutationOptions(options), queryClient);
+    }
+
+export const getRecoverCheckoutOrderUrl = () => {
+
+
+
+
+  return `/api/checkout/recover`
+}
+
+export const recoverCheckoutOrder = async (checkoutAccess: CheckoutAccess, options?: Parameters<typeof customFetch>[1]): Promise<CheckoutOrder> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<CheckoutOrder>(getRecoverCheckoutOrderUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(checkoutAccess)
+  }
+);}
+
+
+
+
+
+export const getRecoverCheckoutOrderMutationKey = () => ['recoverCheckoutOrder'] as const;
+
+export const getRecoverCheckoutOrderMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recoverCheckoutOrder>>, TError,RecoverCheckoutOrderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof recoverCheckoutOrder>>, TError,RecoverCheckoutOrderMutationVariables, TContext> => {
+
+const mutationKey = getRecoverCheckoutOrderMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof recoverCheckoutOrder>>, RecoverCheckoutOrderMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  recoverCheckoutOrder(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RecoverCheckoutOrderMutationResult = NonNullable<Awaited<ReturnType<typeof recoverCheckoutOrder>>>
+    export type RecoverCheckoutOrderMutationBody = BodyType<CheckoutAccess>
+    export type RecoverCheckoutOrderMutationError = ErrorType<unknown>
+    export type RecoverCheckoutOrderMutationVariables = {data: BodyType<CheckoutAccess>}
+
+    export const useRecoverCheckoutOrder = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recoverCheckoutOrder>>, TError,RecoverCheckoutOrderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof recoverCheckoutOrder>>,
+        TError,
+        RecoverCheckoutOrderMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRecoverCheckoutOrderMutationOptions(options), queryClient);
+    }
+
+export const getCancelCheckoutRequestUrl = () => {
+
+
+
+
+  return `/api/checkout/cancel-request`
+}
+
+export const cancelCheckoutRequest = async (checkoutAccess: CheckoutAccess, options?: Parameters<typeof customFetch>[1]): Promise<CheckoutCancellation> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<CheckoutCancellation>(getCancelCheckoutRequestUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(checkoutAccess)
+  }
+);}
+
+
+
+
+
+export const getCancelCheckoutRequestMutationKey = () => ['cancelCheckoutRequest'] as const;
+
+export const getCancelCheckoutRequestMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelCheckoutRequest>>, TError,CancelCheckoutRequestMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof cancelCheckoutRequest>>, TError,CancelCheckoutRequestMutationVariables, TContext> => {
+
+const mutationKey = getCancelCheckoutRequestMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof cancelCheckoutRequest>>, CancelCheckoutRequestMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  cancelCheckoutRequest(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CancelCheckoutRequestMutationResult = NonNullable<Awaited<ReturnType<typeof cancelCheckoutRequest>>>
+    export type CancelCheckoutRequestMutationBody = BodyType<CheckoutAccess>
+    export type CancelCheckoutRequestMutationError = ErrorType<unknown>
+    export type CancelCheckoutRequestMutationVariables = {data: BodyType<CheckoutAccess>}
+
+    export const useCancelCheckoutRequest = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelCheckoutRequest>>, TError,CancelCheckoutRequestMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof cancelCheckoutRequest>>,
+        TError,
+        CancelCheckoutRequestMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCancelCheckoutRequestMutationOptions(options), queryClient);
+    }
+
+export const getGetAdminCheckoutSettingsUrl = () => {
+
+
+
+
+  return `/api/admin/checkout-settings`
+}
+
+export const getAdminCheckoutSettings = async ( options?: Parameters<typeof customFetch>[1]): Promise<CheckoutSettings> => {
+
+  return customFetch<CheckoutSettings>(getGetAdminCheckoutSettingsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminCheckoutSettingsQueryKey = () => {
+    return [
+    `/api/admin/checkout-settings`
+    ] as const;
+    }
+
+
+export const getGetAdminCheckoutSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminCheckoutSettings>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminCheckoutSettings>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminCheckoutSettingsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminCheckoutSettings>>> = ({ signal }) => getAdminCheckoutSettings({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminCheckoutSettings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAdminCheckoutSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminCheckoutSettings>>>
+export type GetAdminCheckoutSettingsQueryError = ErrorType<unknown>
+
+
+export function useGetAdminCheckoutSettings<TData = Awaited<ReturnType<typeof getAdminCheckoutSettings>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminCheckoutSettings>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminCheckoutSettings>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminCheckoutSettings>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAdminCheckoutSettings<TData = Awaited<ReturnType<typeof getAdminCheckoutSettings>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminCheckoutSettings>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminCheckoutSettings>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminCheckoutSettings>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAdminCheckoutSettings<TData = Awaited<ReturnType<typeof getAdminCheckoutSettings>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminCheckoutSettings>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetAdminCheckoutSettings<TData = Awaited<ReturnType<typeof getAdminCheckoutSettings>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminCheckoutSettings>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAdminCheckoutSettingsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSaveAdminCheckoutSettingsUrl = () => {
+
+
+
+
+  return `/api/admin/checkout-settings`
+}
+
+export const saveAdminCheckoutSettings = async (checkoutSettings: CheckoutSettings, options?: Parameters<typeof customFetch>[1]): Promise<CheckoutSettings> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<CheckoutSettings>(getSaveAdminCheckoutSettingsUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(checkoutSettings)
+  }
+);}
+
+
+
+
+
+export const getSaveAdminCheckoutSettingsMutationKey = () => ['saveAdminCheckoutSettings'] as const;
+
+export const getSaveAdminCheckoutSettingsMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveAdminCheckoutSettings>>, TError,SaveAdminCheckoutSettingsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof saveAdminCheckoutSettings>>, TError,SaveAdminCheckoutSettingsMutationVariables, TContext> => {
+
+const mutationKey = getSaveAdminCheckoutSettingsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof saveAdminCheckoutSettings>>, SaveAdminCheckoutSettingsMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  saveAdminCheckoutSettings(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SaveAdminCheckoutSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof saveAdminCheckoutSettings>>>
+    export type SaveAdminCheckoutSettingsMutationBody = BodyType<CheckoutSettings>
+    export type SaveAdminCheckoutSettingsMutationError = ErrorType<unknown>
+    export type SaveAdminCheckoutSettingsMutationVariables = {data: BodyType<CheckoutSettings>}
+
+    export const useSaveAdminCheckoutSettings = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveAdminCheckoutSettings>>, TError,SaveAdminCheckoutSettingsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof saveAdminCheckoutSettings>>,
+        TError,
+        SaveAdminCheckoutSettingsMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSaveAdminCheckoutSettingsMutationOptions(options), queryClient);
+    }
+
+export const getListAdminOrdersUrl = (params?: ListAdminOrdersParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/admin/orders?${stringifiedParams}` : `/api/admin/orders`
+}
+
+export const listAdminOrders = async (params?: ListAdminOrdersParams, options?: Parameters<typeof customFetch>[1]): Promise<AdminOrderPage> => {
+
+  return customFetch<AdminOrderPage>(getListAdminOrdersUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListAdminOrdersQueryKey = (params?: ListAdminOrdersParams,) => {
+    return [
+    `/api/admin/orders`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListAdminOrdersQueryOptions = <TData = Awaited<ReturnType<typeof listAdminOrders>>, TError = ErrorType<unknown>>(params?: ListAdminOrdersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminOrders>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListAdminOrdersQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAdminOrders>>> = ({ signal }) => listAdminOrders(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAdminOrders>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListAdminOrdersQueryResult = NonNullable<Awaited<ReturnType<typeof listAdminOrders>>>
+export type ListAdminOrdersQueryError = ErrorType<unknown>
+
+
+export function useListAdminOrders<TData = Awaited<ReturnType<typeof listAdminOrders>>, TError = ErrorType<unknown>>(
+ params: undefined |  ListAdminOrdersParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminOrders>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listAdminOrders>>,
+          TError,
+          Awaited<ReturnType<typeof listAdminOrders>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListAdminOrders<TData = Awaited<ReturnType<typeof listAdminOrders>>, TError = ErrorType<unknown>>(
+ params?: ListAdminOrdersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminOrders>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listAdminOrders>>,
+          TError,
+          Awaited<ReturnType<typeof listAdminOrders>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListAdminOrders<TData = Awaited<ReturnType<typeof listAdminOrders>>, TError = ErrorType<unknown>>(
+ params?: ListAdminOrdersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminOrders>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useListAdminOrders<TData = Awaited<ReturnType<typeof listAdminOrders>>, TError = ErrorType<unknown>>(
+ params?: ListAdminOrdersParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAdminOrders>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListAdminOrdersQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAdminOrderUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/orders/${id}`
+}
+
+export const getAdminOrder = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<AdminCheckoutOrder> => {
+
+  return customFetch<AdminCheckoutOrder>(getGetAdminOrderUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminOrderQueryKey = (id: number,) => {
+    return [
+    `/api/admin/orders/${id}`
+    ] as const;
+    }
+
+
+export const getGetAdminOrderQueryOptions = <TData = Awaited<ReturnType<typeof getAdminOrder>>, TError = ErrorType<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminOrder>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminOrderQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminOrder>>> = ({ signal }) => getAdminOrder(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminOrder>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAdminOrderQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminOrder>>>
+export type GetAdminOrderQueryError = ErrorType<unknown>
+
+
+export function useGetAdminOrder<TData = Awaited<ReturnType<typeof getAdminOrder>>, TError = ErrorType<unknown>>(
+ id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminOrder>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminOrder>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminOrder>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAdminOrder<TData = Awaited<ReturnType<typeof getAdminOrder>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminOrder>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAdminOrder>>,
+          TError,
+          Awaited<ReturnType<typeof getAdminOrder>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAdminOrder<TData = Awaited<ReturnType<typeof getAdminOrder>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminOrder>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetAdminOrder<TData = Awaited<ReturnType<typeof getAdminOrder>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminOrder>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAdminOrderQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCancelAdminOrderUrl = (id: number,) => {
+
+
+
+
+  return `/api/admin/orders/${id}/cancel`
+}
+
+export const cancelAdminOrder = async (id: number,
+    orderCancellationReason: OrderCancellationReason, options?: Parameters<typeof customFetch>[1]): Promise<AdminCheckoutOrder> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<AdminCheckoutOrder>(getCancelAdminOrderUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(orderCancellationReason)
+  }
+);}
+
+
+
+
+
+export const getCancelAdminOrderMutationKey = () => ['cancelAdminOrder'] as const;
+
+export const getCancelAdminOrderMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelAdminOrder>>, TError,CancelAdminOrderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof cancelAdminOrder>>, TError,CancelAdminOrderMutationVariables, TContext> => {
+
+const mutationKey = getCancelAdminOrderMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof cancelAdminOrder>>, CancelAdminOrderMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  cancelAdminOrder(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CancelAdminOrderMutationResult = NonNullable<Awaited<ReturnType<typeof cancelAdminOrder>>>
+    export type CancelAdminOrderMutationBody = BodyType<OrderCancellationReason>
+    export type CancelAdminOrderMutationError = ErrorType<unknown>
+    export type CancelAdminOrderMutationVariables = {id: number;data: BodyType<OrderCancellationReason>}
+
+    export const useCancelAdminOrder = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelAdminOrder>>, TError,CancelAdminOrderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof cancelAdminOrder>>,
+        TError,
+        CancelAdminOrderMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCancelAdminOrderMutationOptions(options), queryClient);
+    }
 
 export const getHealthCheckUrl = () => {
 

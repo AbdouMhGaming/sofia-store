@@ -23,6 +23,16 @@ Unlocking on a 404 can create two independent successful requests for one purcha
 **How to apply:** Keep exact retry payloads, fail closed if pending-state storage
 fails, and retain cancellation markers under the same serialization rules as sales.
 
+Guest order recovery keeps its private capability out of URLs and logs, and
+returns no customer name, full phone or address.
+
+**Why:** A copied tracking URL can leak through history, referrers or request logs.
+Guest customers have no account protecting their order summary.
+
+**How to apply:** Keep recovery tokens in tab storage and POST bodies; leave contact
+details behind staff authorization. Automatic recovery must wait for the security
+session and CSRF cookie/token rather than weakening CSRF checks to avoid a startup race.
+
 Hostinger's MySQL-compatible engine rejects CHECK expressions involving foreign-key
 columns with cascading updates.
 

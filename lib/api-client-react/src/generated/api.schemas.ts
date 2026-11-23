@@ -5,6 +5,324 @@
  * SOFIA STORE shared retail API. Initial foundation and catalog phase.
  * OpenAPI spec version: 0.2.0
  */
+export interface DeliveryZone {
+  /** @pattern ^(0[1-9]|[1-4][0-9]|5[0-8])$ */
+  code: string;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  nameFr: string;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  nameAr: string;
+  enabled: boolean;
+  /**
+     * @minimum 0
+     * @maximum 1000000000
+     * @nullable
+     */
+  homeFeeMinor: number | null;
+  /**
+     * @minimum 0
+     * @maximum 1000000000
+     * @nullable
+     */
+  deskFeeMinor: number | null;
+  /**
+     * @minimum 1
+     * @maximum 60
+     * @nullable
+     */
+  homeMinDays: number | null;
+  /**
+     * @minimum 1
+     * @maximum 60
+     * @nullable
+     */
+  homeMaxDays: number | null;
+  /**
+     * @minimum 1
+     * @maximum 60
+     * @nullable
+     */
+  deskMinDays: number | null;
+  /**
+     * @minimum 1
+     * @maximum 60
+     * @nullable
+     */
+  deskMaxDays: number | null;
+}
+
+export interface CheckoutSettings {
+  enabled: boolean;
+  deliveryEnabled: boolean;
+  pickupEnabled: boolean;
+  /** @maxLength 500 */
+  pickupAddressFr: string;
+  /** @maxLength 500 */
+  pickupAddressAr: string;
+  /**
+     * @minimum 0
+     * @maximum 1000000000
+     * @nullable
+     */
+  pickupFeeMinor: number | null;
+  /**
+     * @minimum 15
+     * @maximum 10080
+     * @nullable
+     */
+  reservationMinutes: number | null;
+  /** @maxLength 3000 */
+  policyFr: string;
+  /** @maxLength 3000 */
+  policyAr: string;
+  /**
+     * @minItems 58
+     * @maxItems 58
+     */
+  zones: DeliveryZone[];
+}
+
+export interface CheckoutBasketItem {
+  /** @minimum 1 */
+  variantId: number;
+  /**
+     * @minimum 1
+     * @maximum 20
+     */
+  quantity: number;
+}
+
+export type CheckoutBasketFulfillment = typeof CheckoutBasketFulfillment[keyof typeof CheckoutBasketFulfillment];
+
+
+export const CheckoutBasketFulfillment = {
+  DELIVERY: 'DELIVERY',
+  PICKUP: 'PICKUP',
+} as const;
+
+/**
+ * @nullable
+ */
+export type CheckoutBasketDeliveryMode = typeof CheckoutBasketDeliveryMode[keyof typeof CheckoutBasketDeliveryMode] | null;
+
+
+export const CheckoutBasketDeliveryMode = {
+  HOME: 'HOME',
+  DESK: 'DESK',
+} as const;
+
+export interface CheckoutBasket {
+  /**
+     * @minItems 1
+     * @maxItems 20
+     */
+  items: CheckoutBasketItem[];
+  fulfillment: CheckoutBasketFulfillment;
+  /**
+     * @maxLength 20
+     * @nullable
+     */
+  zoneCode: string | null;
+  /** @nullable */
+  deliveryMode: CheckoutBasketDeliveryMode;
+}
+
+export interface CheckoutAccess {
+  requestId: string;
+  /** @pattern ^[a-f0-9]{64}$ */
+  accessToken: string;
+}
+
+export type CheckoutSubmission = CheckoutBasket & CheckoutAccess & {
+  /** @pattern ^[a-f0-9]{64}$ */
+  expectedQuoteHash: string;
+  /**
+     * @minLength 3
+     * @maxLength 150
+     */
+  customerName: string;
+  /**
+     * @minLength 10
+     * @maxLength 25
+     */
+  customerPhone: string;
+  /** @maxLength 150 */
+  commune: string;
+  /** @maxLength 500 */
+  address: string;
+  /** @maxLength 1000 */
+  notes: string;
+  acceptedPolicy: true;
+};
+
+export interface CheckoutOrderLine {
+  variantId: number;
+  productName: string;
+  nameAr: string;
+  sku: string;
+  size: string;
+  color: string;
+  image: string;
+  quantity: number;
+  unitPriceMinor: number;
+  lineTotalMinor: number;
+}
+
+export type CheckoutQuoteFulfillment = typeof CheckoutQuoteFulfillment[keyof typeof CheckoutQuoteFulfillment];
+
+
+export const CheckoutQuoteFulfillment = {
+  DELIVERY: 'DELIVERY',
+  PICKUP: 'PICKUP',
+} as const;
+
+/**
+ * @nullable
+ */
+export type CheckoutQuoteDeliveryMode = typeof CheckoutQuoteDeliveryMode[keyof typeof CheckoutQuoteDeliveryMode] | null;
+
+
+export const CheckoutQuoteDeliveryMode = {
+  HOME: 'HOME',
+  DESK: 'DESK',
+} as const;
+
+export interface CheckoutQuote {
+  quoteHash: string;
+  items: CheckoutOrderLine[];
+  subtotalMinor: number;
+  feeMinor: number;
+  totalMinor: number;
+  fulfillment: CheckoutQuoteFulfillment;
+  /** @nullable */
+  zoneCode: string | null;
+  /** @nullable */
+  deliveryMode: CheckoutQuoteDeliveryMode;
+  /** @nullable */
+  deliveryMinDays: number | null;
+  /** @nullable */
+  deliveryMaxDays: number | null;
+  zoneNameFr: string;
+  zoneNameAr: string;
+  pickupAddressFr: string;
+  pickupAddressAr: string;
+  policyFr: string;
+  policyAr: string;
+  reservationMinutes: number;
+}
+
+export type CheckoutOrderStatus = typeof CheckoutOrderStatus[keyof typeof CheckoutOrderStatus];
+
+
+export const CheckoutOrderStatus = {
+  PENDING: 'PENDING',
+  CANCELLED: 'CANCELLED',
+  EXPIRED: 'EXPIRED',
+} as const;
+
+export type CheckoutOrderFulfillment = typeof CheckoutOrderFulfillment[keyof typeof CheckoutOrderFulfillment];
+
+
+export const CheckoutOrderFulfillment = {
+  DELIVERY: 'DELIVERY',
+  PICKUP: 'PICKUP',
+} as const;
+
+/**
+ * @nullable
+ */
+export type CheckoutOrderDeliveryMode = typeof CheckoutOrderDeliveryMode[keyof typeof CheckoutOrderDeliveryMode] | null;
+
+
+export const CheckoutOrderDeliveryMode = {
+  HOME: 'HOME',
+  DESK: 'DESK',
+} as const;
+
+export type CheckoutOrderPaymentMethod = typeof CheckoutOrderPaymentMethod[keyof typeof CheckoutOrderPaymentMethod];
+
+
+export const CheckoutOrderPaymentMethod = {
+  COD: 'COD',
+  CASH_PICKUP: 'CASH_PICKUP',
+} as const;
+
+export type CheckoutOrderPaymentStatus = typeof CheckoutOrderPaymentStatus[keyof typeof CheckoutOrderPaymentStatus];
+
+
+export const CheckoutOrderPaymentStatus = {
+  UNPAID: 'UNPAID',
+} as const;
+
+export interface CheckoutOrder {
+  reference: string;
+  requestId: string;
+  status: CheckoutOrderStatus;
+  createdAt: string;
+  expiresAt: string;
+  fulfillment: CheckoutOrderFulfillment;
+  /** @nullable */
+  deliveryMode: CheckoutOrderDeliveryMode;
+  /** @nullable */
+  deliveryMinDays: number | null;
+  /** @nullable */
+  deliveryMaxDays: number | null;
+  paymentMethod: CheckoutOrderPaymentMethod;
+  paymentStatus: CheckoutOrderPaymentStatus;
+  maskedPhone: string;
+  items: CheckoutOrderLine[];
+  subtotalMinor: number;
+  feeMinor: number;
+  totalMinor: number;
+  zoneNameFr: string;
+  zoneNameAr: string;
+  pickupAddressFr: string;
+  pickupAddressAr: string;
+  policyFr: string;
+  policyAr: string;
+}
+
+export interface CheckoutCancellation {
+  cancelled: boolean;
+  order: CheckoutOrder | null;
+}
+
+export interface OrderCancellationReason {
+  /**
+     * @minLength 3
+     * @maxLength 500
+     */
+  reason: string;
+}
+
+export interface OrderEventView {
+  kind: string;
+  reason: string;
+  createdAt: string;
+}
+
+export type AdminCheckoutOrder = CheckoutOrder & {
+  id: number;
+  customerName: string;
+  customerPhone: string;
+  commune: string;
+  address: string;
+  notes: string;
+  events: OrderEventView[];
+};
+
+export interface AdminOrderPage {
+  items: AdminCheckoutOrder[];
+  /** @nullable */
+  nextCursor: number | null;
+}
+
 export interface PosSaleCancellation {
   /**
      * @minLength 16
@@ -674,6 +992,27 @@ export interface UploadTicket {
   uploadURL: string;
   objectPath: string;
 }
+
+export type ListAdminOrdersParams = {
+/**
+ * @minimum 1
+ */
+before?: number;
+status?: ListAdminOrdersStatus;
+/**
+ * @maxLength 100
+ */
+q?: string;
+};
+
+export type ListAdminOrdersStatus = typeof ListAdminOrdersStatus[keyof typeof ListAdminOrdersStatus];
+
+
+export const ListAdminOrdersStatus = {
+  PENDING: 'PENDING',
+  CANCELLED: 'CANCELLED',
+  EXPIRED: 'EXPIRED',
+} as const;
 
 export type ListProductsParams = {
 /**

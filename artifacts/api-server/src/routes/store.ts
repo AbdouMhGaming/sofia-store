@@ -1,16 +1,17 @@
 import { Router, type IRouter } from "express";
-import { db } from "@workspace/db";
+import { db, checkoutSettings } from "@workspace/db";
 import { GetProductParams, ListProductsQueryParams, ListProductsResponse, GetProductResponse } from "@workspace/api-zod";
 import { productInclude, publicProduct } from "../lib/catalog";
 
 const router: IRouter = Router();
-router.get("/store", (_req, res) => {
+router.get("/store", async (_req, res) => {
+  const checkout = await db.$transaction(checkoutSettings);
   res.json({
-    name: "SOFIA STORE", phone: "0792 01 34 53", location: "Relizane, Algérie",
+    name: "SOFIA STORE", phone: "0792 01 34 53", location: "Rue colonel Amirouche, Oued Rhiou, Relizane",
     instagram: "https://instagram.com/sofia_store___",
     facebook: "https://www.facebook.com/share/1Gc7vDgDCL/?mibextid=wwXIfr",
     tiktok: "https://www.tiktok.com/@sofiastore01",
-    commerceEnabled: false,
+    commerceEnabled: checkout.enabled,
   });
 });
 router.get("/categories", async (_req, res): Promise<void> => {

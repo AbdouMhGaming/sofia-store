@@ -8,6 +8,666 @@
 import * as zod from 'zod';
 
 
+export const getCheckoutConfigResponsePickupAddressFrMax = 500;
+
+export const getCheckoutConfigResponsePickupAddressArMax = 500;
+
+export const getCheckoutConfigResponsePickupFeeMinorMin = 0;
+export const getCheckoutConfigResponsePickupFeeMinorMax = 1000000000;
+
+export const getCheckoutConfigResponseReservationMinutesMin = 15;
+export const getCheckoutConfigResponseReservationMinutesMax = 10080;
+
+export const getCheckoutConfigResponsePolicyFrMax = 3000;
+
+export const getCheckoutConfigResponsePolicyArMax = 3000;
+
+export const getCheckoutConfigResponseZonesItemCodeRegExp = new RegExp('^(0[1-9]|[1-4][0-9]|5[0-8])$');
+export const getCheckoutConfigResponseZonesItemNameFrMax = 100;
+
+export const getCheckoutConfigResponseZonesItemNameArMax = 100;
+
+export const getCheckoutConfigResponseZonesItemHomeFeeMinorMin = 0;
+export const getCheckoutConfigResponseZonesItemHomeFeeMinorMax = 1000000000;
+
+export const getCheckoutConfigResponseZonesItemDeskFeeMinorMin = 0;
+export const getCheckoutConfigResponseZonesItemDeskFeeMinorMax = 1000000000;
+
+export const getCheckoutConfigResponseZonesItemHomeMinDaysMax = 60;
+
+export const getCheckoutConfigResponseZonesItemHomeMaxDaysMax = 60;
+
+export const getCheckoutConfigResponseZonesItemDeskMinDaysMax = 60;
+
+export const getCheckoutConfigResponseZonesItemDeskMaxDaysMax = 60;
+
+export const getCheckoutConfigResponseZonesMin = 58;
+export const getCheckoutConfigResponseZonesMax = 58;
+
+
+
+export const GetCheckoutConfigResponse = zod.object({
+  "enabled": zod.boolean(),
+  "deliveryEnabled": zod.boolean(),
+  "pickupEnabled": zod.boolean(),
+  "pickupAddressFr": zod.string().max(getCheckoutConfigResponsePickupAddressFrMax),
+  "pickupAddressAr": zod.string().max(getCheckoutConfigResponsePickupAddressArMax),
+  "pickupFeeMinor": zod.number().int().min(getCheckoutConfigResponsePickupFeeMinorMin).max(getCheckoutConfigResponsePickupFeeMinorMax).nullable(),
+  "reservationMinutes": zod.number().int().min(getCheckoutConfigResponseReservationMinutesMin).max(getCheckoutConfigResponseReservationMinutesMax).nullable(),
+  "policyFr": zod.string().max(getCheckoutConfigResponsePolicyFrMax),
+  "policyAr": zod.string().max(getCheckoutConfigResponsePolicyArMax),
+  "zones": zod.array(zod.object({
+  "code": zod.string().regex(getCheckoutConfigResponseZonesItemCodeRegExp),
+  "nameFr": zod.string().min(1).max(getCheckoutConfigResponseZonesItemNameFrMax),
+  "nameAr": zod.string().min(1).max(getCheckoutConfigResponseZonesItemNameArMax),
+  "enabled": zod.boolean(),
+  "homeFeeMinor": zod.number().int().min(getCheckoutConfigResponseZonesItemHomeFeeMinorMin).max(getCheckoutConfigResponseZonesItemHomeFeeMinorMax).nullable(),
+  "deskFeeMinor": zod.number().int().min(getCheckoutConfigResponseZonesItemDeskFeeMinorMin).max(getCheckoutConfigResponseZonesItemDeskFeeMinorMax).nullable(),
+  "homeMinDays": zod.number().int().min(1).max(getCheckoutConfigResponseZonesItemHomeMinDaysMax).nullable(),
+  "homeMaxDays": zod.number().int().min(1).max(getCheckoutConfigResponseZonesItemHomeMaxDaysMax).nullable(),
+  "deskMinDays": zod.number().int().min(1).max(getCheckoutConfigResponseZonesItemDeskMinDaysMax).nullable(),
+  "deskMaxDays": zod.number().int().min(1).max(getCheckoutConfigResponseZonesItemDeskMaxDaysMax).nullable()
+})).min(getCheckoutConfigResponseZonesMin).max(getCheckoutConfigResponseZonesMax)
+})
+
+
+
+export const quoteCheckoutBodyItemsItemQuantityMax = 20;
+
+export const quoteCheckoutBodyItemsMax = 20;
+
+export const quoteCheckoutBodyZoneCodeMax = 20;
+
+
+
+export const QuoteCheckoutBody = zod.object({
+  "items": zod.array(zod.object({
+  "variantId": zod.number().int().min(1),
+  "quantity": zod.number().int().min(1).max(quoteCheckoutBodyItemsItemQuantityMax)
+})).min(1).max(quoteCheckoutBodyItemsMax),
+  "fulfillment": zod.enum(['DELIVERY', 'PICKUP']),
+  "zoneCode": zod.string().max(quoteCheckoutBodyZoneCodeMax).nullable(),
+  "deliveryMode": zod.union([zod.literal('HOME'),zod.literal('DESK'),zod.literal(null)]).nullable()
+})
+
+export const QuoteCheckoutResponse = zod.object({
+  "quoteHash": zod.string(),
+  "items": zod.array(zod.object({
+  "variantId": zod.number().int(),
+  "productName": zod.string(),
+  "nameAr": zod.string(),
+  "sku": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "image": zod.string(),
+  "quantity": zod.number().int(),
+  "unitPriceMinor": zod.number().int(),
+  "lineTotalMinor": zod.number().int()
+})),
+  "subtotalMinor": zod.number().int(),
+  "feeMinor": zod.number().int(),
+  "totalMinor": zod.number().int(),
+  "fulfillment": zod.enum(['DELIVERY', 'PICKUP']),
+  "zoneCode": zod.string().nullable(),
+  "deliveryMode": zod.union([zod.literal('HOME'),zod.literal('DESK'),zod.literal(null)]).nullable(),
+  "deliveryMinDays": zod.number().int().nullable(),
+  "deliveryMaxDays": zod.number().int().nullable(),
+  "zoneNameFr": zod.string(),
+  "zoneNameAr": zod.string(),
+  "pickupAddressFr": zod.string(),
+  "pickupAddressAr": zod.string(),
+  "policyFr": zod.string(),
+  "policyAr": zod.string(),
+  "reservationMinutes": zod.number().int()
+})
+
+
+
+export const placeCheckoutOrderBodyOneItemsItemQuantityMax = 20;
+
+export const placeCheckoutOrderBodyOneItemsMax = 20;
+
+export const placeCheckoutOrderBodyOneZoneCodeMax = 20;
+
+export const placeCheckoutOrderBodyTwoAccessTokenRegExp = new RegExp('^[a-f0-9]{64}$');
+export const placeCheckoutOrderBodyThreeExpectedQuoteHashRegExp = new RegExp('^[a-f0-9]{64}$');
+export const placeCheckoutOrderBodyThreeCustomerNameMin = 3;
+export const placeCheckoutOrderBodyThreeCustomerNameMax = 150;
+
+export const placeCheckoutOrderBodyThreeCustomerPhoneMin = 10;
+export const placeCheckoutOrderBodyThreeCustomerPhoneMax = 25;
+
+export const placeCheckoutOrderBodyThreeCommuneMax = 150;
+
+export const placeCheckoutOrderBodyThreeAddressMax = 500;
+
+export const placeCheckoutOrderBodyThreeNotesMax = 1000;
+
+
+
+export const PlaceCheckoutOrderBody = zod.object({
+  "items": zod.array(zod.object({
+  "variantId": zod.number().int().min(1),
+  "quantity": zod.number().int().min(1).max(placeCheckoutOrderBodyOneItemsItemQuantityMax)
+})).min(1).max(placeCheckoutOrderBodyOneItemsMax),
+  "fulfillment": zod.enum(['DELIVERY', 'PICKUP']),
+  "zoneCode": zod.string().max(placeCheckoutOrderBodyOneZoneCodeMax).nullable(),
+  "deliveryMode": zod.union([zod.literal('HOME'),zod.literal('DESK'),zod.literal(null)]).nullable()
+}).and(zod.object({
+  "requestId": zod.string().uuid(),
+  "accessToken": zod.string().regex(placeCheckoutOrderBodyTwoAccessTokenRegExp)
+})).and(zod.object({
+  "expectedQuoteHash": zod.string().regex(placeCheckoutOrderBodyThreeExpectedQuoteHashRegExp),
+  "customerName": zod.string().min(placeCheckoutOrderBodyThreeCustomerNameMin).max(placeCheckoutOrderBodyThreeCustomerNameMax),
+  "customerPhone": zod.string().min(placeCheckoutOrderBodyThreeCustomerPhoneMin).max(placeCheckoutOrderBodyThreeCustomerPhoneMax),
+  "commune": zod.string().max(placeCheckoutOrderBodyThreeCommuneMax),
+  "address": zod.string().max(placeCheckoutOrderBodyThreeAddressMax),
+  "notes": zod.string().max(placeCheckoutOrderBodyThreeNotesMax),
+  "acceptedPolicy": zod.literal(true)
+}))
+
+export const PlaceCheckoutOrderResponse = zod.object({
+  "reference": zod.string(),
+  "requestId": zod.string(),
+  "status": zod.enum(['PENDING', 'CANCELLED', 'EXPIRED']),
+  "createdAt": zod.coerce.date(),
+  "expiresAt": zod.coerce.date(),
+  "fulfillment": zod.enum(['DELIVERY', 'PICKUP']),
+  "deliveryMode": zod.union([zod.literal('HOME'),zod.literal('DESK'),zod.literal(null)]).nullable(),
+  "deliveryMinDays": zod.number().int().nullable(),
+  "deliveryMaxDays": zod.number().int().nullable(),
+  "paymentMethod": zod.enum(['COD', 'CASH_PICKUP']),
+  "paymentStatus": zod.enum(['UNPAID']),
+  "maskedPhone": zod.string(),
+  "items": zod.array(zod.object({
+  "variantId": zod.number().int(),
+  "productName": zod.string(),
+  "nameAr": zod.string(),
+  "sku": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "image": zod.string(),
+  "quantity": zod.number().int(),
+  "unitPriceMinor": zod.number().int(),
+  "lineTotalMinor": zod.number().int()
+})),
+  "subtotalMinor": zod.number().int(),
+  "feeMinor": zod.number().int(),
+  "totalMinor": zod.number().int(),
+  "zoneNameFr": zod.string(),
+  "zoneNameAr": zod.string(),
+  "pickupAddressFr": zod.string(),
+  "pickupAddressAr": zod.string(),
+  "policyFr": zod.string(),
+  "policyAr": zod.string()
+})
+
+
+export const recoverCheckoutOrderBodyAccessTokenRegExp = new RegExp('^[a-f0-9]{64}$');
+
+
+export const RecoverCheckoutOrderBody = zod.object({
+  "requestId": zod.string().uuid(),
+  "accessToken": zod.string().regex(recoverCheckoutOrderBodyAccessTokenRegExp)
+})
+
+export const RecoverCheckoutOrderResponse = zod.object({
+  "reference": zod.string(),
+  "requestId": zod.string(),
+  "status": zod.enum(['PENDING', 'CANCELLED', 'EXPIRED']),
+  "createdAt": zod.coerce.date(),
+  "expiresAt": zod.coerce.date(),
+  "fulfillment": zod.enum(['DELIVERY', 'PICKUP']),
+  "deliveryMode": zod.union([zod.literal('HOME'),zod.literal('DESK'),zod.literal(null)]).nullable(),
+  "deliveryMinDays": zod.number().int().nullable(),
+  "deliveryMaxDays": zod.number().int().nullable(),
+  "paymentMethod": zod.enum(['COD', 'CASH_PICKUP']),
+  "paymentStatus": zod.enum(['UNPAID']),
+  "maskedPhone": zod.string(),
+  "items": zod.array(zod.object({
+  "variantId": zod.number().int(),
+  "productName": zod.string(),
+  "nameAr": zod.string(),
+  "sku": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "image": zod.string(),
+  "quantity": zod.number().int(),
+  "unitPriceMinor": zod.number().int(),
+  "lineTotalMinor": zod.number().int()
+})),
+  "subtotalMinor": zod.number().int(),
+  "feeMinor": zod.number().int(),
+  "totalMinor": zod.number().int(),
+  "zoneNameFr": zod.string(),
+  "zoneNameAr": zod.string(),
+  "pickupAddressFr": zod.string(),
+  "pickupAddressAr": zod.string(),
+  "policyFr": zod.string(),
+  "policyAr": zod.string()
+})
+
+
+export const cancelCheckoutRequestBodyAccessTokenRegExp = new RegExp('^[a-f0-9]{64}$');
+
+
+export const CancelCheckoutRequestBody = zod.object({
+  "requestId": zod.string().uuid(),
+  "accessToken": zod.string().regex(cancelCheckoutRequestBodyAccessTokenRegExp)
+})
+
+export const CancelCheckoutRequestResponse = zod.object({
+  "cancelled": zod.boolean(),
+  "order": zod.union([zod.object({
+  "reference": zod.string(),
+  "requestId": zod.string(),
+  "status": zod.enum(['PENDING', 'CANCELLED', 'EXPIRED']),
+  "createdAt": zod.coerce.date(),
+  "expiresAt": zod.coerce.date(),
+  "fulfillment": zod.enum(['DELIVERY', 'PICKUP']),
+  "deliveryMode": zod.union([zod.literal('HOME'),zod.literal('DESK'),zod.literal(null)]).nullable(),
+  "deliveryMinDays": zod.number().int().nullable(),
+  "deliveryMaxDays": zod.number().int().nullable(),
+  "paymentMethod": zod.enum(['COD', 'CASH_PICKUP']),
+  "paymentStatus": zod.enum(['UNPAID']),
+  "maskedPhone": zod.string(),
+  "items": zod.array(zod.object({
+  "variantId": zod.number().int(),
+  "productName": zod.string(),
+  "nameAr": zod.string(),
+  "sku": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "image": zod.string(),
+  "quantity": zod.number().int(),
+  "unitPriceMinor": zod.number().int(),
+  "lineTotalMinor": zod.number().int()
+})),
+  "subtotalMinor": zod.number().int(),
+  "feeMinor": zod.number().int(),
+  "totalMinor": zod.number().int(),
+  "zoneNameFr": zod.string(),
+  "zoneNameAr": zod.string(),
+  "pickupAddressFr": zod.string(),
+  "pickupAddressAr": zod.string(),
+  "policyFr": zod.string(),
+  "policyAr": zod.string()
+}),zod.null()])
+})
+
+
+export const getAdminCheckoutSettingsResponsePickupAddressFrMax = 500;
+
+export const getAdminCheckoutSettingsResponsePickupAddressArMax = 500;
+
+export const getAdminCheckoutSettingsResponsePickupFeeMinorMin = 0;
+export const getAdminCheckoutSettingsResponsePickupFeeMinorMax = 1000000000;
+
+export const getAdminCheckoutSettingsResponseReservationMinutesMin = 15;
+export const getAdminCheckoutSettingsResponseReservationMinutesMax = 10080;
+
+export const getAdminCheckoutSettingsResponsePolicyFrMax = 3000;
+
+export const getAdminCheckoutSettingsResponsePolicyArMax = 3000;
+
+export const getAdminCheckoutSettingsResponseZonesItemCodeRegExp = new RegExp('^(0[1-9]|[1-4][0-9]|5[0-8])$');
+export const getAdminCheckoutSettingsResponseZonesItemNameFrMax = 100;
+
+export const getAdminCheckoutSettingsResponseZonesItemNameArMax = 100;
+
+export const getAdminCheckoutSettingsResponseZonesItemHomeFeeMinorMin = 0;
+export const getAdminCheckoutSettingsResponseZonesItemHomeFeeMinorMax = 1000000000;
+
+export const getAdminCheckoutSettingsResponseZonesItemDeskFeeMinorMin = 0;
+export const getAdminCheckoutSettingsResponseZonesItemDeskFeeMinorMax = 1000000000;
+
+export const getAdminCheckoutSettingsResponseZonesItemHomeMinDaysMax = 60;
+
+export const getAdminCheckoutSettingsResponseZonesItemHomeMaxDaysMax = 60;
+
+export const getAdminCheckoutSettingsResponseZonesItemDeskMinDaysMax = 60;
+
+export const getAdminCheckoutSettingsResponseZonesItemDeskMaxDaysMax = 60;
+
+export const getAdminCheckoutSettingsResponseZonesMin = 58;
+export const getAdminCheckoutSettingsResponseZonesMax = 58;
+
+
+
+export const GetAdminCheckoutSettingsResponse = zod.object({
+  "enabled": zod.boolean(),
+  "deliveryEnabled": zod.boolean(),
+  "pickupEnabled": zod.boolean(),
+  "pickupAddressFr": zod.string().max(getAdminCheckoutSettingsResponsePickupAddressFrMax),
+  "pickupAddressAr": zod.string().max(getAdminCheckoutSettingsResponsePickupAddressArMax),
+  "pickupFeeMinor": zod.number().int().min(getAdminCheckoutSettingsResponsePickupFeeMinorMin).max(getAdminCheckoutSettingsResponsePickupFeeMinorMax).nullable(),
+  "reservationMinutes": zod.number().int().min(getAdminCheckoutSettingsResponseReservationMinutesMin).max(getAdminCheckoutSettingsResponseReservationMinutesMax).nullable(),
+  "policyFr": zod.string().max(getAdminCheckoutSettingsResponsePolicyFrMax),
+  "policyAr": zod.string().max(getAdminCheckoutSettingsResponsePolicyArMax),
+  "zones": zod.array(zod.object({
+  "code": zod.string().regex(getAdminCheckoutSettingsResponseZonesItemCodeRegExp),
+  "nameFr": zod.string().min(1).max(getAdminCheckoutSettingsResponseZonesItemNameFrMax),
+  "nameAr": zod.string().min(1).max(getAdminCheckoutSettingsResponseZonesItemNameArMax),
+  "enabled": zod.boolean(),
+  "homeFeeMinor": zod.number().int().min(getAdminCheckoutSettingsResponseZonesItemHomeFeeMinorMin).max(getAdminCheckoutSettingsResponseZonesItemHomeFeeMinorMax).nullable(),
+  "deskFeeMinor": zod.number().int().min(getAdminCheckoutSettingsResponseZonesItemDeskFeeMinorMin).max(getAdminCheckoutSettingsResponseZonesItemDeskFeeMinorMax).nullable(),
+  "homeMinDays": zod.number().int().min(1).max(getAdminCheckoutSettingsResponseZonesItemHomeMinDaysMax).nullable(),
+  "homeMaxDays": zod.number().int().min(1).max(getAdminCheckoutSettingsResponseZonesItemHomeMaxDaysMax).nullable(),
+  "deskMinDays": zod.number().int().min(1).max(getAdminCheckoutSettingsResponseZonesItemDeskMinDaysMax).nullable(),
+  "deskMaxDays": zod.number().int().min(1).max(getAdminCheckoutSettingsResponseZonesItemDeskMaxDaysMax).nullable()
+})).min(getAdminCheckoutSettingsResponseZonesMin).max(getAdminCheckoutSettingsResponseZonesMax)
+})
+
+
+export const saveAdminCheckoutSettingsBodyPickupAddressFrMax = 500;
+
+export const saveAdminCheckoutSettingsBodyPickupAddressArMax = 500;
+
+export const saveAdminCheckoutSettingsBodyPickupFeeMinorMin = 0;
+export const saveAdminCheckoutSettingsBodyPickupFeeMinorMax = 1000000000;
+
+export const saveAdminCheckoutSettingsBodyReservationMinutesMin = 15;
+export const saveAdminCheckoutSettingsBodyReservationMinutesMax = 10080;
+
+export const saveAdminCheckoutSettingsBodyPolicyFrMax = 3000;
+
+export const saveAdminCheckoutSettingsBodyPolicyArMax = 3000;
+
+export const saveAdminCheckoutSettingsBodyZonesItemCodeRegExp = new RegExp('^(0[1-9]|[1-4][0-9]|5[0-8])$');
+export const saveAdminCheckoutSettingsBodyZonesItemNameFrMax = 100;
+
+export const saveAdminCheckoutSettingsBodyZonesItemNameArMax = 100;
+
+export const saveAdminCheckoutSettingsBodyZonesItemHomeFeeMinorMin = 0;
+export const saveAdminCheckoutSettingsBodyZonesItemHomeFeeMinorMax = 1000000000;
+
+export const saveAdminCheckoutSettingsBodyZonesItemDeskFeeMinorMin = 0;
+export const saveAdminCheckoutSettingsBodyZonesItemDeskFeeMinorMax = 1000000000;
+
+export const saveAdminCheckoutSettingsBodyZonesItemHomeMinDaysMax = 60;
+
+export const saveAdminCheckoutSettingsBodyZonesItemHomeMaxDaysMax = 60;
+
+export const saveAdminCheckoutSettingsBodyZonesItemDeskMinDaysMax = 60;
+
+export const saveAdminCheckoutSettingsBodyZonesItemDeskMaxDaysMax = 60;
+
+export const saveAdminCheckoutSettingsBodyZonesMin = 58;
+export const saveAdminCheckoutSettingsBodyZonesMax = 58;
+
+
+
+export const SaveAdminCheckoutSettingsBody = zod.object({
+  "enabled": zod.boolean(),
+  "deliveryEnabled": zod.boolean(),
+  "pickupEnabled": zod.boolean(),
+  "pickupAddressFr": zod.string().max(saveAdminCheckoutSettingsBodyPickupAddressFrMax),
+  "pickupAddressAr": zod.string().max(saveAdminCheckoutSettingsBodyPickupAddressArMax),
+  "pickupFeeMinor": zod.number().int().min(saveAdminCheckoutSettingsBodyPickupFeeMinorMin).max(saveAdminCheckoutSettingsBodyPickupFeeMinorMax).nullable(),
+  "reservationMinutes": zod.number().int().min(saveAdminCheckoutSettingsBodyReservationMinutesMin).max(saveAdminCheckoutSettingsBodyReservationMinutesMax).nullable(),
+  "policyFr": zod.string().max(saveAdminCheckoutSettingsBodyPolicyFrMax),
+  "policyAr": zod.string().max(saveAdminCheckoutSettingsBodyPolicyArMax),
+  "zones": zod.array(zod.object({
+  "code": zod.string().regex(saveAdminCheckoutSettingsBodyZonesItemCodeRegExp),
+  "nameFr": zod.string().min(1).max(saveAdminCheckoutSettingsBodyZonesItemNameFrMax),
+  "nameAr": zod.string().min(1).max(saveAdminCheckoutSettingsBodyZonesItemNameArMax),
+  "enabled": zod.boolean(),
+  "homeFeeMinor": zod.number().int().min(saveAdminCheckoutSettingsBodyZonesItemHomeFeeMinorMin).max(saveAdminCheckoutSettingsBodyZonesItemHomeFeeMinorMax).nullable(),
+  "deskFeeMinor": zod.number().int().min(saveAdminCheckoutSettingsBodyZonesItemDeskFeeMinorMin).max(saveAdminCheckoutSettingsBodyZonesItemDeskFeeMinorMax).nullable(),
+  "homeMinDays": zod.number().int().min(1).max(saveAdminCheckoutSettingsBodyZonesItemHomeMinDaysMax).nullable(),
+  "homeMaxDays": zod.number().int().min(1).max(saveAdminCheckoutSettingsBodyZonesItemHomeMaxDaysMax).nullable(),
+  "deskMinDays": zod.number().int().min(1).max(saveAdminCheckoutSettingsBodyZonesItemDeskMinDaysMax).nullable(),
+  "deskMaxDays": zod.number().int().min(1).max(saveAdminCheckoutSettingsBodyZonesItemDeskMaxDaysMax).nullable()
+})).min(saveAdminCheckoutSettingsBodyZonesMin).max(saveAdminCheckoutSettingsBodyZonesMax)
+})
+
+export const saveAdminCheckoutSettingsResponsePickupAddressFrMax = 500;
+
+export const saveAdminCheckoutSettingsResponsePickupAddressArMax = 500;
+
+export const saveAdminCheckoutSettingsResponsePickupFeeMinorMin = 0;
+export const saveAdminCheckoutSettingsResponsePickupFeeMinorMax = 1000000000;
+
+export const saveAdminCheckoutSettingsResponseReservationMinutesMin = 15;
+export const saveAdminCheckoutSettingsResponseReservationMinutesMax = 10080;
+
+export const saveAdminCheckoutSettingsResponsePolicyFrMax = 3000;
+
+export const saveAdminCheckoutSettingsResponsePolicyArMax = 3000;
+
+export const saveAdminCheckoutSettingsResponseZonesItemCodeRegExp = new RegExp('^(0[1-9]|[1-4][0-9]|5[0-8])$');
+export const saveAdminCheckoutSettingsResponseZonesItemNameFrMax = 100;
+
+export const saveAdminCheckoutSettingsResponseZonesItemNameArMax = 100;
+
+export const saveAdminCheckoutSettingsResponseZonesItemHomeFeeMinorMin = 0;
+export const saveAdminCheckoutSettingsResponseZonesItemHomeFeeMinorMax = 1000000000;
+
+export const saveAdminCheckoutSettingsResponseZonesItemDeskFeeMinorMin = 0;
+export const saveAdminCheckoutSettingsResponseZonesItemDeskFeeMinorMax = 1000000000;
+
+export const saveAdminCheckoutSettingsResponseZonesItemHomeMinDaysMax = 60;
+
+export const saveAdminCheckoutSettingsResponseZonesItemHomeMaxDaysMax = 60;
+
+export const saveAdminCheckoutSettingsResponseZonesItemDeskMinDaysMax = 60;
+
+export const saveAdminCheckoutSettingsResponseZonesItemDeskMaxDaysMax = 60;
+
+export const saveAdminCheckoutSettingsResponseZonesMin = 58;
+export const saveAdminCheckoutSettingsResponseZonesMax = 58;
+
+
+
+export const SaveAdminCheckoutSettingsResponse = zod.object({
+  "enabled": zod.boolean(),
+  "deliveryEnabled": zod.boolean(),
+  "pickupEnabled": zod.boolean(),
+  "pickupAddressFr": zod.string().max(saveAdminCheckoutSettingsResponsePickupAddressFrMax),
+  "pickupAddressAr": zod.string().max(saveAdminCheckoutSettingsResponsePickupAddressArMax),
+  "pickupFeeMinor": zod.number().int().min(saveAdminCheckoutSettingsResponsePickupFeeMinorMin).max(saveAdminCheckoutSettingsResponsePickupFeeMinorMax).nullable(),
+  "reservationMinutes": zod.number().int().min(saveAdminCheckoutSettingsResponseReservationMinutesMin).max(saveAdminCheckoutSettingsResponseReservationMinutesMax).nullable(),
+  "policyFr": zod.string().max(saveAdminCheckoutSettingsResponsePolicyFrMax),
+  "policyAr": zod.string().max(saveAdminCheckoutSettingsResponsePolicyArMax),
+  "zones": zod.array(zod.object({
+  "code": zod.string().regex(saveAdminCheckoutSettingsResponseZonesItemCodeRegExp),
+  "nameFr": zod.string().min(1).max(saveAdminCheckoutSettingsResponseZonesItemNameFrMax),
+  "nameAr": zod.string().min(1).max(saveAdminCheckoutSettingsResponseZonesItemNameArMax),
+  "enabled": zod.boolean(),
+  "homeFeeMinor": zod.number().int().min(saveAdminCheckoutSettingsResponseZonesItemHomeFeeMinorMin).max(saveAdminCheckoutSettingsResponseZonesItemHomeFeeMinorMax).nullable(),
+  "deskFeeMinor": zod.number().int().min(saveAdminCheckoutSettingsResponseZonesItemDeskFeeMinorMin).max(saveAdminCheckoutSettingsResponseZonesItemDeskFeeMinorMax).nullable(),
+  "homeMinDays": zod.number().int().min(1).max(saveAdminCheckoutSettingsResponseZonesItemHomeMinDaysMax).nullable(),
+  "homeMaxDays": zod.number().int().min(1).max(saveAdminCheckoutSettingsResponseZonesItemHomeMaxDaysMax).nullable(),
+  "deskMinDays": zod.number().int().min(1).max(saveAdminCheckoutSettingsResponseZonesItemDeskMinDaysMax).nullable(),
+  "deskMaxDays": zod.number().int().min(1).max(saveAdminCheckoutSettingsResponseZonesItemDeskMaxDaysMax).nullable()
+})).min(saveAdminCheckoutSettingsResponseZonesMin).max(saveAdminCheckoutSettingsResponseZonesMax)
+})
+
+
+
+export const listAdminOrdersQueryQMax = 100;
+
+
+
+export const ListAdminOrdersQueryParams = zod.object({
+  "before": zod.coerce.number().int().min(1).optional(),
+  "status": zod.enum(['PENDING', 'CANCELLED', 'EXPIRED']).optional(),
+  "q": zod.coerce.string().max(listAdminOrdersQueryQMax).optional()
+})
+
+export const ListAdminOrdersResponse = zod.object({
+  "items": zod.array(zod.object({
+  "reference": zod.string(),
+  "requestId": zod.string(),
+  "status": zod.enum(['PENDING', 'CANCELLED', 'EXPIRED']),
+  "createdAt": zod.coerce.date(),
+  "expiresAt": zod.coerce.date(),
+  "fulfillment": zod.enum(['DELIVERY', 'PICKUP']),
+  "deliveryMode": zod.union([zod.literal('HOME'),zod.literal('DESK'),zod.literal(null)]).nullable(),
+  "deliveryMinDays": zod.number().int().nullable(),
+  "deliveryMaxDays": zod.number().int().nullable(),
+  "paymentMethod": zod.enum(['COD', 'CASH_PICKUP']),
+  "paymentStatus": zod.enum(['UNPAID']),
+  "maskedPhone": zod.string(),
+  "items": zod.array(zod.object({
+  "variantId": zod.number().int(),
+  "productName": zod.string(),
+  "nameAr": zod.string(),
+  "sku": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "image": zod.string(),
+  "quantity": zod.number().int(),
+  "unitPriceMinor": zod.number().int(),
+  "lineTotalMinor": zod.number().int()
+})),
+  "subtotalMinor": zod.number().int(),
+  "feeMinor": zod.number().int(),
+  "totalMinor": zod.number().int(),
+  "zoneNameFr": zod.string(),
+  "zoneNameAr": zod.string(),
+  "pickupAddressFr": zod.string(),
+  "pickupAddressAr": zod.string(),
+  "policyFr": zod.string(),
+  "policyAr": zod.string()
+}).and(zod.object({
+  "id": zod.number().int(),
+  "customerName": zod.string(),
+  "customerPhone": zod.string(),
+  "commune": zod.string(),
+  "address": zod.string(),
+  "notes": zod.string(),
+  "events": zod.array(zod.object({
+  "kind": zod.string(),
+  "reason": zod.string(),
+  "createdAt": zod.coerce.date()
+}))
+}))),
+  "nextCursor": zod.number().int().nullable()
+})
+
+
+
+
+
+export const GetAdminOrderParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const GetAdminOrderResponse = zod.object({
+  "reference": zod.string(),
+  "requestId": zod.string(),
+  "status": zod.enum(['PENDING', 'CANCELLED', 'EXPIRED']),
+  "createdAt": zod.coerce.date(),
+  "expiresAt": zod.coerce.date(),
+  "fulfillment": zod.enum(['DELIVERY', 'PICKUP']),
+  "deliveryMode": zod.union([zod.literal('HOME'),zod.literal('DESK'),zod.literal(null)]).nullable(),
+  "deliveryMinDays": zod.number().int().nullable(),
+  "deliveryMaxDays": zod.number().int().nullable(),
+  "paymentMethod": zod.enum(['COD', 'CASH_PICKUP']),
+  "paymentStatus": zod.enum(['UNPAID']),
+  "maskedPhone": zod.string(),
+  "items": zod.array(zod.object({
+  "variantId": zod.number().int(),
+  "productName": zod.string(),
+  "nameAr": zod.string(),
+  "sku": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "image": zod.string(),
+  "quantity": zod.number().int(),
+  "unitPriceMinor": zod.number().int(),
+  "lineTotalMinor": zod.number().int()
+})),
+  "subtotalMinor": zod.number().int(),
+  "feeMinor": zod.number().int(),
+  "totalMinor": zod.number().int(),
+  "zoneNameFr": zod.string(),
+  "zoneNameAr": zod.string(),
+  "pickupAddressFr": zod.string(),
+  "pickupAddressAr": zod.string(),
+  "policyFr": zod.string(),
+  "policyAr": zod.string()
+}).and(zod.object({
+  "id": zod.number().int(),
+  "customerName": zod.string(),
+  "customerPhone": zod.string(),
+  "commune": zod.string(),
+  "address": zod.string(),
+  "notes": zod.string(),
+  "events": zod.array(zod.object({
+  "kind": zod.string(),
+  "reason": zod.string(),
+  "createdAt": zod.coerce.date()
+}))
+}))
+
+
+
+
+
+export const CancelAdminOrderParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const cancelAdminOrderBodyReasonMin = 3;
+export const cancelAdminOrderBodyReasonMax = 500;
+
+
+
+export const CancelAdminOrderBody = zod.object({
+  "reason": zod.string().min(cancelAdminOrderBodyReasonMin).max(cancelAdminOrderBodyReasonMax)
+})
+
+export const CancelAdminOrderResponse = zod.object({
+  "reference": zod.string(),
+  "requestId": zod.string(),
+  "status": zod.enum(['PENDING', 'CANCELLED', 'EXPIRED']),
+  "createdAt": zod.coerce.date(),
+  "expiresAt": zod.coerce.date(),
+  "fulfillment": zod.enum(['DELIVERY', 'PICKUP']),
+  "deliveryMode": zod.union([zod.literal('HOME'),zod.literal('DESK'),zod.literal(null)]).nullable(),
+  "deliveryMinDays": zod.number().int().nullable(),
+  "deliveryMaxDays": zod.number().int().nullable(),
+  "paymentMethod": zod.enum(['COD', 'CASH_PICKUP']),
+  "paymentStatus": zod.enum(['UNPAID']),
+  "maskedPhone": zod.string(),
+  "items": zod.array(zod.object({
+  "variantId": zod.number().int(),
+  "productName": zod.string(),
+  "nameAr": zod.string(),
+  "sku": zod.string(),
+  "size": zod.string(),
+  "color": zod.string(),
+  "image": zod.string(),
+  "quantity": zod.number().int(),
+  "unitPriceMinor": zod.number().int(),
+  "lineTotalMinor": zod.number().int()
+})),
+  "subtotalMinor": zod.number().int(),
+  "feeMinor": zod.number().int(),
+  "totalMinor": zod.number().int(),
+  "zoneNameFr": zod.string(),
+  "zoneNameAr": zod.string(),
+  "pickupAddressFr": zod.string(),
+  "pickupAddressAr": zod.string(),
+  "policyFr": zod.string(),
+  "policyAr": zod.string()
+}).and(zod.object({
+  "id": zod.number().int(),
+  "customerName": zod.string(),
+  "customerPhone": zod.string(),
+  "commune": zod.string(),
+  "address": zod.string(),
+  "notes": zod.string(),
+  "events": zod.array(zod.object({
+  "kind": zod.string(),
+  "reason": zod.string(),
+  "createdAt": zod.coerce.date()
+}))
+}))
+
+
 export const HealthCheckResponse = zod.object({
   "status": zod.string()
 })

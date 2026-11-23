@@ -3,7 +3,7 @@ import { Link, useLocation, Redirect } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Archive, Boxes, Tags, FileSpreadsheet, Images, History, Barcode, Check, Copy, KeyRound, LayoutGrid, LogOut, Package, Pencil, Plus, ScrollText, ShoppingBag, Receipt, Wallet, ExternalLink, AlertTriangle,
-} from "lucide-react";
+  ClipboardList, Globe } from "lucide-react";
 import {
   useLogin, useLogout, useChangePassword, useActivateOwner, useGetAdminSummary, useListAdminProducts, useCreateProduct,
   useUpdateProduct, useCreateVariant, useListInventory, useAdjustStock, useListActivity, useListCategories,
@@ -166,6 +166,8 @@ const NAV = [
   { href: "/admin/mouvements", label: "Mouvements", icon: History },
   { href: "/admin/medias", label: "Médiathèque", icon: Images },
   { href: "/admin/import-export", label: "Import / Export", icon: FileSpreadsheet },
+  { href: "/admin/commandes", label: "Commandes", icon: ClipboardList },
+  { href: "/admin/vente-en-ligne", label: "Vente en ligne", icon: Globe },
   { href: "/admin/activite", label: "Activité", icon: ScrollText },
   { href: "/pos", label: "Caisse", icon: ShoppingBag },
 ];

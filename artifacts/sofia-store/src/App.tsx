@@ -16,6 +16,9 @@ import { PosHistoryPage } from '@/pages/pos-history';
 import { PosTicketPage } from '@/pages/pos-ticket';
 import { PosSessionsPage } from '@/pages/pos-sessions';
 import { PosSettingsPage } from '@/pages/pos-settings';
+import { CartPage } from '@/pages/cart';
+import { CheckoutPage, ConfirmationPage } from '@/pages/checkout';
+import { AdminCheckoutSettingsPage, AdminOrdersPage, AdminOrderDetailPage } from '@/pages/admin-orders';
 import {
   Route,
   Switch,
@@ -37,6 +40,12 @@ function Router() {
         <Route path="/a-propos" component={AboutPage} />
         <Route path="/contact" component={ContactPage} />
         <Route path="/favoris" component={FavoritesPage} />
+        <Route path="/panier" component={CartPage} />
+        <Route path="/commande" component={CheckoutPage} />
+        <Route path="/commande/confirmation" component={ConfirmationPage} />
+        <Route path="/admin/vente-en-ligne" component={AdminCheckoutSettingsPage} />
+        <Route path="/admin/commandes" component={AdminOrdersPage} />
+        <Route path="/admin/commandes/:id" component={AdminOrderDetailPage} />
         <Route path="/admin/login" component={AdminLoginPage} />
         <Route path="/admin" component={AdminDashboardPage} />
         <Route path="/admin/produits" component={AdminProductsPage} />
