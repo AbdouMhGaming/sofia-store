@@ -35,3 +35,5 @@ export { actOnWebOrder } from "./checkout/fulfillment";
 export { recordWebPayment } from "./checkout/payments";
 export { recoverWebCommand, abandonWebCommand } from "./checkout/commands";
 export { readRetailReport, reportOptions, reportOwner, aggregateRetailReport, loadRetailReportSource, retailReportCsv, reportCsvCell } from "./reports";
+export { lockAccount, accountRole, hashStaffPassword, verifyStaffPassword } from "./accounts";
+export { listStaffAccounts, executeStaffOperation, recoverStaffOperation, abandonStaffOperation, type StaffActor } from "./staff";

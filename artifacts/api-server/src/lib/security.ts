@@ -1,6 +1,7 @@
-import { createHash, createHmac, randomBytes, scrypt, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import type { Request, Response, NextFunction } from "express";
-import { db } from "@workspace/db";
+import { db, type Prisma } from "@workspace/db";
+export { hashStaffPassword as hashPassword, verifyStaffPassword as verifyPassword } from "@workspace/db";
 import type { User } from "@workspace/api-zod";
 
 const secret = process.env.SESSION_SECRET;
@@ -16,24 +17,7 @@ export function safeEqual(a: string, b: string): boolean {
 function cookieOptions(req: Request) {
   return { httpOnly: true, secure: req.secure, sameSite: "strict" as const, path: "/api", maxAge: 8 * 60 * 60 * 1000 };
 }
-export function hashPassword(password: string): Promise<string> {
-  const salt = randomBytes(16).toString("hex");
-  return new Promise((resolve, reject) => {
-    scrypt(password, salt, 64, { N: 32768, r: 8, p: 1, maxmem: 64 * 1024 * 1024 }, (err, key) => {
-      if (err) reject(err);
-      else resolve(`scrypt$32768$${salt}$${key.toString("hex")}`);
-    });
-  });
-}
-export async function verifyPassword(password: string, stored: string): Promise<boolean> {
-  const [algorithm, n, salt, expected] = stored.split("$");
-  if (algorithm !== "scrypt" || n !== "32768" || !salt || !expected) return false;
-  const actual = await new Promise<Buffer>((resolve, reject) => {
-    scrypt(password, salt, 64, { N: 32768, r: 8, p: 1, maxmem: 64 * 1024 * 1024 }, (err, key) => err ? reject(err) : resolve(key));
-  });
-  return safeEqual(actual.toString("hex"), expected);
-}
-export type Identity = { user: User; tokenHash: string; csrfToken: string };
+export type Identity = { user: User; tokenHash: string; csrfToken: string; accountVersion: number };
 export async function identity(req: Request): Promise<Identity | null> {
   const token = req.cookies?.[cookieName];
   if (typeof token !== "string" || token.length !== 64) return null;
@@ -49,15 +33,18 @@ export async function identity(req: Request): Promise<Identity | null> {
     user: { id: session.userId, email: session.user.email, role, mustChangePassword: session.user.mustChangePassword },
     tokenHash: session.tokenHash,
     csrfToken: hmac(`csrf:${token}`),
+    accountVersion: session.user.version,
   };
 }
-export async function newSession(req: Request, res: Response, userId: number) {
+export async function prepareSession(tx: Prisma.TransactionClient, userId: number) {
   const token = randomBytes(32).toString("hex");
   const csrfToken = hmac(`csrf:${token}`);
-  await db.session.create({ data: { tokenHash: sha256(token), userId, csrfHash: sha256(csrfToken), expiresAt: new Date(Date.now() + 8 * 3600 * 1000) } });
+  await tx.session.create({ data: { tokenHash: sha256(token), userId, csrfHash: sha256(csrfToken), expiresAt: new Date(Date.now() + 8 * 3600 * 1000) } });
+  return { token, csrfToken };
+}
+export function sendSessionCookie(req: Request, res: Response, token: string) {
   res.cookie(cookieName, token, cookieOptions(req));
   res.clearCookie(csrfCookie, { path: "/api" });
-  return csrfToken;
 }
 export function anonymousCsrf(req: Request, res: Response): string {
   const old = req.cookies?.[csrfCookie];

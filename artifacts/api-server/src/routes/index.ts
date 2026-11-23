@@ -11,6 +11,7 @@ import mediaRouter from "./media";
 import posRouter from "./pos";
 import checkoutRouter from "./checkout";
 import reportsRouter from "./reports";
+import staffRouter from "./staff";
 
 const router: IRouter = Router();
 
@@ -26,5 +27,6 @@ router.use(mediaRouter);
 router.use("/pos", posRouter);
 router.use(checkoutRouter);
 router.use(reportsRouter);
+router.use(staffRouter);
 
 export default router;

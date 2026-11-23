@@ -13,6 +13,8 @@ model User {
   passwordHash       String      @db.VarChar(255)
   mustChangePassword Boolean     @default(true)
   active             Boolean     @default(true)
+  version            Int         @default(1)
+  accountGuard       AccountGuard?
   createdAt          DateTime    @default(now())
   roles              UserRole[]
   sessions           Session[]
@@ -28,6 +30,8 @@ model User {
   orderEvents        WebOrderEvent[]
   webPayments        WebOrderPayment[]
   webCommands        WebOrderCommand[]
+  staffCommands      StaffCommand[] @relation("StaffActor")
+  staffResults       StaffCommand[] @relation("StaffResult")
   @@map("users")
 }
 
@@ -36,6 +40,27 @@ model Role {
   name  String     @unique @db.VarChar(40)
   users UserRole[]
   @@map("roles")
+}
+
+model StaffCommand {
+  requestId     String   @id @db.VarChar(36)
+  actorId       Int
+  requestHash   String   @db.VarChar(64)
+  kind          String   @db.VarChar(16)
+  state         String   @db.VarChar(16)
+  resultUserId  Int?
+  resultVersion Int?
+  createdAt     DateTime @default(now())
+  actor         User     @relation("StaffActor", fields: [actorId], references: [id], onDelete: Restrict)
+  resultUser    User?    @relation("StaffResult", fields: [resultUserId], references: [id], onDelete: Restrict)
+  @@index([actorId, createdAt])
+  @@map("staff_commands")
+}
+
+model AccountGuard {
+  userId Int @id
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("account_guards")
 }
 
 model UserRole {

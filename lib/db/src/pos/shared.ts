@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import type { PosSale, ReceiptSettings, RegisterSession } from "@workspace/api-zod";
 
 export type Tx = Prisma.TransactionClient;
-export type PosActor = { id: number; role: string; registerCode?: string };
+export type PosActor = { id: number; role: string; registerCode?: string; authVersion?: number };
 export const MAX_MONEY = 1000000000;
 export const manager = (actor: PosActor) => ["STORE_OWNER", "MANAGER"].includes(actor.role);
 export function fail(message: string, status = 409): never { throw Object.assign(new Error(message), { status }); }

@@ -1,9 +1,15 @@
 import type { ReceiptSettings, RegisterClosing, RegisterOpening } from "@workspace/api-zod";
+import { lockAccount, accountRole } from "../accounts";
 import { activeSession, assertNotCancelled, drawerTotals, fail, fingerprint, lockRegister, manager, match, money, reason, receiptSettings, registerOutput, requestKey, type PosActor, type Tx } from "./shared";
 
 export async function openDrawer(tx: Tx, input: RegisterOpening, actor: PosActor) {
   requestKey(input.requestId); money(input.openingMinor);
   const requestHash = fingerprint(actor, input);
+  // Same account lock/order as staff changes: an opener cannot be disabled
+  // between the no-open-drawer check and creation of their new drawer.
+  const account = await lockAccount(tx, actor.id);
+  if (!account.active || account.mustChangePassword || account.version !== actor.authVersion || accountRole(account) !== actor.role)
+    fail("Le compte ou ses autorisations ont changé. Reconnectez-vous avant d'ouvrir une caisse.", 403);
   const register = await lockRegister(tx, actor);
   const previous = await tx.registerSession.findUnique({ where: { openRequestId: input.requestId } });
   if (previous) { match(previous.openRequestHash, requestHash); return registerOutput(tx, previous.id); }

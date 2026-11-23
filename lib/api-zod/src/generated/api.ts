@@ -8,6 +8,159 @@
 import * as zod from 'zod';
 
 
+export const ListStaffResponse = zod.object({
+  "staff": zod.array(zod.object({
+  "id": zod.number().int(),
+  "email": zod.string(),
+  "role": zod.enum(['MANAGER', 'CASHIER']),
+  "active": zod.boolean(),
+  "mustChangePassword": zod.boolean(),
+  "version": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "openRegisterSessionId": zod.number().int().nullable()
+}))
+})
+
+
+export const executeStaffCommandBodyOneEmailMax = 190;
+
+export const executeStaffCommandBodyOneReasonMin = 3;
+export const executeStaffCommandBodyOneReasonMax = 400;
+
+
+
+export const executeStaffCommandBodyTwoReasonMin = 3;
+export const executeStaffCommandBodyTwoReasonMax = 400;
+
+
+
+export const executeStaffCommandBodyThreeReasonMin = 3;
+export const executeStaffCommandBodyThreeReasonMax = 400;
+
+
+
+export const ExecuteStaffCommandBody = zod.union([zod.object({
+  "kind": zod.enum(['CREATE']),
+  "requestId": zod.string().uuid(),
+  "email": zod.string().email().max(executeStaffCommandBodyOneEmailMax),
+  "role": zod.enum(['MANAGER', 'CASHIER']),
+  "reason": zod.string().min(executeStaffCommandBodyOneReasonMin).max(executeStaffCommandBodyOneReasonMax)
+}),zod.object({
+  "kind": zod.enum(['UPDATE']),
+  "requestId": zod.string().uuid(),
+  "userId": zod.number().int().min(1),
+  "version": zod.number().int().min(1),
+  "role": zod.enum(['MANAGER', 'CASHIER']),
+  "active": zod.boolean(),
+  "reason": zod.string().min(executeStaffCommandBodyTwoReasonMin).max(executeStaffCommandBodyTwoReasonMax)
+}),zod.object({
+  "kind": zod.enum(['RESET']),
+  "requestId": zod.string().uuid(),
+  "userId": zod.number().int().min(1),
+  "version": zod.number().int().min(1),
+  "reason": zod.string().min(executeStaffCommandBodyThreeReasonMin).max(executeStaffCommandBodyThreeReasonMax)
+})])
+
+export const ExecuteStaffCommandResponse = zod.object({
+  "requestId": zod.string().uuid(),
+  "kind": zod.enum(['CREATE', 'UPDATE', 'RESET']),
+  "status": zod.enum(['COMMITTED', 'CANCELLED']),
+  "staff": zod.union([zod.object({
+  "id": zod.number().int(),
+  "email": zod.string(),
+  "role": zod.enum(['MANAGER', 'CASHIER']),
+  "active": zod.boolean(),
+  "mustChangePassword": zod.boolean(),
+  "version": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "openRegisterSessionId": zod.number().int().nullable()
+}),zod.null()]),
+  "resultVersion": zod.number().int().nullable(),
+  "temporaryPassword": zod.string().nullable()
+})
+
+
+export const RecoverStaffCommandParams = zod.object({
+  "requestId": zod.coerce.string().uuid()
+})
+
+export const RecoverStaffCommandResponse = zod.object({
+  "requestId": zod.string().uuid(),
+  "kind": zod.enum(['CREATE', 'UPDATE', 'RESET']),
+  "status": zod.enum(['COMMITTED', 'CANCELLED']),
+  "staff": zod.union([zod.object({
+  "id": zod.number().int(),
+  "email": zod.string(),
+  "role": zod.enum(['MANAGER', 'CASHIER']),
+  "active": zod.boolean(),
+  "mustChangePassword": zod.boolean(),
+  "version": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "openRegisterSessionId": zod.number().int().nullable()
+}),zod.null()]),
+  "resultVersion": zod.number().int().nullable(),
+  "temporaryPassword": zod.string().nullable()
+})
+
+
+export const abandonStaffCommandBodyOneEmailMax = 190;
+
+export const abandonStaffCommandBodyOneReasonMin = 3;
+export const abandonStaffCommandBodyOneReasonMax = 400;
+
+
+
+export const abandonStaffCommandBodyTwoReasonMin = 3;
+export const abandonStaffCommandBodyTwoReasonMax = 400;
+
+
+
+export const abandonStaffCommandBodyThreeReasonMin = 3;
+export const abandonStaffCommandBodyThreeReasonMax = 400;
+
+
+
+export const AbandonStaffCommandBody = zod.union([zod.object({
+  "kind": zod.enum(['CREATE']),
+  "requestId": zod.string().uuid(),
+  "email": zod.string().email().max(abandonStaffCommandBodyOneEmailMax),
+  "role": zod.enum(['MANAGER', 'CASHIER']),
+  "reason": zod.string().min(abandonStaffCommandBodyOneReasonMin).max(abandonStaffCommandBodyOneReasonMax)
+}),zod.object({
+  "kind": zod.enum(['UPDATE']),
+  "requestId": zod.string().uuid(),
+  "userId": zod.number().int().min(1),
+  "version": zod.number().int().min(1),
+  "role": zod.enum(['MANAGER', 'CASHIER']),
+  "active": zod.boolean(),
+  "reason": zod.string().min(abandonStaffCommandBodyTwoReasonMin).max(abandonStaffCommandBodyTwoReasonMax)
+}),zod.object({
+  "kind": zod.enum(['RESET']),
+  "requestId": zod.string().uuid(),
+  "userId": zod.number().int().min(1),
+  "version": zod.number().int().min(1),
+  "reason": zod.string().min(abandonStaffCommandBodyThreeReasonMin).max(abandonStaffCommandBodyThreeReasonMax)
+})])
+
+export const AbandonStaffCommandResponse = zod.object({
+  "requestId": zod.string().uuid(),
+  "kind": zod.enum(['CREATE', 'UPDATE', 'RESET']),
+  "status": zod.enum(['COMMITTED', 'CANCELLED']),
+  "staff": zod.union([zod.object({
+  "id": zod.number().int(),
+  "email": zod.string(),
+  "role": zod.enum(['MANAGER', 'CASHIER']),
+  "active": zod.boolean(),
+  "mustChangePassword": zod.boolean(),
+  "version": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "openRegisterSessionId": zod.number().int().nullable()
+}),zod.null()]),
+  "resultVersion": zod.number().int().nullable(),
+  "temporaryPassword": zod.string().nullable()
+})
+
+
 export const getRetailReportQueryFromRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const getRetailReportQueryToRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const getRetailReportQueryGroupByDefault = `DAY`;

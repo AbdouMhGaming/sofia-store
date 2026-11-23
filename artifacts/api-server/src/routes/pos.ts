@@ -37,7 +37,7 @@ export function createPosRouter(registerCode = "MAIN"): IRouter {
     if (who.user.mustChangePassword) { res.status(403).json({ error: "Changez d'abord votre mot de passe temporaire." }); return; }
     if (!["STORE_OWNER", "MANAGER", "CASHIER"].includes(who.user.role)) { res.status(403).json({ error: "Accès caisse non autorisé." }); return; }
     res.locals.identity = who;
-    res.locals.posActor = { id: who.user.id, role: who.user.role, registerCode } satisfies PosActor;
+    res.locals.posActor = { id: who.user.id, role: who.user.role, registerCode, authVersion: who.accountVersion } satisfies PosActor;
     next();
   });
   const actor = (res: Response) => res.locals.posActor as PosActor;

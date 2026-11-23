@@ -8,8 +8,8 @@ import type { WebOrderAction, WebOrderOperation, WebOrderPaymentInput, AdminChec
 const uuid = () => randomUUID(), rollback = new Error("ROLLBACK_FULFILLMENT_VERIFICATION");
 async function fixture(tx: Prisma.TransactionClient) {
   const suffix = uuid().slice(0, 8);
-  const user = await tx.user.create({ data: { email: `fulfillment-${suffix}@invalid.test`, passwordHash: "DISABLED_VERIFICATION_ACCOUNT", active: false } });
-  const actor: PosActor = { id: user.id, role: "STORE_OWNER", registerCode: `V-FUL-${suffix}` };
+  const user = await tx.user.create({ data: { email: `fulfillment-${suffix}@invalid.test`, passwordHash: "DISABLED_VERIFICATION_ACCOUNT", active: true, mustChangePassword: false, roles: { create: { role: { connect: { name: "STORE_OWNER" } } } } } });
+  const actor: PosActor = { id: user.id, role: "STORE_OWNER", registerCode: `V-FUL-${suffix}`, authVersion: user.version };
   const register = await tx.cashRegister.create({ data: { code: actor.registerCode!, name: `VÉRIFICATION ${suffix}` } });
   const category = await tx.category.findFirstOrThrow();
   const size = await tx.size.create({ data: { name: `VF-${suffix}` } }), color = await tx.color.create({ data: { name: `VF-${suffix}` } });
@@ -213,7 +213,9 @@ try {
         await tx.registerSession.deleteMany({ where: { registerId: f.register.id } }); await tx.cashRegister.delete({ where: { id: f.register.id } });
         await tx.inventory.delete({ where: { id: f.inventory.id } }); await tx.productVariant.delete({ where: { id: f.variant.id } }); await tx.product.delete({ where: { id: f.product.id } });
         await tx.size.delete({ where: { id: f.size.id } }); await tx.color.delete({ where: { id: f.color.id } });
-        await tx.auditLog.deleteMany({ where: { userId: f.user.id } }); await tx.user.delete({ where: { id: f.user.id } });
+        await tx.auditLog.deleteMany({ where: { userId: f.user.id } });
+        await tx.userRole.deleteMany({ where: { userId: f.user.id } });
+        await tx.user.delete({ where: { id: f.user.id } });
       });
       console.log("Concurrent verification records cleaned by exact owned IDs. Original store configuration and real records preserved.");
     } catch (e) { console.error("Fulfillment cleanup needs review:", (e as { code?: string }).code || "CLEANUP_FAILED"); process.exitCode = 1; }

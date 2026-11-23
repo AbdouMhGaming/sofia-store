@@ -10,8 +10,8 @@ import type { CashSaleInput } from "@workspace/api-zod";
 async function fixture(tx: Prisma.TransactionClient) {
   const suffix = randomUUID().slice(0, 8);
   const category = await tx.category.findFirstOrThrow();
-  const manager = await tx.user.create({ data: { email: `pos-manager-${suffix}@invalid.test`, passwordHash: "NO_LOGIN_TEST_FIXTURE", active: false } });
-  const cashier = await tx.user.create({ data: { email: `pos-cashier-${suffix}@invalid.test`, passwordHash: "NO_LOGIN_TEST_FIXTURE", active: false } });
+  const manager = await tx.user.create({ data: { email: `pos-manager-${suffix}@invalid.test`, passwordHash: "NO_LOGIN_TEST_FIXTURE", active: true, mustChangePassword: false, roles: { create: { role: { connect: { name: "MANAGER" } } } } } });
+  const cashier = await tx.user.create({ data: { email: `pos-cashier-${suffix}@invalid.test`, passwordHash: "NO_LOGIN_TEST_FIXTURE", active: true, mustChangePassword: false, roles: { create: { role: { connect: { name: "CASHIER" } } } } } });
   const register = await tx.cashRegister.create({ data: { code: `VERIFY-${suffix}`, name: `VÉRIFICATION ${suffix}` } });
   const product = await tx.product.create({ data: {
     slug: `verification-pos-${suffix}`, nameFr: `VÉRIFICATION — NE PAS VENDRE ${suffix}`, nameAr: "اختبار",
@@ -23,8 +23,8 @@ async function fixture(tx: Prisma.TransactionClient) {
   const b = await tx.productVariant.create({ data: { productId: product.id, sizeId: sizeB.id, colorId: color.id, sku: `V-${suffix}-B`, barcode: `00VERIFY${suffix}B`, priceMinor: 20003, costMinor: 10000 } });
   const location = await tx.location.findUniqueOrThrow({ where: { code: "STORE" } });
   await tx.inventory.createMany({ data: [{ variantId: a.id, locationId: location.id, onHand: 20, reserved: 3 }, { variantId: b.id, locationId: location.id, onHand: 10, reserved: 2 }] });
-  const owner: PosActor = { id: manager.id, role: "MANAGER", registerCode: register.code };
-  const tiller: PosActor = { id: cashier.id, role: "CASHIER", registerCode: register.code };
+  const owner: PosActor = { id: manager.id, role: "MANAGER", registerCode: register.code, authVersion: manager.version };
+  const tiller: PosActor = { id: cashier.id, role: "CASHIER", registerCode: register.code, authVersion: cashier.version };
   return { a, b, product, register, owner, tiller, manager, cashier, sizeA, sizeB, color };
 }
 function saleInput(sessionId: number, id: number, price: number, quantity = 1): CashSaleInput {
@@ -184,6 +184,7 @@ try {
         await tx.size.deleteMany({ where: { id: { in: [f.sizeA.id, f.sizeB.id] } } });
         await tx.color.delete({ where: { id: f.color.id } });
         await tx.auditLog.deleteMany({ where: { userId: { in: users } } });
+        await tx.userRole.deleteMany({ where: { userId: { in: users } } });
         await tx.user.deleteMany({ where: { id: { in: users } } });
       });
       console.log("Only verification-owned concurrent-test records were removed.");

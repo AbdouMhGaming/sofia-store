@@ -5,6 +5,124 @@
  * SOFIA STORE shared retail API. Initial foundation and catalog phase.
  * OpenAPI spec version: 0.2.0
  */
+export type StaffRole = typeof StaffRole[keyof typeof StaffRole];
+
+
+export const StaffRole = {
+  MANAGER: 'MANAGER',
+  CASHIER: 'CASHIER',
+} as const;
+
+export interface StaffRow {
+  id: number;
+  email: string;
+  role: StaffRole;
+  active: boolean;
+  mustChangePassword: boolean;
+  version: number;
+  createdAt: string;
+  /** @nullable */
+  openRegisterSessionId: number | null;
+}
+
+export interface StaffPage {
+  staff: StaffRow[];
+}
+
+export type StaffCreateKind = typeof StaffCreateKind[keyof typeof StaffCreateKind];
+
+
+export const StaffCreateKind = {
+  CREATE: 'CREATE',
+} as const;
+
+export interface StaffCreate {
+  kind: StaffCreateKind;
+  requestId: string;
+  /** @maxLength 190 */
+  email: string;
+  role: StaffRole;
+  /**
+     * @minLength 3
+     * @maxLength 400
+     */
+  reason: string;
+}
+
+export type StaffUpdateKind = typeof StaffUpdateKind[keyof typeof StaffUpdateKind];
+
+
+export const StaffUpdateKind = {
+  UPDATE: 'UPDATE',
+} as const;
+
+export interface StaffUpdate {
+  kind: StaffUpdateKind;
+  requestId: string;
+  /** @minimum 1 */
+  userId: number;
+  /** @minimum 1 */
+  version: number;
+  role: StaffRole;
+  active: boolean;
+  /**
+     * @minLength 3
+     * @maxLength 400
+     */
+  reason: string;
+}
+
+export type StaffResetKind = typeof StaffResetKind[keyof typeof StaffResetKind];
+
+
+export const StaffResetKind = {
+  RESET: 'RESET',
+} as const;
+
+export interface StaffReset {
+  kind: StaffResetKind;
+  requestId: string;
+  /** @minimum 1 */
+  userId: number;
+  /** @minimum 1 */
+  version: number;
+  /**
+     * @minLength 3
+     * @maxLength 400
+     */
+  reason: string;
+}
+
+export type StaffCommandInput = StaffCreate | StaffUpdate | StaffReset;
+
+export type StaffCommandResultKind = typeof StaffCommandResultKind[keyof typeof StaffCommandResultKind];
+
+
+export const StaffCommandResultKind = {
+  CREATE: 'CREATE',
+  UPDATE: 'UPDATE',
+  RESET: 'RESET',
+} as const;
+
+export type StaffCommandResultStatus = typeof StaffCommandResultStatus[keyof typeof StaffCommandResultStatus];
+
+
+export const StaffCommandResultStatus = {
+  COMMITTED: 'COMMITTED',
+  CANCELLED: 'CANCELLED',
+} as const;
+
+export interface StaffCommandResult {
+  requestId: string;
+  kind: StaffCommandResultKind;
+  status: StaffCommandResultStatus;
+  staff: StaffRow | null;
+  /** @nullable */
+  resultVersion: number | null;
+  /** @nullable */
+  temporaryPassword: string | null;
+}
+
 export interface ReportActivity {
   unitsSold: number;
   unitsReturned: number;

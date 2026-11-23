@@ -6,6 +6,59 @@ info:
 servers:
   - url: /api
 paths:
+  /admin/staff:
+    get:
+      operationId: listStaff
+      responses:
+        "200":
+          description: Owner-only staff metadata without password hashes
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StaffPage" }
+        "403": { description: Owner required }
+  /admin/staff/commands:
+    post:
+      operationId: executeStaffCommand
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StaffCommandInput" }
+      responses:
+        "200":
+          description: One-time credential only for the original successful create or reset response
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StaffCommandResult" }
+        "400": { description: Invalid input }
+        "403": { description: Owner or target protection }
+        "409": { description: Stale version or open drawer or cancelled command }
+  /admin/staff/requests/{requestId}:
+    get:
+      operationId: recoverStaffCommand
+      parameters:
+        - { in: path, name: requestId, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Actor-bound recovery never discloses a password
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StaffCommandResult" }
+        "404": { description: Unknown is not proof that a delayed request cannot commit }
+  /admin/staff/requests/cancel:
+    post:
+      operationId: abandonStaffCommand
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StaffCommandInput" }
+      responses:
+        "200":
+          description: Committed metadata or durable cancellation of the exact pending operation
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StaffCommandResult" }
   /admin/reports:
     get:
       operationId: getRetailReport
@@ -802,6 +855,75 @@ paths:
               schema: { $ref: "#/components/schemas/ReceiptSettings" }
 components:
   schemas:
+    StaffRole:
+      type: string
+      enum: [MANAGER, CASHIER]
+    StaffRow:
+      type: object
+      required: [id, email, role, active, mustChangePassword, version, createdAt, openRegisterSessionId]
+      properties:
+        id: { type: integer }
+        email: { type: string }
+        role: { $ref: "#/components/schemas/StaffRole" }
+        active: { type: boolean }
+        mustChangePassword: { type: boolean }
+        version: { type: integer }
+        createdAt: { type: string, format: date-time }
+        openRegisterSessionId: { type: [integer, "null"] }
+    StaffPage:
+      type: object
+      required: [staff]
+      properties:
+        staff:
+          type: array
+          items: { $ref: "#/components/schemas/StaffRow" }
+    StaffCreate:
+      type: object
+      required: [kind, requestId, email, role, reason]
+      properties:
+        kind: { type: string, enum: [CREATE] }
+        requestId: { type: string, format: uuid }
+        email: { type: string, format: email, maxLength: 190 }
+        role: { $ref: "#/components/schemas/StaffRole" }
+        reason: { type: string, minLength: 3, maxLength: 400 }
+    StaffUpdate:
+      type: object
+      required: [kind, requestId, userId, version, role, active, reason]
+      properties:
+        kind: { type: string, enum: [UPDATE] }
+        requestId: { type: string, format: uuid }
+        userId: { type: integer, minimum: 1 }
+        version: { type: integer, minimum: 1 }
+        role: { $ref: "#/components/schemas/StaffRole" }
+        active: { type: boolean }
+        reason: { type: string, minLength: 3, maxLength: 400 }
+    StaffReset:
+      type: object
+      required: [kind, requestId, userId, version, reason]
+      properties:
+        kind: { type: string, enum: [RESET] }
+        requestId: { type: string, format: uuid }
+        userId: { type: integer, minimum: 1 }
+        version: { type: integer, minimum: 1 }
+        reason: { type: string, minLength: 3, maxLength: 400 }
+    StaffCommandInput:
+      oneOf:
+        - { $ref: "#/components/schemas/StaffCreate" }
+        - { $ref: "#/components/schemas/StaffUpdate" }
+        - { $ref: "#/components/schemas/StaffReset" }
+    StaffCommandResult:
+      type: object
+      required: [requestId, kind, status, staff, resultVersion, temporaryPassword]
+      properties:
+        requestId: { type: string, format: uuid }
+        kind: { type: string, enum: [CREATE, UPDATE, RESET] }
+        status: { type: string, enum: [COMMITTED, CANCELLED] }
+        staff:
+          anyOf:
+            - { $ref: "#/components/schemas/StaffRow" }
+            - { type: "null" }
+        resultVersion: { type: [integer, "null"] }
+        temporaryPassword: { type: [string, "null"] }
     ReportActivity:
       type: object
       required: [unitsSold, unitsReturned, grossMinor, discountMinor, returnsMinor, netMinor, costSoldMinor, costRecoveredMinor, damagedUnfulfilledMinor, netCostMinor, marginMinor]
