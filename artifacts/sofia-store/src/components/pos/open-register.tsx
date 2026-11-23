@@ -3,15 +3,14 @@ import { Link } from "wouter";
 import { Lock, Vault } from "lucide-react";
 import { useOpenRegister, useCancelRegisterRequest, type PosContext, type RegisterOpening } from "@workspace/api-client-react";
 import { formatDA, errMsg } from "@/lib/util";
-import { classify, newRequestId, parseMoney, useInvalidatePos, loadPending, savePending, openingKey } from "@/lib/pos";
+import { classify, newRequestId, parseMoney, useInvalidatePos, usePendingRequest, validOpening, openingKey } from "@/lib/pos";
 import { inputCls, btnDark, btnGhost } from "@/components/admin/shell-primitives";
 
 export function OpenRegisterPanel({ ctx, request, pendingOnly = false }: { ctx: PosContext; request: { headers: Record<string, string> }; pendingOnly?: boolean }) {
   const [raw, setRaw] = useState("");
   const [confirming, setConfirming] = useState(false);
   const key = openingKey(ctx.userId);
-  const [pending, setPendingState] = useState<RegisterOpening | null>(() => loadPending<RegisterOpening>(key));
-  const setPending = (v: RegisterOpening | null) => { savePending(key, v); setPendingState(v); };
+  const { pending, setPending, storageError, storageBlocked } = usePendingRequest<RegisterOpening>(key, validOpening);
   const [err, setErr] = useState<{ e: unknown; uncertain: boolean } | null>(() => (pending ? { e: null, uncertain: true } : null));
   const cancel = useCancelRegisterRequest({ request });
   const [cancelErr, setCancelErr] = useState<unknown>(null);
@@ -31,21 +30,6 @@ export function OpenRegisterPanel({ ctx, request, pendingOnly = false }: { ctx: 
       </div>
     </div>
   );
-  if (pendingOnly) return pendingBlock ? <div className="mb-4">{pendingBlock}</div> : resolved ? <p className="mb-4 text-sm text-emerald-700" data-testid="status-opening-resolved">{resolved}</p> : null;
-
-  if (!ctx.canSell) {
-    return <Notice title="Caisse non autorisée" text="Votre compte ne peut pas encaisser. Demandez à un responsable." />;
-  }
-  const s = ctx.activeSession;
-  if (s && s.openedById !== ctx.userId) {
-    return (
-      <Notice title={`Tiroir ouvert par ${s.openedBy}`}
-        text={`Le tiroir ${ctx.registerName} est utilisé depuis le ${new Date(s.openedAt).toLocaleString("fr-FR", { timeZone: "Africa/Algiers" })}. Seule la personne qui l'a ouvert peut y encaisser.`}>
-        {ctx.canManage && <Link href="/pos/sessions" className={`${btnGhost} mt-4`} data-testid="link-close-other">Clôturer cette session</Link>}
-      </Notice>
-    );
-  }
-
   const send = (p: RegisterOpening) => {
     setErr(null);
     open.mutate({ data: p }, {
@@ -68,13 +52,24 @@ export function OpenRegisterPanel({ ctx, request, pendingOnly = false }: { ctx: 
   function go() {
     // Never mint a new key while a previous opening is unresolved: always resend the stored one.
     const p = pending ?? (amount !== null ? { openingMinor: amount, requestId: newRequestId() } : null);
-    if (!p) return;
-    if (!pending) setPending(p);
+    if (!p || storageBlocked) return;
+    if (!pending && !setPending(p)) return;
     send(p);
   };
 
+  const storageNotice = storageError ? <p role="alert" className="text-sm text-destructive mb-4">{storageError}</p> : null;
+  if (storageBlocked) return storageNotice;
+  if (pendingOnly) return <>{storageNotice}{pendingBlock ? <div className="mb-4">{pendingBlock}</div> : resolved ? <p className="mb-4 text-sm text-emerald-700">{resolved}</p> : null}</>;
+  const s = ctx.activeSession;
+  if (s && s.openedById !== ctx.userId) {
+    return <Notice title={`Tiroir ouvert par ${s.openedBy}`}
+      text="Seule la personne qui a ouvert ce tiroir peut y encaisser.">
+      {ctx.canManage && <Link href="/pos/sessions" className={`${btnGhost} mt-4`}>Clôturer cette session</Link>}
+    </Notice>;
+  }
   return (
     <div className="max-w-lg mx-auto bg-card border border-border rounded-md p-8 rise" data-testid="panel-open-register">
+      {storageNotice}
       <Vault className="w-8 h-8 text-primary" strokeWidth={1.3} />
       <p className="eyebrow mt-4">{ctx.registerName}</p>
       <h2 className="font-serif text-3xl mt-1">Ouvrir le tiroir</h2>

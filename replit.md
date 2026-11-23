@@ -1,7 +1,7 @@
 # SOFIA STORE
 
 An Algerian women's fashion boutique with one shared backend for the storefront,
-management, and planned POS. This is a phased development build, not ready to
+management, and POS. This is a phased development build, not ready to
 replace the store's existing Safe-POS installation yet.
 
 ## Product constraints
@@ -31,6 +31,8 @@ replace the store's existing Safe-POS installation yet.
   `docs/database-operations.md`.
 - Current Phase 3 behavior, CSV format, image constraints and Hostinger storage
   requirement: `docs/phase3-catalog.md`.
+- POS permissions, financial rules, recovery, receipts and hardware gates:
+  `docs/phase4-pos.md`.
 
 ## Run and validate
 
@@ -64,7 +66,7 @@ budget (60 seconds for the multi-record setup seed).
 
 ## Current phase boundary
 
-Current phase: **Phase 3 — catalog and inventory**. Next: **Phase 4 — POS and receipts**.
+Current phase: **Phase 4 — POS and receipts**. Next: **Phase 5 — storefront checkout**.
 Category CRUD, variant editing, barcode labels, CSV preview/atomic import/export,
 and detailed stock history are implemented. The image pipeline now uses a private
 filesystem directory configured with `SOFIA_UPLOAD_DIR`; Replit storage code and
@@ -76,6 +78,11 @@ for customer photos, or claim actual Hostinger permissions/redeploy persistence
 verified. Those account-specific checks remain open for staging/deployment.
 The active owner account was created through the one-time activation process.
 
-Cash checkout, sale receipts, orders/reservations, delivery, reports, staff account
+Cash POS, receipt history, manager returns/voids and register reconciliation are
+implemented. Backend financial/concurrency checks and a signed-in browser
+sale/return/closure journey passed. Verification fixtures were cleaned without
+altering real store records. See `docs/phase4-pos.md` for outstanding hardware gates.
+
+Online checkout, orders/reservations, delivery, reports, staff account
 management, Hostinger production setup, restore rehearsal, and Safe-POS migration
 remain separate phases. Do not imply unavailable screens implement those functions.

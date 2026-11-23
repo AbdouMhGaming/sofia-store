@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { AdminShell } from "@/pages/admin";
 import { btnDark, btnGhost, inputCls, ErrorText } from "@/components/admin/shell-primitives";
 import { PosTabs } from "@/components/pos/pos-tabs";
-import { usePos, fmtDate, parseMoney, newRequestId, classify, useInvalidatePos, loadPending, savePending, closingKey } from "@/lib/pos";
+import { usePos, fmtDate, parseMoney, newRequestId, classify, useInvalidatePos, usePendingRequest, validClosing, closingKey } from "@/lib/pos";
 import { formatDA, errMsg } from "@/lib/util";
 
 export function PosSessionsPage() {
@@ -34,7 +34,7 @@ export function PosSessionsPage() {
         <div className="mb-6 rounded-md border border-dashed border-border p-5 flex items-center gap-4">
           <Vault className="w-6 h-6 text-primary" strokeWidth={1.3} />
           <p className="text-sm flex-1">Aucun tiroir ouvert sur {c.registerName}.</p>
-          {c.canSell && <Link href="/pos" className={btnDark}>Ouvrir depuis la caisse</Link>}
+          <Link href="/pos" className={btnDark}>Ouvrir depuis la caisse</Link>
         </div>
       )}
       <div className="bg-card border border-border rounded-md overflow-x-auto">
@@ -97,8 +97,7 @@ function SessionRows({ enabled, before, last, onMore, canClose, onClose }: {
 
 function CloseDialog({ session, userId, onClose, request, isOther }: { session: RegisterSession; userId: number; onClose: () => void; request: { headers: Record<string, string> }; isOther: boolean }) {
   const key = closingKey(userId, session.id);
-  const [pending, setPendingState] = useState<RegisterClosing | null>(() => loadPending<RegisterClosing>(key));
-  const setPending = (v: RegisterClosing | null) => { savePending(key, v); setPendingState(v); };
+  const { pending, setPending, storageError, storageBlocked } = usePendingRequest<RegisterClosing>(key, validClosing);
   const [raw, setRaw] = useState(() => (pending ? (pending.countedMinor / 100).toFixed(2).replace(".", ",") : ""));
   const [reason, setReason] = useState(pending?.reason ?? "");
   const [ack, setAck] = useState(!!pending);
@@ -110,12 +109,12 @@ function CloseDialog({ session, userId, onClose, request, isOther }: { session: 
   const invalidate = useInvalidatePos();
   const counted = pending ? pending.countedMinor : parseMoney(raw);
   const variance = counted !== null ? counted - session.expectedMinor : null;
-  const valid = !!pending || (counted !== null && reason.trim().length >= 3 && ack);
+  const valid = !storageBlocked && (!!pending || (counted !== null && reason.trim().length >= 3 && ack));
   const go = () => {
     // Reuse the stored closing request while its outcome is unknown; never mint a second key.
     const p = pending ?? (counted !== null ? { countedMinor: counted, reason: reason.trim(), requestId: newRequestId() } : null);
     if (!p || !valid) return;
-    if (!pending) setPending(p);
+    if (!pending && !setPending(p)) return;
     setErr(null);
     close.mutate({ id: session.id, data: p }, {
       onSuccess: () => { setPending(null); invalidate(); onClose(); },
@@ -142,6 +141,7 @@ function CloseDialog({ session, userId, onClose, request, isOther }: { session: 
           <DialogTitle className="font-serif text-3xl font-normal">Clôturer la session #{session.id}</DialogTitle>
           <DialogDescription>{isOther ? `Session ouverte par ${session.openedBy}. Clôture par un responsable.` : "Comptez les espèces réellement présentes."}</DialogDescription>
         </DialogHeader>
+        {storageError && <p role="alert" className="text-sm text-destructive">{storageError}</p>}
         <div className="flex justify-between text-sm"><span className="text-muted-foreground">Attendu (serveur)</span><span className="font-mono">{formatDA(session.expectedMinor)}</span></div>
         <label className="block"><span className="text-xs uppercase tracking-wide text-muted-foreground">Espèces comptées (DA)</span>
           <input inputMode="decimal" className={`${inputCls} mt-1 font-mono text-lg`} value={raw} disabled={!!pending} onChange={(e) => { setRaw(e.target.value); setAck(false); }} data-testid="input-counted" /></label>

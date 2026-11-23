@@ -63,8 +63,8 @@ export function PosTicketPage() {
               {c?.canManage && (
                 <div className="bg-card border border-border rounded-md p-5 space-y-3">
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">Retour ou annulation (responsable)</p>
-                  {user && active && (() => { const pr = loadPendingRefund(user.id, sale.id); return pr && !dlg ? (
-                    <button className="w-full text-left text-xs rounded px-3 py-2 bg-[#fbf1ea] text-[#8a4a24] border border-secondary/30" onClick={() => setDlg(pr.kind)} data-testid="button-resume-refund">
+                  {user && active && (() => { const stored = loadPendingRefund(user.id, sale.id); const pr = stored.ok ? stored.value : null; return (!stored.ok || pr) && !dlg ? (
+                    <button className="w-full text-left text-xs rounded px-3 py-2 bg-[#fbf1ea] text-[#8a4a24] border border-secondary/30" onClick={() => setDlg(pr?.kind ?? "RETURN")} data-testid="button-resume-refund">
                       Un remboursement dont le résultat est inconnu est en attente sur cet onglet. Ouvrir pour vérifier ou réessayer à l'identique.</button>) : null; })()}
                   {!active ? <p className="text-sm text-muted-foreground">Ouvrez un tiroir pour rembourser en espèces.</p> : (
                     <div className="flex flex-wrap gap-2">

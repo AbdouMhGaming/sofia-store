@@ -1,4 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { useGetPosContext, getGetPosContextQueryKey, type PosVariant, type CashSaleInput, type RefundInput } from "@workspace/api-client-react";
 import { useSessionCsrf } from "@/lib/auth";
 import { daToMinor } from "@/lib/util";
@@ -109,7 +110,7 @@ const validDraft = (v: unknown) => isObj(v) && Array.isArray(v.lines)
   && v.lines.every((l) => isObj(l) && isObj(l.variant) && isInt(l.variant.id) && isInt(l.variant.priceMinor) && isInt(l.quantity) && isInt(l.discountMinor))
   && isInt(v.orderDiscountMinor ?? 0) && typeof (v.discountReason ?? "") === "string"
   && (v.pending == null || validSalePayload(v.pending));
-const validRefund = (v: unknown) => isObj(v) && isReqId(v.requestId) && isInt(v.registerSessionId) && (v.kind === "RETURN" || v.kind === "VOID")
+export const validRefund = (v: unknown) => isObj(v) && isReqId(v.requestId) && isInt(v.registerSessionId) && (v.kind === "RETURN" || v.kind === "VOID")
   && typeof v.reason === "string" && Array.isArray(v.items) && v.items.every((i) => isObj(i) && isInt(i.saleItemId) && isInt(i.quantity) && typeof i.restock === "boolean");
 export const validOpening = (v: unknown) => isObj(v) && isReqId(v.requestId) && isInt(v.openingMinor);
 export const validClosing = (v: unknown) => isObj(v) && isReqId(v.requestId) && isInt(v.countedMinor) && typeof v.reason === "string";
@@ -122,7 +123,7 @@ export function loadDraft(userId: number): StoreRead<PosDraft> {
 }
 export const saveDraft = (userId: number, d: PosDraft) => storeWrite(draftKey(userId), d);
 
-const refundKey = (userId: number, saleId: number) => `sofia-pos-refund:${userId}:${saleId}`;
+export const refundKey = (userId: number, saleId: number) => `sofia-pos-refund:${userId}:${saleId}`;
 export const loadPendingRefund = (userId: number, saleId: number) => storeRead<RefundInput>(refundKey(userId, saleId), validRefund);
 export const savePendingRefund = (userId: number, saleId: number, r: RefundInput | null) => storeWrite(refundKey(userId, saleId), r);
 
@@ -152,3 +153,23 @@ export const REFUND_KIND: Record<string, string> = { RETURN: "Retour", VOID: "An
 /* ---------- Per-user pending opening/closing ---------- */
 export const openingKey = (userId: number) => `sofia-pos-opening:${userId}`;
 export const closingKey = (userId: number, sessionId: number) => `sofia-pos-closing:${userId}:${sessionId}`;
+
+/** Persist before sending; unreadable saved requests block new financial operations. */
+export function usePendingRequest<T>(key: string, valid: (v: unknown) => boolean) {
+  const [loaded] = useState(() => storeRead<T>(key, valid));
+  const [pending, setPendingState] = useState<T | null>(loaded.ok ? loaded.value : null);
+  const [storageError, setStorageError] = useState(loaded.ok ? "" : STORAGE_CORRUPT_MESSAGE);
+  const storageBlocked = !loaded.ok;
+  const setPending = (value: T | null): boolean => {
+    if (value !== null && storageBlocked) return false;
+    const ok = storeWrite(key, value);
+    if (!ok && value !== null) { setStorageError(STORAGE_WRITE_ERROR); return false; }
+    if (!ok) {
+      setStorageError(STORAGE_CLEANUP_WARNING);
+      window.alert(STORAGE_CLEANUP_WARNING);
+    } else setStorageError("");
+    setPendingState(value);
+    return true;
+  };
+  return { pending, setPending, storageError, storageBlocked };
+}

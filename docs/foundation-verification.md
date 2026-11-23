@@ -1,5 +1,8 @@
 # Foundation verification
 
+This records the foundation milestone, not the current feature boundary.
+See `phase4-pos.md` for the subsequent POS implementation and verification.
+
 This is evidence for the initial foundation only, not the full retail acceptance suite.
 
 ## Passed

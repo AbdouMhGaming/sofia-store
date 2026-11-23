@@ -4,7 +4,7 @@ import { useRefundPosSale, useCancelPosRefundRequest, type PosSale, type Registe
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { btnDark, btnGhost, inputCls } from "@/components/admin/shell-primitives";
 import { formatDA, errMsg } from "@/lib/util";
-import { classify, newRequestId, refundEstimate, loadPendingRefund, savePendingRefund, useInvalidatePos, type Outcome } from "@/lib/pos";
+import { classify, newRequestId, refundEstimate, usePendingRequest, refundKey, validRefund, useInvalidatePos, type Outcome } from "@/lib/pos";
 
 export function canVoid(sale: PosSale, active: RegisterSession | null) {
   return sale.status === "COMPLETED" && sale.refunds.length === 0 && !!active && active.status === "OPEN" && active.id === sale.registerSessionId;
@@ -17,7 +17,7 @@ export function RefundDialog({ sale, active, userId, kind, open, onClose, reques
   const [qty, setQty] = useState<Record<number, number>>({});
   const [restock, setRestock] = useState<Record<number, boolean>>({});
   const [reason, setReason] = useState("");
-  const [pending, setPending] = useState<RefundInput | null>(() => loadPendingRefund(userId, sale.id));
+  const { pending, setPending, storageError, storageBlocked } = usePendingRequest<RefundInput>(refundKey(userId, sale.id), validRefund);
   const [outcome, setOutcome] = useState<{ kind: Outcome; e: unknown } | null>(null);
   const [step, setStep] = useState<"edit" | "confirm">("edit");
   const refund = useRefundPosSale({ request });
@@ -29,7 +29,7 @@ export function RefundDialog({ sale, active, userId, kind, open, onClose, reques
     setCancelErr(null);
     cancel.mutate({ data: { requestId: pending.requestId, registerSessionId: pending.registerSessionId, saleId: sale.id } }, {
       onSuccess: (r) => {
-        savePendingRefund(userId, sale.id, null); setPending(null); setOutcome(null); invalidate(); onRefresh();
+        setPending(null); setOutcome(null); invalidate(); onRefresh();
         if (!r.cancelled) onClose(); // refund was already confirmed: show updated ticket
         else setStep("edit");
       },
@@ -60,12 +60,12 @@ export function RefundDialog({ sale, active, userId, kind, open, onClose, reques
   });
   const total = lines.reduce((a, x) => a + x.est, 0);
   const chosen = lines.filter((x) => x.n > 0);
-  const valid = chosen.length > 0 && reason.trim().length >= 3 && reason.trim().length <= 500;
+  const valid = !storageBlocked && chosen.length > 0 && reason.trim().length >= 3 && reason.trim().length <= 500;
 
   const send = (p: RefundInput) => {
     setOutcome(null);
     refund.mutate({ id: sale.id, data: p }, {
-      onSuccess: () => { savePendingRefund(userId, sale.id, null); setPending(null); invalidate(); onRefresh(); onClose(); },
+      onSuccess: () => { setPending(null); invalidate(); onRefresh(); onClose(); },
       onError: (e) => {
         const k = classify(e);
         setOutcome({ kind: k, e }); invalidate(); onRefresh();
@@ -77,7 +77,8 @@ export function RefundDialog({ sale, active, userId, kind, open, onClose, reques
       requestId: newRequestId(), registerSessionId: active.id, kind, reason: reason.trim(),
       items: chosen.map((x) => ({ saleItemId: x.l.id, quantity: x.n, restock: kind === "VOID" ? true : !!restock[x.l.id] })),
     };
-    savePendingRefund(userId, sale.id, p); setPending(p); send(p);
+    if (!setPending(p)) return;
+    send(p);
   };
 
   return (
@@ -87,6 +88,7 @@ export function RefundDialog({ sale, active, userId, kind, open, onClose, reques
           <DialogTitle className="font-serif text-3xl font-normal">{kind === "VOID" ? `Annuler le ticket ${sale.number}` : `Retour sur ${sale.number}`}</DialogTitle>
           <DialogDescription>Le remboursement sort du tiroir actif (session {active.id}). Le ticket original reste conservé.</DialogDescription>
         </DialogHeader>
+        {storageError && <p role="alert" className="text-sm text-destructive">{storageError}</p>}
 
         {pending ? (
           <div className="rounded-md bg-[#fbf1ea] border border-secondary/30 p-4 text-sm space-y-2" data-testid="status-refund-pending">
